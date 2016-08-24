@@ -5,9 +5,9 @@ import android.animation.AnimatorSet;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -23,6 +23,7 @@ import java.util.Map;
  */
 public class YearMonthTransformer {
     private final int STAY_DELAY_TIME = 200;
+    private final int TRANSITION_ANIM_DURATION = 300;
     private final YearView yearView;
     private final MonthView monthView;
     private final MonthViewObserver monthViewObserver;
@@ -56,31 +57,34 @@ public class YearMonthTransformer {
 
     private void animShowMonth(int month) {
         MonthView child = (MonthView) yearView.getChildAt(month - 1);
-        // global rect ensure correct position on screen
-        Rect fromRect = new Rect();
-        child.getGlobalVisibleRect(fromRect);
-        Rect toRect = new Rect();
-        monthView.getGlobalVisibleRect(toRect);
-        // calculate translation in global
-        int trL = toRect.left - fromRect.left;
-        int trT = toRect.top + monthView.MONTH_HEADER_HEIGHT + monthView.WEEK_LABEL_HEIGHT - fromRect.top;
-        int trR = toRect.right - fromRect.right;
-        int trB = toRect.bottom - fromRect.bottom;
+        // screen position
+        int[] fromLocation = new int[2];
+        child.getLocationOnScreen(fromLocation);
+        int[] parentLocation = new int[2];
+        ((ViewGroup) monthView.getParent()).getLocationOnScreen(parentLocation);
+        // label height of MonthView
+        int labelHeight = monthView.MONTH_HEADER_HEIGHT + monthView.WEEK_LABEL_HEIGHT;
+
+        // calculate original position
+        int posL = fromLocation[0] - parentLocation[0];
+        int posT = fromLocation[1] - parentLocation[1];
+        int posR = posL + child.getWidth();
+        int posB = posT + child.getHeight();
 
         // 1-7
         ObjectAnimator animators = createMonthPropertyAnimator(child, monthView, monthView);
         // 8 left
-        ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", child.getLeft() - monthView.getPaddingLeft(), child.getLeft() + trL);
+        ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", posL - monthView.getPaddingLeft(), monthView.getLeft());
         // 9 top
-        ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", child.getTop(), child.getTop() + trT);
+        ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", posT, monthView.getTop() + labelHeight);
         // 10 right
-        ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", child.getRight() + monthView.getPaddingLeft(), child.getRight() + trR);
+        ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", posR + monthView.getPaddingLeft(), monthView.getRight());
         // 11 bottom
-        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(monthView, "bottom", child.getBottom(), child.getBottom() + trB);
+        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(monthView, "bottom", posB, monthView.getBottom());
 
         AnimatorSet animSet = new AnimatorSet();
         animSet.playTogether(animators, leftAnim, topAnim, rightAnim, bottomAnim);
-        animSet.setDuration(300);
+        animSet.setDuration(TRANSITION_ANIM_DURATION);
         animSet.setInterpolator(new DecelerateInterpolator(2.5f));
         animSet.addListener(new Animator.AnimatorListener() {
             boolean canceled = false;
@@ -226,32 +230,35 @@ public class YearMonthTransformer {
     }
 
     private void animHideMonth() {
-        MonthView child = (MonthView) yearView.getChildAt(monthView.mMonth);
-        // global rect ensure correct position on screen
-        Rect fromRect = new Rect();
-        monthView.getGlobalVisibleRect(fromRect);
-        Rect toRect = new Rect();
-        child.getGlobalVisibleRect(toRect);
-        // calculate translation in global
-        int trL = toRect.left - monthView.getPaddingLeft() - fromRect.left;
-        int trT = toRect.top - fromRect.top;
-        int trR = toRect.right + monthView.getPaddingLeft() - fromRect.right;
-        int trB = toRect.bottom - fromRect.bottom;
+        MonthView child = (MonthView) yearView.getChildAt(monthView.getCurrentMonth() - 1);
+        // screen position
+        int[] toLocation = new int[2];
+        child.getLocationOnScreen(toLocation);
+        int[] parentLocation = new int[2];
+        ((ViewGroup) monthView.getParent()).getLocationOnScreen(parentLocation);
+        // label height of MonthView
+        int labelHeight = monthView.MONTH_HEADER_HEIGHT + monthView.WEEK_LABEL_HEIGHT;
+
+        // calculate final position
+        int posL = toLocation[0] - parentLocation[0];
+        int posT = toLocation[1] - parentLocation[1];
+        int posR = posL + child.getWidth();
+        int posB = posT + child.getHeight();
 
         // 1-7
         ObjectAnimator animators = createMonthPropertyAnimator(monthView, child, monthView);
         // 8 left
-        ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", monthView.getLeft(), monthView.getLeft() + trL);
+        ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", monthView.getLeft(), posL - monthView.getPaddingLeft());
         // 9 top
-        ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", monthView.getTop() + monthView.MONTH_HEADER_HEIGHT + monthView.WEEK_LABEL_HEIGHT, monthView.getTop() + trT);
+        ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", monthView.getTop() + labelHeight, posT);
         // 10 right
-        ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", monthView.getRight(), monthView.getRight() + trR);
+        ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", monthView.getRight(), posR + monthView.getPaddingLeft());
         // 11 bottom
-        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(monthView, "bottom", monthView.getBottom(), monthView.getBottom() + trB);
+        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(monthView, "bottom", monthView.getBottom(), posB);
 
         AnimatorSet animSet = new AnimatorSet();
         animSet.playTogether(animators, leftAnim, topAnim, rightAnim, bottomAnim);
-        animSet.setDuration(300);
+        animSet.setDuration(TRANSITION_ANIM_DURATION);
         animSet.setInterpolator(new AccelerateInterpolator(2.5f));
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
@@ -336,7 +343,7 @@ public class YearMonthTransformer {
 
     // pass property of MonthView to YearView
     private void passProperties2Year() {
-        yearView.setYear(monthView.mYear);
+        yearView.setYear(monthView.getCurrentYear());
     }
 
     private ObjectAnimator createMonthPropertyAnimator(MonthView start, MonthView end, final MonthView target) {

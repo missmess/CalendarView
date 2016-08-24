@@ -59,10 +59,10 @@ public class MonthView extends View {
     protected int mNumDays = 7;
     protected int mNumCells = mNumDays;
     private int mDayOfWeekStart = 0;
-    protected int mMonth = 0;
+    private int mMonth = 0;
     protected int dayRowHeight = 0;
     protected int mWidth;
-    protected int mYear = 0;
+    private int mYear = 0;
     protected Calendar today;
 
     private int mNumRows = DEFAULT_NUM_ROWS;
@@ -464,6 +464,14 @@ public class MonthView extends View {
      */
     public int getShouldHeight() {
         return MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT + SPACE_BETWEEN_WEEK_AND_DAY + dayRowHeight * mNumRows;
+    }
+
+    public int getCurrentMonth() {
+        return mMonth + 1;
+    }
+
+    public int getCurrentYear() {
+        return mYear;
     }
 
     public void setOnDayClickListener(OnDayClickListener onDayClickListener) {
