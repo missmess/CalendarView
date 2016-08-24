@@ -365,6 +365,10 @@ public class MonthView extends View {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        if(!isEnabled()) {
+            // still consume touch event
+            return true;
+        }
         int action = event.getAction();
         float x = event.getX();
         float y = event.getY();

@@ -359,6 +359,10 @@ public class YearView extends ViewGroup {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        if(!isEnabled()) {
+            // still consume touch event
+            return true;
+        }
         int action = event.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:

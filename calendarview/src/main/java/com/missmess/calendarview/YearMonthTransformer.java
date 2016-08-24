@@ -29,6 +29,22 @@ public class YearMonthTransformer {
     private final MonthViewObserver monthViewObserver;
     private boolean mvShowMonthTitle; //original month showing status
     private boolean mvShowWeekLabel; //before anim, week showing status
+    private OnTransitListener mTransiter;
+    private boolean animating = false;
+
+    /**
+     * transition listener
+     */
+    public interface OnTransitListener {
+        /**
+         * When YearView to MonthView transit process finished.
+         */
+        void onY2MTransitEnd();
+        /**
+         * When MonthView to YearView transit process finished.
+         */
+        void onM2YTransitEnd();
+    }
 
     public YearMonthTransformer(YearView yearView, MonthView monthView) {
         this.yearView = yearView;
@@ -39,9 +55,10 @@ public class YearMonthTransformer {
     }
 
     public void applyShow(int month) {
-        if (yearView.getVisibility() != View.VISIBLE)
+        if (yearView.getVisibility() != View.VISIBLE || monthView.getVisibility() == View.VISIBLE || animating)
             return;
 
+        animating = true;
         mvShowMonthTitle = monthView.mShowMonthTitle;
         mvShowWeekLabel = monthView.mShowWeekLabel;
         passProperties2Month(month);
@@ -51,6 +68,7 @@ public class YearMonthTransformer {
         monthView.setAlpha(0);
         // not handler click event again
         yearView.setEnabled(false);
+        monthView.setEnabled(false);
         // add layout listener
         monthViewObserver.setMonth(month);
         monthView.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
@@ -111,8 +129,13 @@ public class YearMonthTransformer {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (!canceled) {
+                    monthView.setEnabled(true);
                     yearView.setEnabled(true);
                     yearView.setVisibility(View.GONE);
+                    animating = false;
+                    if(mTransiter != null) {
+                        mTransiter.onY2MTransitEnd();
+                    }
                     animShowLabel();
                 }
             }
@@ -120,7 +143,7 @@ public class YearMonthTransformer {
             @Override
             public void onAnimationCancel(final Animator animation) {
                 canceled = true;
-                alphaYear(false);
+                alphaView(yearView, false);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -272,7 +295,7 @@ public class YearMonthTransformer {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                alphaYear(true);
+                alphaView(yearView, true);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -280,6 +303,12 @@ public class YearMonthTransformer {
                         monthView.showMonthTitle(true);
                         monthView.showWeekLabel(true);
                         yearView.setEnabled(true);
+                        monthView.setEnabled(true);
+
+                        animating = false;
+                        if(mTransiter != null) {
+                            mTransiter.onM2YTransitEnd();
+                        }
                     }
                 }, STAY_DELAY_TIME);
             }
@@ -297,13 +326,13 @@ public class YearMonthTransformer {
         animSet.start();
     }
 
-    private void alphaYear(boolean show) {
-        yearView.setAlpha(1);
+    public void alphaView(View view, boolean show) {
+        view.setAlpha(1);
         float start = show ? 0 : 1;
         float end = show ? 1 : 0;
         AlphaAnimation alphaA = new AlphaAnimation(start, end);
         alphaA.setDuration(STAY_DELAY_TIME);
-        yearView.startAnimation(alphaA);
+        view.startAnimation(alphaA);
     }
 
     private int obtainTransitAnimDuration(int transitT, int childHeight) {
@@ -321,11 +350,12 @@ public class YearMonthTransformer {
      * @return false - not necessary to hide; true - attempt to hide
      */
     public boolean applyHide() {
-        if (monthView.getVisibility() != View.VISIBLE || yearView.getVisibility() == View.VISIBLE) {
+        if (monthView.getVisibility() != View.VISIBLE || yearView.getVisibility() == View.VISIBLE || animating) {
             // not necessary to hide
             return false;
         }
 
+        animating = true;
         mvShowMonthTitle = monthView.mShowMonthTitle;
         mvShowWeekLabel = monthView.mShowWeekLabel;
         passProperties2Year();
@@ -334,6 +364,7 @@ public class YearMonthTransformer {
         yearView.setAlpha(0);
         // not handler click event again
         yearView.setEnabled(false);
+        monthView.setEnabled(false);
         // clear selection
         monthView.clearSelection();
         // add layout listener
@@ -413,6 +444,10 @@ public class YearMonthTransformer {
             });
         }
         return animator;
+    }
+
+    public void setOnTransitListener(OnTransitListener listener) {
+        mTransiter = listener;
     }
 
     class MonthViewObserver implements ViewTreeObserver.OnGlobalLayoutListener {
