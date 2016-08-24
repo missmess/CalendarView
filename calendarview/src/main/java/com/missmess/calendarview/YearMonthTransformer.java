@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class YearMonthTransformer {
     private final int STAY_DELAY_TIME = 200;
-    private final int TRANSITION_ANIM_DURATION = 300;
+    private final int BASE_TRANSITION_ANIM_DURATION = 300;
     private final YearView yearView;
     private final MonthView monthView;
     private final MonthViewObserver monthViewObserver;
@@ -35,6 +35,7 @@ public class YearMonthTransformer {
         this.monthView = monthView;
 
         monthViewObserver = new MonthViewObserver();
+        monthView.setOnMonthTitleClickListener(new MonthTitleClicker());
     }
 
     public void applyShow(int month) {
@@ -77,6 +78,7 @@ public class YearMonthTransformer {
         ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", posL - monthView.getPaddingLeft(), monthView.getLeft());
         // 9 top
         ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", posT, monthView.getTop() + labelHeight);
+        int transitT = Math.abs(monthView.getTop() + labelHeight - posT);
         // 10 right
         ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", posR + monthView.getPaddingLeft(), monthView.getRight());
         // 11 bottom
@@ -84,7 +86,7 @@ public class YearMonthTransformer {
 
         AnimatorSet animSet = new AnimatorSet();
         animSet.playTogether(animators, leftAnim, topAnim, rightAnim, bottomAnim);
-        animSet.setDuration(TRANSITION_ANIM_DURATION);
+        animSet.setDuration(obtainTransitAnimDuration(transitT, child.getHeight()));
         animSet.setInterpolator(new DecelerateInterpolator(2.5f));
         animSet.addListener(new Animator.AnimatorListener() {
             boolean canceled = false;
@@ -251,6 +253,7 @@ public class YearMonthTransformer {
         ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", monthView.getLeft(), posL - monthView.getPaddingLeft());
         // 9 top
         ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", monthView.getTop() + labelHeight, posT);
+        int transitT = Math.abs(monthView.getTop() + labelHeight - posT);
         // 10 right
         ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", monthView.getRight(), posR + monthView.getPaddingLeft());
         // 11 bottom
@@ -258,8 +261,8 @@ public class YearMonthTransformer {
 
         AnimatorSet animSet = new AnimatorSet();
         animSet.playTogether(animators, leftAnim, topAnim, rightAnim, bottomAnim);
-        animSet.setDuration(TRANSITION_ANIM_DURATION);
-        animSet.setInterpolator(new AccelerateInterpolator(2.5f));
+        animSet.setDuration(obtainTransitAnimDuration(transitT, child.getHeight()));
+        animSet.setInterpolator(new DecelerateInterpolator());
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -301,6 +304,15 @@ public class YearMonthTransformer {
         AlphaAnimation alphaA = new AlphaAnimation(start, end);
         alphaA.setDuration(STAY_DELAY_TIME);
         yearView.startAnimation(alphaA);
+    }
+
+    private int obtainTransitAnimDuration(int transitT, int childHeight) {
+        float factor = (float) transitT / (float) childHeight / 2f;
+        if(factor < 1)
+            factor = 1;
+        if(factor > 1.4f)
+            factor = 1.4f;
+        return (int) (factor * BASE_TRANSITION_ANIM_DURATION);
     }
 
     /**
@@ -418,6 +430,14 @@ public class YearMonthTransformer {
                 animHideLabel();
             }
             monthView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        }
+    }
+
+    class MonthTitleClicker implements MonthView.OnMonthTitleClickListener {
+
+        @Override
+        public void onMonthClick(MonthView monthView, CalendarMonth calendarMonth) {
+            applyHide();
         }
     }
 }

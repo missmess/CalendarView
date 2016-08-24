@@ -12,7 +12,6 @@ import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,7 +43,7 @@ public class MonthView extends View {
     private String mMonthTitleTypeface;
 
     protected Paint mWeekLabelPaint;
-    protected Paint mMonthNumPaint;
+    protected Paint mDayNumPaint;
     protected Paint mMonthTitlePaint;
     protected Paint mDayCirclePaint;
 
@@ -69,6 +68,7 @@ public class MonthView extends View {
 
     private static final String DAY_OF_WEEK_FORMAT = "EEEEE";
     private OnDayClickListener mOnDayClickListener;
+    private OnMonthTitleClickListener mOnMonthClicker;
     private int selectedDay = 0;
     private float downX;
     private float downY;
@@ -164,12 +164,11 @@ public class MonthView extends View {
     }
 
     private void drawMonthTitle(Canvas canvas) {
-        Log.e("MonthView", "drawMonthTitle");
-        int x = mWidth / 2;
-        int y = MONTH_HEADER_HEIGHT / 2 + (MONTH_LABEL_TEXT_SIZE / 3) + monthLabelOffset;
-        StringBuilder stringBuilder = new StringBuilder(getMonthAndYearString().toLowerCase());
-        stringBuilder.setCharAt(0, Character.toUpperCase(stringBuilder.charAt(0)));
-        canvas.drawText(stringBuilder.toString(), x, y, mMonthTitlePaint);
+//        Log.e("MonthView", "drawMonthTitle");
+        int[] pos = getMonthDrawPoint();
+//        StringBuilder stringBuilder = new StringBuilder(getMonthAndYearString().toLowerCase());
+//        stringBuilder.setCharAt(0, Character.toUpperCase(stringBuilder.charAt(0)));
+        canvas.drawText(getMonthAndYearString(), pos[0], pos[1], mMonthTitlePaint);
     }
 
     /**
@@ -185,31 +184,31 @@ public class MonthView extends View {
             int x = paddingDay * (1 + dayOffset * 2) + mPadding;
             String dayStr = String.format(Locale.getDefault(), "%d", day);
             Rect rect = new Rect();
-            mMonthNumPaint.getTextBounds(dayStr, 0, dayStr.length(), rect);
+            mDayNumPaint.getTextBounds(dayStr, 0, dayStr.length(), rect);
             if(day == selectedDay) {
                 mDayCirclePaint.setColor(mSelectedCircleColor);
                 canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
 
-                mMonthNumPaint.setColor(circleTextColor);
-                canvas.drawText(dayStr, x, y, mMonthNumPaint);
+                mDayNumPaint.setColor(circleTextColor);
+                canvas.drawText(dayStr, x, y, mDayNumPaint);
             }  else if(decorColors.get(day) != null){
                 Integer color = decorColors.get(day);
                 mDayCirclePaint.setColor(color);
                 canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
 
-                mMonthNumPaint.setColor(circleTextColor);
-                canvas.drawText(dayStr, x, y, mMonthNumPaint);
+                mDayNumPaint.setColor(circleTextColor);
+                canvas.drawText(dayStr, x, y, mDayNumPaint);
             } else if (isToday(mYear, mMonth, day)) { //today
                 mDayCirclePaint.setColor(todayCircleBgColor);
                 canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
 
-                mMonthNumPaint.setColor(todayTextColor);
-                mMonthNumPaint.setFakeBoldText(true);
-                canvas.drawText(dayStr, x, y, mMonthNumPaint);
-                mMonthNumPaint.setFakeBoldText(false);
+                mDayNumPaint.setColor(todayTextColor);
+                mDayNumPaint.setFakeBoldText(true);
+                canvas.drawText(dayStr, x, y, mDayNumPaint);
+                mDayNumPaint.setFakeBoldText(false);
             } else { //not today
-                mMonthNumPaint.setColor(normalDayTextColor);
-                canvas.drawText(dayStr, x, y, mMonthNumPaint);
+                mDayNumPaint.setColor(normalDayTextColor);
+                canvas.drawText(dayStr, x, y, mDayNumPaint);
             }
 
             dayOffset++;
@@ -265,6 +264,24 @@ public class MonthView extends View {
         return new CalendarDay(mYear, mMonth + 1, day);
     }
 
+    private boolean isClickMonth(int x, int y) {
+        int[] pos = getMonthDrawPoint();
+        int centerX = pos[0];
+        int bottom = pos[1];
+        int extra = 10;
+        int width = (int) mMonthTitlePaint.measureText(getMonthAndYearString());
+        Rect monthTitleRect = new Rect(centerX - width / 2 - extra, bottom - MONTH_LABEL_TEXT_SIZE - extra,
+                centerX + width / 2 + extra, bottom + extra);
+
+        return monthTitleRect.contains(x, y);
+    }
+
+    private int[] getMonthDrawPoint() {
+        int x = mWidth / 2;
+        int y = MONTH_HEADER_HEIGHT / 2 + (MONTH_LABEL_TEXT_SIZE / 3) + monthLabelOffset;
+        return new int[] {x, y};
+    }
+
     public void clearSelection() {
         selectedDay = 0;
 //        invalidate();
@@ -301,17 +318,17 @@ public class MonthView extends View {
         mWeekLabelPaint.setTextAlign(Align.CENTER);
         mWeekLabelPaint.setFakeBoldText(true);
 
-        mMonthNumPaint = new Paint();
-        mMonthNumPaint.setAntiAlias(true);
-        mMonthNumPaint.setTextSize(normalDayTextSize);
-        mMonthNumPaint.setStyle(Style.FILL);
-        mMonthNumPaint.setTextAlign(Align.CENTER);
-        mMonthNumPaint.setColor(normalDayTextColor);
-        mMonthNumPaint.setFakeBoldText(false);
+        mDayNumPaint = new Paint();
+        mDayNumPaint.setAntiAlias(true);
+        mDayNumPaint.setTextSize(normalDayTextSize);
+        mDayNumPaint.setStyle(Style.FILL);
+        mDayNumPaint.setTextAlign(Align.CENTER);
+        mDayNumPaint.setColor(normalDayTextColor);
+        mDayNumPaint.setFakeBoldText(false);
     }
 
     protected void onDraw(Canvas canvas) {
-        Log.d("MonthView", "onDraw");
+//        Log.d("MonthView", "onDraw");
         if (mYear == 0) {
             setYearAndMonth(today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1);
         }
@@ -349,18 +366,25 @@ public class MonthView extends View {
 
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
+        float x = event.getX();
+        float y = event.getY();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                downX = event.getX();
-                downY = event.getY();
+                downX = x;
+                downY = y;
                 break;
             case MotionEvent.ACTION_UP:
-                if (Math.abs(downX - event.getX()) < 10
-                        && Math.abs(downY - event.getY()) < 10
+                if (Math.abs(downX - x) < 10
+                        && Math.abs(downY - y) < 10
                         && event.getEventTime() - event.getDownTime() < 500) {
-                    CalendarDay calendarDay = getDayFromLocation(event.getX(), event.getY());
+                    CalendarDay calendarDay = getDayFromLocation(x, y);
                     if (calendarDay != null) {
                         onDayClick(calendarDay);
+                    } else if(isClickMonth((int)x, (int)y)) {
+                        // month title clicked
+                        if(mOnMonthClicker != null) {
+                            mOnMonthClicker.onMonthClick(this, new CalendarMonth(mYear, mMonth));
+                        }
                     }
                 }
                 break;
@@ -425,7 +449,7 @@ public class MonthView extends View {
 
     public void setNormalDayTextSize(int px) {
         normalDayTextSize = px;
-        mMonthNumPaint.setTextSize(normalDayTextSize);
+        mDayNumPaint.setTextSize(normalDayTextSize);
     }
 
     public void setDayCircleRadius(int px) {
@@ -478,7 +502,15 @@ public class MonthView extends View {
         mOnDayClickListener = onDayClickListener;
     }
 
+    public void setOnMonthTitleClickListener(OnMonthTitleClickListener onMonthTitleClickListener) {
+        this.mOnMonthClicker = onMonthTitleClickListener;
+    }
+
     public interface OnDayClickListener {
         void onDayClick(MonthView monthView, CalendarDay calendarDay);
+    }
+
+    public interface OnMonthTitleClickListener {
+        void onMonthClick(MonthView monthView, CalendarMonth calendarMonth);
     }
 }
