@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:calendar="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context="com.missmess.calendardemo.MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/vs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.missmess.calendarview.YearView
+            android:id="@+id/yv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FFFFFF"
+            android:visibility="visible"
+            calendar:dayTextColor="#FF6600"
+            calendar:monthHeaderHeight="40dp"
+            calendar:showYearLunarLabel="true"/>
+
+        <com.missmess.calendarview.MonthView
+            android:id="@+id/smv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+</ScrollView>

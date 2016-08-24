@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="YearView">
+        <attr name="showYearLunarLabel" format="boolean"/>
+        <attr name="dividerColor" format="color"/>
+        <attr name="yearHeaderTextColor" format="color" />
+        <attr name="yearHeaderTextHeight" format="dimension"/>
+        <attr name="yearHeaderTextSize" format="dimension"/>
+        <attr name="yearHeaderLunarTextColor" format="color"/>
+        <attr name="yearHeaderLunarTextSize" format="dimension"/>
+        <attr name="yearHeaderDashColor" format="color"/>
+        <attr name="monthLabelTextColor" format="color"/>
+        <attr name="monthLabelTextSize" format="dimension"/>
+        <attr name="monthLabelTextHeight" format="dimension"/>
+
+        <attr name="dayLabelTextColor" format="color"/>
+        <attr name="dayLabelTextSize" format="dimension"/>
+        <attr name="dayLabelCircleTextColor" format="color"/>
+        <attr name="todayLabelCircleBgColor" format="color"/>
+        <attr name="todayLabelTextColor" format="color"/>
+        <attr name="dayLabelCircleRadius" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="MonthView">
+        <!-- circle radius cover up day -->
+        <attr name="dayCircleRadius" format="dimension" />
+        <attr name="dayCircleTextColor" format="color"/>
+        <attr name="selectDayCircleBgColor" format="color" />
+
+        <attr name="dayTextColor" format="color"/>
+        <attr name="dayTextSize" format="dimension"/>
+        <attr name="dayRowHeight" format="dimension" />
+
+        <attr name="todayCircleBgColor" format="color"/>
+        <attr name="todayTextColor" format="color"/>
+
+        <attr name="monthTitleColor" format="color" />
+        <attr name="monthTextSize" format="dimension" />
+        <attr name="monthHeaderHeight" format="dimension" />
+        <attr name="weekLabelTextColor" format="color" />
+        <attr name="weekLabelTextSize" format="dimension" />
+
+        <attr name="showWeekLabel" format="boolean"/>
+        <attr name="showWeekDivider" format="boolean"/>
+        <attr name="showMonthTitle" format="boolean"/>
+    </declare-styleable>
+</resources>

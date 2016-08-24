@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CalendarView</string>
+
+    <string name="sans_serif" translatable="false">sans-serif</string>
+</resources>

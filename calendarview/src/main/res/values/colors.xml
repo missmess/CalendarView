@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<color name="year_header_text_color">#FF000000</color>
+	<color name="divider_color">#FFDDDDDD</color>
+	<color name="year_header_lunar_text_color">#FFCCCCCC</color>
+	<color name="year_header_dash_color">#FFFF0000</color>
+	<color name="month_labe_text_color">#FFFF0000</color>
+	<color name="day_label_text_color">#FF222222</color>
+	<color name="day_label_text_today_color">#FFFFFFFF</color>
+	<color name="day_label_circle_bg_color">#00FFFFFF</color>
+	<color name="day_select_circle_bg_color">#FF0066FF</color>
+	<color name="week_label_text_color">#FF999999</color>
+	<color name="month_title_color">#FF333333</color>
+	<color name="today_text_color">#FFFF4400</color>
+
+</resources>
