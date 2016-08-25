@@ -61,6 +61,7 @@ public class YearView extends ViewGroup {
 
     private int width;
 
+    private boolean showYearLabel;
     private boolean showYearLunarLabel;
 
     private OnMonthClickListener mOnMonthClickListener;
@@ -77,6 +78,7 @@ public class YearView extends ViewGroup {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.YearView);
         Resources resources = context.getResources();
 
+        showYearLabel = typedArray.getBoolean(R.styleable.YearView_showYearLabel, true);
         showYearLunarLabel = typedArray.getBoolean(R.styleable.YearView_showYearLunarLabel, false);
         dividerColor = typedArray.getColor(R.styleable.YearView_dividerColor, resources.getColor(R.color.divider_color));
         yearHeaderTextColor = typedArray.getColor(R.styleable.YearView_yearHeaderTextColor, resources.getColor(R.color.year_header_text_color));
@@ -100,6 +102,11 @@ public class YearView extends ViewGroup {
         padding = resources.getDimensionPixelSize(R.dimen.main_padding);
         lineSpacingBetweenYearAndMonth = resources.getDimensionPixelSize(R.dimen.padding_between_year_and_month);
         typedArray.recycle();
+
+        if(!showYearLabel) {
+            showYearLunarLabel = false;
+            YEAR_HEADER_TEXT_HEIGHT = 0;
+        }
 
         monthDecors = new SparseArray<>();
         initPaint();
@@ -184,7 +191,9 @@ public class YearView extends ViewGroup {
     }
 
     protected void onDraw(Canvas canvas) {
-        drawYearHeaderLabels(canvas);
+        if(showYearLabel) {
+            drawYearHeaderLabels(canvas);
+        }
         drawMonthTitle(canvas);
     }
 

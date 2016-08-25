@@ -24,8 +24,8 @@ import java.util.Map;
 public class YearMonthTransformer {
     private final int STAY_DELAY_TIME = 200;
     private final int BASE_TRANSITION_ANIM_DURATION = 300;
-    private final YearView yearView;
-    private final MonthView monthView;
+    private final YearView mYearView;
+    private final MonthView mMonthView;
     private final MonthViewObserver monthViewObserver;
     private boolean mvShowMonthTitle; //original month showing status
     private boolean mvShowWeekLabel; //before anim, week showing status
@@ -37,9 +37,17 @@ public class YearMonthTransformer {
      */
     public interface OnTransitListener {
         /**
+         * When YearView to MonthView transit process start.
+         */
+        void onY2MTransitStart();
+        /**
          * When YearView to MonthView transit process finished.
          */
         void onY2MTransitEnd();
+        /**
+         * When MonthView to YearView transit process start.
+         */
+        void onM2YTransitStart();
         /**
          * When MonthView to YearView transit process finished.
          */
@@ -47,42 +55,42 @@ public class YearMonthTransformer {
     }
 
     public YearMonthTransformer(YearView yearView, MonthView monthView) {
-        this.yearView = yearView;
-        this.monthView = monthView;
+        this.mYearView = yearView;
+        this.mMonthView = monthView;
 
         monthViewObserver = new MonthViewObserver();
         monthView.setOnMonthTitleClickListener(new MonthTitleClicker());
     }
 
     public void applyShow(int month) {
-        if (yearView.getVisibility() != View.VISIBLE || monthView.getVisibility() == View.VISIBLE || animating)
+        if (mYearView.getVisibility() != View.VISIBLE || mMonthView.getVisibility() == View.VISIBLE || animating)
             return;
 
         animating = true;
-        mvShowMonthTitle = monthView.mShowMonthTitle;
-        mvShowWeekLabel = monthView.mShowWeekLabel;
+        mvShowMonthTitle = mMonthView.mShowMonthTitle;
+        mvShowWeekLabel = mMonthView.mShowWeekLabel;
         passProperties2Month(month);
 
         // start layout but not need to be visible
-        monthView.setVisibility(View.VISIBLE);
-        monthView.setAlpha(0);
+        mMonthView.setVisibility(View.VISIBLE);
+        mMonthView.setAlpha(0);
         // not handler click event again
-        yearView.setEnabled(false);
-        monthView.setEnabled(false);
+        mYearView.setEnabled(false);
+        mMonthView.setEnabled(false);
         // add layout listener
         monthViewObserver.setMonth(month);
-        monthView.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
+        mMonthView.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
     }
 
     private void animShowMonth(int month) {
-        MonthView child = (MonthView) yearView.getChildAt(month - 1);
+        MonthView child = (MonthView) mYearView.getChildAt(month - 1);
         // screen position
         int[] fromLocation = new int[2];
         child.getLocationOnScreen(fromLocation);
         int[] parentLocation = new int[2];
-        ((ViewGroup) monthView.getParent()).getLocationOnScreen(parentLocation);
+        ((ViewGroup) mMonthView.getParent()).getLocationOnScreen(parentLocation);
         // label height of MonthView
-        int labelHeight = monthView.MONTH_HEADER_HEIGHT + monthView.WEEK_LABEL_HEIGHT;
+        int labelHeight = mMonthView.MONTH_HEADER_HEIGHT + mMonthView.WEEK_LABEL_HEIGHT;
 
         // calculate original position
         int posL = fromLocation[0] - parentLocation[0];
@@ -91,16 +99,16 @@ public class YearMonthTransformer {
         int posB = posT + child.getHeight();
 
         // 1-7
-        ObjectAnimator animators = createMonthPropertyAnimator(child, monthView, monthView);
+        ObjectAnimator animators = createMonthPropertyAnimator(child, mMonthView, mMonthView);
         // 8 left
-        ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", posL - monthView.getPaddingLeft(), monthView.getLeft());
+        ObjectAnimator leftAnim = ObjectAnimator.ofInt(mMonthView, "left", posL - mMonthView.getPaddingLeft(), mMonthView.getLeft());
         // 9 top
-        ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", posT, monthView.getTop() + labelHeight);
-        int transitT = Math.abs(monthView.getTop() + labelHeight - posT);
+        ObjectAnimator topAnim = ObjectAnimator.ofInt(mMonthView, "top", posT, mMonthView.getTop() + labelHeight);
+        int transitT = Math.abs(mMonthView.getTop() + labelHeight - posT);
         // 10 right
-        ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", posR + monthView.getPaddingLeft(), monthView.getRight());
+        ObjectAnimator rightAnim = ObjectAnimator.ofInt(mMonthView, "right", posR + mMonthView.getPaddingLeft(), mMonthView.getRight());
         // 11 bottom
-        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(monthView, "bottom", posB, monthView.getBottom());
+        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(mMonthView, "bottom", posB, mMonthView.getBottom());
 
         AnimatorSet animSet = new AnimatorSet();
         animSet.playTogether(animators, leftAnim, topAnim, rightAnim, bottomAnim);
@@ -111,13 +119,12 @@ public class YearMonthTransformer {
 
             @Override
             public void onAnimationStart(Animator animation) {
-                yearView.setVisibility(View.INVISIBLE);
-                monthView.setAlpha(1);
+                mMonthView.setAlpha(1);
                 // hide title, leave day number only
                 if (mvShowMonthTitle)
-                    monthView.showMonthTitle(false);
+                    mMonthView.showMonthTitle(false);
                 if (mvShowWeekLabel)
-                    monthView.showWeekLabel(false);
+                    mMonthView.showWeekLabel(false);
 
                 if (!canceled) { // pause animation to effect as delay
                     animation.cancel();
@@ -129,9 +136,9 @@ public class YearMonthTransformer {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (!canceled) {
-                    monthView.setEnabled(true);
-                    yearView.setEnabled(true);
-                    yearView.setVisibility(View.GONE);
+                    mMonthView.setEnabled(true);
+                    mYearView.setEnabled(true);
+                    mYearView.setVisibility(View.GONE);
                     animating = false;
                     if(mTransiter != null) {
                         mTransiter.onY2MTransitEnd();
@@ -143,7 +150,12 @@ public class YearMonthTransformer {
             @Override
             public void onAnimationCancel(final Animator animation) {
                 canceled = true;
-                alphaView(yearView, false);
+
+                mYearView.setVisibility(View.INVISIBLE);
+                alphaView(mYearView, false);
+                if(mTransiter != null) {
+                    mTransiter.onY2MTransitStart();
+                }
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -170,20 +182,20 @@ public class YearMonthTransformer {
         ObjectAnimator weekAnim = null;
 
         if (mvShowMonthTitle) {
-            monthView.showMonthTitle(true);
-            int sMonthOffset = -monthView.MONTH_HEADER_HEIGHT;
+            mMonthView.showMonthTitle(true);
+            int sMonthOffset = -mMonthView.MONTH_HEADER_HEIGHT;
             // delay start should initial its position
-            monthView.setMonthLabelOffset(sMonthOffset);
+            mMonthView.setMonthLabelOffset(sMonthOffset);
             // 1
-            monthAnim = ObjectAnimator.ofInt(monthView, "monthLabelOffset", sMonthOffset, 0);
+            monthAnim = ObjectAnimator.ofInt(mMonthView, "monthLabelOffset", sMonthOffset, 0);
             monthAnim.setDuration(200);
             monthAnim.setStartDelay(mvShowWeekLabel ? 100 : 0);
         }
         if (mvShowWeekLabel) {
-            monthView.showWeekLabel(true);
-            int sWeekOffset = -2 * monthView.WEEK_LABEL_HEIGHT;
+            mMonthView.showWeekLabel(true);
+            int sWeekOffset = -2 * mMonthView.WEEK_LABEL_HEIGHT;
             // 2
-            weekAnim = ObjectAnimator.ofInt(monthView, "weekLabelOffset", sWeekOffset, 0);
+            weekAnim = ObjectAnimator.ofInt(mMonthView, "weekLabelOffset", sWeekOffset, 0);
             weekAnim.setDuration(300);
         }
         AnimatorSet animSet = new AnimatorSet();
@@ -206,15 +218,15 @@ public class YearMonthTransformer {
         ObjectAnimator weekAnim = null;
 
         if (mvShowMonthTitle) {
-            int sMonthOffset = -monthView.MONTH_HEADER_HEIGHT;
+            int sMonthOffset = -mMonthView.MONTH_HEADER_HEIGHT;
             // 1
-            monthAnim = ObjectAnimator.ofInt(monthView, "monthLabelOffset", 0, sMonthOffset);
+            monthAnim = ObjectAnimator.ofInt(mMonthView, "monthLabelOffset", 0, sMonthOffset);
             monthAnim.setDuration(200);
         }
         if (mvShowWeekLabel) {
-            int sWeekOffset = -monthView.MONTH_HEADER_HEIGHT - monthView.WEEK_LABEL_HEIGHT;
+            int sWeekOffset = -mMonthView.MONTH_HEADER_HEIGHT - mMonthView.WEEK_LABEL_HEIGHT;
             // 2
-            weekAnim = ObjectAnimator.ofInt(monthView, "weekLabelOffset", 0, sWeekOffset);
+            weekAnim = ObjectAnimator.ofInt(mMonthView, "weekLabelOffset", 0, sWeekOffset);
             weekAnim.setDuration(400);
             weekAnim.setStartDelay(mvShowMonthTitle ? 100 : 0);
         }
@@ -230,14 +242,16 @@ public class YearMonthTransformer {
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                if(mTransiter != null) {
+                    mTransiter.onM2YTransitStart();
+                }
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 // recovery MonthView label layout
-                monthView.setMonthLabelOffset(0);
-                monthView.setWeekLabelOffset(0);
+                mMonthView.setMonthLabelOffset(0);
+                mMonthView.setWeekLabelOffset(0);
                 animHideMonth();
             }
 
@@ -255,14 +269,14 @@ public class YearMonthTransformer {
     }
 
     private void animHideMonth() {
-        MonthView child = (MonthView) yearView.getChildAt(monthView.getCurrentMonth() - 1);
+        MonthView child = (MonthView) mYearView.getChildAt(mMonthView.getCurrentMonth() - 1);
         // screen position
         int[] toLocation = new int[2];
         child.getLocationOnScreen(toLocation);
         int[] parentLocation = new int[2];
-        ((ViewGroup) monthView.getParent()).getLocationOnScreen(parentLocation);
+        ((ViewGroup) mMonthView.getParent()).getLocationOnScreen(parentLocation);
         // label height of MonthView
-        int labelHeight = monthView.MONTH_HEADER_HEIGHT + monthView.WEEK_LABEL_HEIGHT;
+        int labelHeight = mMonthView.MONTH_HEADER_HEIGHT + mMonthView.WEEK_LABEL_HEIGHT;
 
         // calculate final position
         int posL = toLocation[0] - parentLocation[0];
@@ -271,16 +285,16 @@ public class YearMonthTransformer {
         int posB = posT + child.getHeight();
 
         // 1-7
-        ObjectAnimator animators = createMonthPropertyAnimator(monthView, child, monthView);
+        ObjectAnimator animators = createMonthPropertyAnimator(mMonthView, child, mMonthView);
         // 8 left
-        ObjectAnimator leftAnim = ObjectAnimator.ofInt(monthView, "left", monthView.getLeft(), posL - monthView.getPaddingLeft());
+        ObjectAnimator leftAnim = ObjectAnimator.ofInt(mMonthView, "left", mMonthView.getLeft(), posL - mMonthView.getPaddingLeft());
         // 9 top
-        ObjectAnimator topAnim = ObjectAnimator.ofInt(monthView, "top", monthView.getTop() + labelHeight, posT);
-        int transitT = Math.abs(monthView.getTop() + labelHeight - posT);
+        ObjectAnimator topAnim = ObjectAnimator.ofInt(mMonthView, "top", mMonthView.getTop() + labelHeight, posT);
+        int transitT = Math.abs(mMonthView.getTop() + labelHeight - posT);
         // 10 right
-        ObjectAnimator rightAnim = ObjectAnimator.ofInt(monthView, "right", monthView.getRight(), posR + monthView.getPaddingLeft());
+        ObjectAnimator rightAnim = ObjectAnimator.ofInt(mMonthView, "right", mMonthView.getRight(), posR + mMonthView.getPaddingLeft());
         // 11 bottom
-        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(monthView, "bottom", monthView.getBottom(), posB);
+        ObjectAnimator bottomAnim = ObjectAnimator.ofInt(mMonthView, "bottom", mMonthView.getBottom(), posB);
 
         AnimatorSet animSet = new AnimatorSet();
         animSet.playTogether(animators, leftAnim, topAnim, rightAnim, bottomAnim);
@@ -289,21 +303,21 @@ public class YearMonthTransformer {
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                monthView.showMonthTitle(false);
-                monthView.showWeekLabel(false);
+                mMonthView.showMonthTitle(false);
+                mMonthView.showWeekLabel(false);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                alphaView(yearView, true);
+                alphaView(mYearView, true);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        monthView.setVisibility(View.GONE);
-                        monthView.showMonthTitle(true);
-                        monthView.showWeekLabel(true);
-                        yearView.setEnabled(true);
-                        monthView.setEnabled(true);
+                        mMonthView.setVisibility(View.GONE);
+                        mMonthView.showMonthTitle(true);
+                        mMonthView.showWeekLabel(true);
+                        mYearView.setEnabled(true);
+                        mMonthView.setEnabled(true);
 
                         animating = false;
                         if(mTransiter != null) {
@@ -350,43 +364,43 @@ public class YearMonthTransformer {
      * @return false - not necessary to hide; true - attempt to hide
      */
     public boolean applyHide() {
-        if (monthView.getVisibility() != View.VISIBLE || yearView.getVisibility() == View.VISIBLE || animating) {
+        if (mMonthView.getVisibility() != View.VISIBLE || mYearView.getVisibility() == View.VISIBLE || animating) {
             // not necessary to hide
             return false;
         }
 
         animating = true;
-        mvShowMonthTitle = monthView.mShowMonthTitle;
-        mvShowWeekLabel = monthView.mShowWeekLabel;
+        mvShowMonthTitle = mMonthView.mShowMonthTitle;
+        mvShowWeekLabel = mMonthView.mShowWeekLabel;
         passProperties2Year();
 
-        yearView.setVisibility(View.VISIBLE);
-        yearView.setAlpha(0);
+        mYearView.setVisibility(View.VISIBLE);
+        mYearView.setAlpha(0);
         // not handler click event again
-        yearView.setEnabled(false);
-        monthView.setEnabled(false);
+        mYearView.setEnabled(false);
+        mMonthView.setEnabled(false);
         // clear selection
-        monthView.clearSelection();
+        mMonthView.clearSelection();
         // add layout listener
-        monthView.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
+        mMonthView.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
         return true;
     }
 
     // pass property of YearView to MonthView
     private void passProperties2Month(int month) {
-        monthView.setToday(yearView.today);
-        monthView.setYearAndMonth(yearView.getYear(), month);
-        Map<Integer, Integer> map = yearView.getMonthDecors(month);
+        mMonthView.setToday(mYearView.today);
+        mMonthView.setYearAndMonth(mYearView.getYear(), month);
+        Map<Integer, Integer> map = mYearView.getMonthDecors(month);
         if (map != null) {
             for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-                monthView.decorateDay(entry.getKey(), entry.getValue());
+                mMonthView.decorateDay(entry.getKey(), entry.getValue());
             }
         }
     }
 
     // pass property of MonthView to YearView
     private void passProperties2Year() {
-        yearView.setYear(monthView.getCurrentYear());
+        mYearView.setYear(mMonthView.getCurrentYear());
     }
 
     private ObjectAnimator createMonthPropertyAnimator(MonthView start, MonthView end, final MonthView target) {
@@ -459,12 +473,12 @@ public class YearMonthTransformer {
 
         @Override
         public void onGlobalLayout() {
-            if (monthView.getAlpha() == 0) {
+            if (mMonthView.getAlpha() == 0) {
                 animShowMonth(month);
             } else {
                 animHideLabel();
             }
-            monthView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            mMonthView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
         }
     }
 

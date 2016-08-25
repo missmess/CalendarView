@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="YearView">
+        <attr name="showYearLabel" format="boolean"/>
         <attr name="showYearLunarLabel" format="boolean"/>
         <attr name="dividerColor" format="color"/>
         <attr name="yearHeaderTextColor" format="color" />
