@@ -106,6 +106,7 @@ public class YearView extends ViewGroup {
         if(!showYearLabel) {
             showYearLunarLabel = false;
             YEAR_HEADER_TEXT_HEIGHT = 0;
+            lineSpacingBetweenYearAndMonth = 0;
         }
 
         monthDecors = new SparseArray<>();

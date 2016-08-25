@@ -72,7 +72,7 @@ public class MonthView extends View {
     private int selectedDay = 0;
     private float downX;
     private float downY;
-    private SparseArray<Integer> decorColors;
+    protected SparseArray<Integer> decorColors;
     private boolean mShowWeekDivider;
 
     public MonthView(Context context) {

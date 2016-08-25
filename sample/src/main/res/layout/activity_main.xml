@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<com.missmess.calendarview.TransitRootView
+    android:id="@+id/trv"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:calendar="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,27 +9,96 @@
     android:background="@android:color/white"
     tools:context="com.missmess.calendardemo.MainActivity">
 
-    <RelativeLayout
-        android:id="@+id/vs"
+    <LinearLayout
+        android:id="@+id/ll1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:id="@+id/rl_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="6dp">
+
+            <TextView
+                android:id="@+id/tv_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2016年"
+                android:textColor="#333333"
+                android:textSize="28sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:text="本年度活动数量：4\n本年度活动种类：3"
+                android:textColor="#666666"
+                android:textSize="13sp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_below="@+id/tv_year"
+                android:layout_marginTop="6dp"
+                android:background="#DCDCDC"/>
+        </RelativeLayout>
 
         <com.missmess.calendarview.YearView
             android:id="@+id/yv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#FFFFFF"
-            android:visibility="visible"
             calendar:dayTextColor="#FF6600"
             calendar:monthHeaderHeight="40dp"
+            calendar:showYearLabel="false"
             calendar:showYearLunarLabel="true"/>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
         <com.missmess.calendarview.MonthView
-            android:id="@+id/smv"
+            android:id="@+id/mv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="20dp"
-            android:visibility="gone" />
+            android:padding="20dp"/>
 
-    </RelativeLayout>
-</ScrollView>
+        <LinearLayout
+            android:id="@+id/ll_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginBottom="15dp"
+                android:background="#DCDCDC"/>
+
+            <TextView
+                android:id="@+id/tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="No Data"
+                android:textSize="24sp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</com.missmess.calendarview.TransitRootView>

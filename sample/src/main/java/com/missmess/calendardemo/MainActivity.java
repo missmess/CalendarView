@@ -2,12 +2,15 @@ package com.missmess.calendardemo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.missmess.calendarview.CalendarDay;
 import com.missmess.calendarview.CalendarMonth;
-import com.missmess.calendarview.YearMonthTransformer;
 import com.missmess.calendarview.MonthView;
+import com.missmess.calendarview.TransitRootView;
+import com.missmess.calendarview.YearMonthTransformer;
 import com.missmess.calendarview.YearView;
 
 import java.util.Calendar;
@@ -16,26 +19,26 @@ public class MainActivity extends AppCompatActivity {
     private YearView yearView;
     private MonthView monthView;
     private YearMonthTransformer transformer;
+    private TextView textView;
+    private final int year = 2016;
+    private View rl_title;
+    private View ll_data;
+    private TransitRootView rootView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        rootView = (TransitRootView) findViewById(R.id.trv);
+        textView = (TextView) findViewById(R.id.tv);
+        ll_data = findViewById(R.id.ll_data);
         yearView = (YearView) findViewById(R.id.yv);
-        monthView = (MonthView) findViewById(R.id.smv);
+        rl_title = findViewById(R.id.rl_title);
+        monthView = (MonthView) findViewById(R.id.mv);
+        transformer = new YearMonthTransformer(rootView, yearView, monthView);
 
-//        yearView.setYear(2015);
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, 2016);
-        calendar.set(Calendar.MONTH, 4);
-        calendar.set(Calendar.DAY_OF_MONTH, 17);
-        yearView.setToday(calendar);
-        yearView.decorateDay(new CalendarDay(2016, 3, 12), 0xFFFF6600);
-        yearView.decorateDay(new CalendarDay(2016, 3, 11), 0xFFDC66C0);
-        yearView.decorateDay(new CalendarDay(2016, 9, 23), 0xFFBDCC76);
+        initYearInfo();
 
-        transformer = new YearMonthTransformer(yearView, monthView);
         yearView.setOnMonthClickListener(new YearView.OnMonthClickListener() {
             @Override
             public void onMonthClick(YearView simpleMonthView, CalendarMonth calendarMonth) {
@@ -48,6 +51,43 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), calendarDay.getYear() + "-" + calendarDay.getMonth() + "-" + calendarDay.getDay(), Toast.LENGTH_SHORT).show();
             }
         });
+        transformer.setOnTransitListener(new YearMonthTransformer.OnTransitListener() {
+            @Override
+            public void onY2MTransitStart(int duration) {
+                transformer.alphaView(rl_title, duration, false);
+            }
+
+            @Override
+            public void onY2MTransitEnd(int duration) {
+                ll_data.setVisibility(View.VISIBLE);
+                transformer.alphaView(ll_data, duration, true);
+            }
+
+            @Override
+            public void onM2YTransitStart(int duration) {
+                ll_data.setVisibility(View.GONE);
+                transformer.alphaView(ll_data, duration, false);
+            }
+
+            @Override
+            public void onM2YTransitEnd(int duration) {
+                rl_title.setVisibility(View.VISIBLE);
+                transformer.alphaView(rl_title, duration, true);
+            }
+        });
+    }
+
+    private void initYearInfo() {
+        yearView.setYear(year);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, 4);
+        calendar.set(Calendar.DAY_OF_MONTH, 17);
+        yearView.setToday(calendar);
+        yearView.decorateDay(new CalendarDay(year, 3, 14), 0xFFFF6600);
+        yearView.decorateDay(new CalendarDay(year, 3, 15), 0xFFDC66C0);
+        yearView.decorateDay(new CalendarDay(year, 6, 2), 0xFF66AA76);
+        yearView.decorateDay(new CalendarDay(year, 9, 23), 0xFF66AA76);
     }
 
     @Override
