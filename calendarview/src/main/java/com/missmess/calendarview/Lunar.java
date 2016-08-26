@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * 农历
+ * 中国农历
  */
 public class Lunar {
     private int year; //农历年

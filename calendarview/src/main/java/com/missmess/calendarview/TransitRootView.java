@@ -11,7 +11,7 @@ import android.widget.ScrollView;
 /**
  * A TransitRootView should contains two direct children, the first child contains an YearView, and
  * the second contains a MonthView.
- * This view can help display Y and M transition animation and the animations of your other elements.
+ * This view can help display Y and M transition animation and manage the animations of your other views.
  *
  * @author wl
  * @since 2016/08/25 11:33
@@ -78,6 +78,10 @@ public class TransitRootView extends ScrollView {
         child2.setVisibility(View.GONE);
     }
 
+    /**
+     * if view should receive touch event.
+     * @param receive false - receive nothing.
+     */
     public void setReceiveEvent(boolean receive) {
         mReceiveEvent = receive;
     }
@@ -87,12 +91,19 @@ public class TransitRootView extends ScrollView {
         return !mReceiveEvent || super.dispatchTouchEvent(ev);
     }
 
+    /**
+     * use a TransitView to show transition animation
+     * @return a useable MonthView
+     */
     public MonthView useTransitView() {
         transitView.setVisibility(View.VISIBLE);
         transitView.setEnabled(true);
         return transitView;
     }
 
+    /**
+     * should call this to recycle the TransitView
+     */
     public void recycleTransitView() {
         transitView.setVisibility(View.GONE);
         transitView.setEnabled(false);

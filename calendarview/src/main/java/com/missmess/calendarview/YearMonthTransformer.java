@@ -17,7 +17,10 @@ import android.widget.FrameLayout;
 import java.util.Map;
 
 /**
- * YearView and MonthView transition animator utils
+ * YearView and MonthView transition animator helper.
+ * use this to implement transition.
+ *
+ * <p>pls work together with {@link TransitRootView}</p>
  *
  * @author wl
  * @since 2016/08/15 17:52

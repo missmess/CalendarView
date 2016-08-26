@@ -20,6 +20,14 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 
+/**
+ * MonthView can show a month, with week label in calendar style.
+ * others:
+ * 1.add day selected listener.
+ * 2.decor days as you like.
+ * 3.provide a lot of attribute, you can customize your own style.
+ * ...
+ */
 public class MonthView extends View {
     protected final int DEFAULT_NUM_ROWS = 6;
     protected int dayCircleRadius;

@@ -4,8 +4,8 @@ import android.animation.Animator;
 import android.os.Handler;
 
 /**
- * not like startDelay() method, DelayAnimListener is that the animator has started(value initialed),
- * but after a delay it continue animator.
+ * not like {@link Animator#setStartDelay(long) stay delay}, DelayAnimListener is that the animator has started(value initialed),
+ * but after a delay it continues.
  *
  * @author wl
  * @since 2016/08/25 18:28
