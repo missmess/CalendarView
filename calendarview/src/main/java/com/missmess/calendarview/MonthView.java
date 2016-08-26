@@ -37,8 +37,6 @@ public class MonthView extends View {
     protected int MONTH_HEADER_HEIGHT;
     protected int WEEK_LABEL_HEIGHT;
     protected int MONTH_LABEL_TEXT_SIZE;
-    protected boolean mShowMonthTitle;
-    protected boolean mShowWeekLabel;
     protected int mSelectedCircleColor;
     protected int spaceBetweenWeekAndDivider;
     protected int monthHeaderSizeCache;
@@ -73,6 +71,9 @@ public class MonthView extends View {
     protected Calendar today;
 
     private int mNumRows = DEFAULT_NUM_ROWS;
+    protected boolean mShowMonthTitle;
+    protected boolean mShowWeekLabel;
+    private boolean mShowWeekDivider;
 
     private static final String DAY_OF_WEEK_FORMAT = "EEEEE";
     private OnDayClickListener mOnDayClickListener;
@@ -81,7 +82,7 @@ public class MonthView extends View {
     private float downX;
     private float downY;
     protected HashMap<Integer, Integer> decorColors;
-    private boolean mShowWeekDivider;
+    private AttributeSet mAttrs;
 
     public MonthView(Context context) {
         this(context, null);
@@ -89,6 +90,7 @@ public class MonthView extends View {
 
     public MonthView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mAttrs = attrs;
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MonthView);
 
         Resources resources = context.getResources();
@@ -493,11 +495,27 @@ public class MonthView extends View {
     }
 
     /**
-     * MonthView should be what height.
+     * MonthView should be this height.
      * @return should height
      */
     public int getShouldHeight() {
-        return MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT + SPACE_BETWEEN_WEEK_AND_DAY + dayRowHeight * mNumRows;
+        return getHeightWithRows(mNumRows);
+    }
+
+    /**
+     * the max height MonthView could be.
+     * @return max height
+     */
+    public int getMaxHeight() {
+        return getHeightWithRows(DEFAULT_NUM_ROWS);
+    }
+
+    private int getHeightWithRows(int rows) {
+        return MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT + SPACE_BETWEEN_WEEK_AND_DAY + dayRowHeight * rows;
+    }
+
+    public MonthView createCopy() {
+        return new MonthView(getContext(), mAttrs);
     }
 
     public int getCurrentMonth() {

@@ -16,6 +16,7 @@
 
         <attr name="dayLabelTextColor" format="color"/>
         <attr name="dayLabelTextSize" format="dimension"/>
+        <attr name="dayLabelRowHeight" format="dimension"/>
         <attr name="dayLabelCircleTextColor" format="color"/>
         <attr name="todayLabelCircleBgColor" format="color"/>
         <attr name="todayLabelTextColor" format="color"/>

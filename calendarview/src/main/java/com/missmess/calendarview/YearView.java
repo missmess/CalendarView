@@ -97,8 +97,8 @@ public class YearView extends ViewGroup {
         YEAR_HEADER_TEXT_HEIGHT = typedArray.getDimensionPixelSize(R.styleable.YearView_yearHeaderTextHeight, resources.getDimensionPixelOffset(R.dimen.year_header_text_height));
         MONTH_HEADER_HEIGHT = typedArray.getDimensionPixelOffset(R.styleable.YearView_monthLabelTextHeight, resources.getDimensionPixelSize(R.dimen.month_label_text_height));
         DAY_LABEL_CIRCLE_RADIUS = typedArray.getDimensionPixelSize(R.styleable.YearView_dayLabelCircleRadius, resources.getDimensionPixelSize(R.dimen.day_label_circle_radius));
+        dayRowHeight = typedArray.getDimensionPixelSize(R.styleable.YearView_dayLabelRowHeight, resources.getDimensionPixelSize(R.dimen.day_row_height));
 
-        dayRowHeight = resources.getDimensionPixelSize(R.dimen.day_row_height);
         padding = resources.getDimensionPixelSize(R.dimen.main_padding);
         lineSpacingBetweenYearAndMonth = resources.getDimensionPixelSize(R.dimen.padding_between_year_and_month);
         typedArray.recycle();

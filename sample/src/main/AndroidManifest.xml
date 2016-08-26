@@ -15,6 +15,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".TransitDemoActivity">
+        </activity>
+        <activity android:name=".YearViewActivity">
+        </activity>
+        <activity android:name=".MonthViewActivity">
+        </activity>
     </application>
 
 </manifest>
