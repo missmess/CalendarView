@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
@@ -24,40 +23,62 @@ import java.util.Map;
  * @since 2016/08/15 17:52
  */
 public final class YearMonthTransformer {
+    // delay time leave views to anim pass in or out.
     private final int STAY_DELAY_TIME = 200;
     private final int BASE_TRANSITION_ANIM_DURATION = 300;
+    private final int LABEL_SHOWIN_DURATION = 300;
+    private final int LABEL_SHOWOUT_DURATION = 400;
+    private final int LABEL_ANIM_OFFSET = 100;
     private final TransitRootView mRootView;
     private final View rootChild1;
     private final View rootChild2;
+    private final AnimTransiter mTransiter;
     private YearView mYearView;
     private MonthView mMonthView;
     private final MonthViewObserver monthViewObserver;
     private boolean mvShowMonthTitle; //original month showing status
     private boolean mvShowWeekLabel; //before anim, week showing status
-    private OnTransitListener mTransiter;
-    private boolean animating = false;
+    private OnTransitListener transitListener;
+    private boolean animating = false; //indicate transit process
     private final MonthTitleClicker monthTitleClicker;
 
     /**
-     * transition listener
+     * transition listener. use this to implements animations of your custom views
+     * to show in or show out.
      */
     public interface OnTransitListener {
         /**
          * When YearView to MonthView transit process start.
+         * use this to animate views to show out in YearView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
          */
-        void onY2MTransitStart(int duration);
+        void onY2MTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView);
         /**
          * When YearView to MonthView transit process finished.
+         * use this to animate views to show in in MonthView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
          */
-        void onY2MTransitEnd(int duration);
+        void onY2MTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView);
         /**
          * When MonthView to YearView transit process start.
+         * use this to animate views to show out in MonthView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
          */
-        void onM2YTransitStart(int duration);
+        void onM2YTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView);
         /**
          * When MonthView to YearView transit process finished.
+         * use this to animate views to show in in YearView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
          */
-        void onM2YTransitEnd(int duration);
+        void onM2YTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView);
     }
 
     public YearMonthTransformer(TransitRootView transitRootView, YearView yearView, MonthView monthView) {
@@ -67,6 +88,7 @@ public final class YearMonthTransformer {
 
         monthViewObserver = new MonthViewObserver();
         monthTitleClicker = new MonthTitleClicker();
+        mTransiter = new AnimTransiter();
 
         updateYearView(yearView);
         updateMonthView(monthView);
@@ -115,7 +137,7 @@ public final class YearMonthTransformer {
         rootChild2.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
     }
 
-    private void animShowMonth(int month) {
+    private void transitShow(int month) {
         MonthView child = (MonthView) mYearView.getChildAt(month - 1);
         // screen position
         int[] fromLocation = new int[2];
@@ -155,10 +177,12 @@ public final class YearMonthTransformer {
         animSet.addListener(new DelayAnimListener(STAY_DELAY_TIME) {
             @Override
             public void onStart(Animator animator) {
-                // transit prepare
-                alphaView(mYearView, STAY_DELAY_TIME, false);
-                if(mTransiter != null) {
-                    mTransiter.onY2MTransitStart(STAY_DELAY_TIME);
+                // transit start
+                // we just alpha YearView, other view determined by the user
+                mTransiter.setDuration(STAY_DELAY_TIME);
+                mTransiter.alphaView(mYearView, false);
+                if(transitListener != null) {
+                    transitListener.onY2MTransitStart(mTransiter, mYearView, mMonthView);
                 }
             }
 
@@ -173,9 +197,6 @@ public final class YearMonthTransformer {
                 mRootView.recycleTransitView();
                 rootChild2.setAlpha(1);
                 animating = false;
-                if (mTransiter != null) {
-                    mTransiter.onY2MTransitEnd(STAY_DELAY_TIME);
-                }
                 animShowLabel();
             }
         });
@@ -197,15 +218,15 @@ public final class YearMonthTransformer {
             mMonthView.setMonthLabelOffset(sMonthOffset);
             // 1
             monthAnim = ObjectAnimator.ofInt(mMonthView, "monthLabelOffset", sMonthOffset, 0);
-            monthAnim.setDuration(200);
-            monthAnim.setStartDelay(mvShowWeekLabel ? 100 : 0);
+            monthAnim.setDuration(LABEL_SHOWIN_DURATION - LABEL_ANIM_OFFSET);
+            monthAnim.setStartDelay(mvShowWeekLabel ? LABEL_ANIM_OFFSET : 0);
         }
         if (mvShowWeekLabel) {
             mMonthView.showWeekLabel(true);
             int sWeekOffset = -2 * mMonthView.WEEK_LABEL_HEIGHT;
             // 2
             weekAnim = ObjectAnimator.ofInt(mMonthView, "weekLabelOffset", sWeekOffset, 0);
-            weekAnim.setDuration(300);
+            weekAnim.setDuration(LABEL_SHOWIN_DURATION);
         }
         AnimatorSet animSet = new AnimatorSet();
         animSet.setInterpolator(new DecelerateInterpolator(2f));
@@ -217,11 +238,16 @@ public final class YearMonthTransformer {
             animSet.play(weekAnim);
         }
         animSet.start();
+
+        mTransiter.setDuration(LABEL_SHOWIN_DURATION);
+        if (transitListener != null) {
+            transitListener.onY2MTransitEnd(mTransiter, mYearView, mMonthView);
+        }
     }
 
     private void animHideLabel() {
         if (!mvShowMonthTitle && !mvShowWeekLabel) {
-            animHideMonth();
+            transitHide();
         }
         ObjectAnimator monthAnim = null;
         ObjectAnimator weekAnim = null;
@@ -230,14 +256,14 @@ public final class YearMonthTransformer {
             int sMonthOffset = -mMonthView.MONTH_HEADER_HEIGHT;
             // 1
             monthAnim = ObjectAnimator.ofInt(mMonthView, "monthLabelOffset", 0, sMonthOffset);
-            monthAnim.setDuration(200);
+            monthAnim.setDuration(LABEL_SHOWOUT_DURATION - 2 * LABEL_ANIM_OFFSET);
         }
         if (mvShowWeekLabel) {
-            int sWeekOffset = -mMonthView.MONTH_HEADER_HEIGHT - mMonthView.WEEK_LABEL_HEIGHT;
+            int sWeekOffset = -2 * mMonthView.WEEK_LABEL_HEIGHT;
             // 2
             weekAnim = ObjectAnimator.ofInt(mMonthView, "weekLabelOffset", 0, sWeekOffset);
-            weekAnim.setDuration(400);
-            weekAnim.setStartDelay(mvShowMonthTitle ? 100 : 0);
+            weekAnim.setDuration(LABEL_SHOWOUT_DURATION - LABEL_ANIM_OFFSET);
+            weekAnim.setStartDelay(mvShowMonthTitle ? LABEL_ANIM_OFFSET : 0);
         }
         AnimatorSet animSet = new AnimatorSet();
         animSet.setInterpolator(new AccelerateInterpolator(2f));
@@ -251,8 +277,9 @@ public final class YearMonthTransformer {
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                if(mTransiter != null) {
-                    mTransiter.onM2YTransitStart(STAY_DELAY_TIME);
+                mTransiter.setDuration(LABEL_SHOWOUT_DURATION);
+                if(transitListener != null) {
+                    transitListener.onM2YTransitStart(mTransiter, mYearView, mMonthView);
                 }
             }
 
@@ -262,7 +289,7 @@ public final class YearMonthTransformer {
                 mMonthView.setMonthLabelOffset(0);
                 mMonthView.setWeekLabelOffset(0);
                 rootChild2.setVisibility(View.GONE);
-                animHideMonth();
+                transitHide();
             }
 
             @Override
@@ -278,7 +305,7 @@ public final class YearMonthTransformer {
         animSet.start();
     }
 
-    private void animHideMonth() {
+    private void transitHide() {
         MonthView child = (MonthView) mYearView.getChildAt(mMonthView.getCurrentMonth() - 1);
         // screen position
         int[] fromLocation = new int[2];
@@ -315,7 +342,7 @@ public final class YearMonthTransformer {
         animSet.playTogether(animators, positionAnim);
         int transitDuration = obtainTransitAnimDuration(Math.abs(finT - oriT), child.getHeight());
         animSet.setDuration(transitDuration);
-        animSet.setInterpolator(new DecelerateInterpolator());
+        animSet.setInterpolator(new AccelerateInterpolator());
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -324,9 +351,10 @@ public final class YearMonthTransformer {
             @Override
             public void onAnimationEnd(Animator animation) {
                 rootChild1.setAlpha(1);
-                alphaView(mYearView, STAY_DELAY_TIME, true);
-                if(mTransiter != null) {
-                    mTransiter.onM2YTransitEnd(STAY_DELAY_TIME);
+                mTransiter.setDuration(STAY_DELAY_TIME);
+                mTransiter.alphaView(mYearView, true);
+                if(transitListener != null) {
+                    transitListener.onM2YTransitEnd(mTransiter, mYearView, mMonthView);
                 }
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -352,20 +380,12 @@ public final class YearMonthTransformer {
         animSet.start();
     }
 
-    public void alphaView(View view, int duration, boolean show) {
-        float start = show ? 0 : 1;
-        float end = show ? 1 : 0;
-        AlphaAnimation alphaA = new AlphaAnimation(start, end);
-        alphaA.setDuration(duration);
-        view.startAnimation(alphaA);
-    }
-
     private int obtainTransitAnimDuration(int transitT, int childHeight) {
         float factor = (float) transitT / (float) childHeight / 2f;
         if(factor < 1)
             factor = 1;
-        if(factor > 1.4f)
-            factor = 1.4f;
+        if(factor > 1.3f)
+            factor = 1.3f;
         return (int) (factor * BASE_TRANSITION_ANIM_DURATION);
     }
 
@@ -424,7 +444,7 @@ public final class YearMonthTransformer {
         yearView.setYear(monthView.getCurrentYear());
     }
 
-    private ObjectAnimator createMonthPropertyAnimator(MonthView start, MonthView end, final MonthView target) {
+    private ObjectAnimator createMonthPropertyAnimator(MonthView start, MonthView end, MonthView target) {
         // animators
         ArgbEvaluator argbEvaluator = new ArgbEvaluator();
         // 7 properties
@@ -446,7 +466,7 @@ public final class YearMonthTransformer {
     }
 
     public void setOnTransitListener(OnTransitListener listener) {
-        mTransiter = listener;
+        transitListener = listener;
     }
 
     class MonthViewObserver implements ViewTreeObserver.OnGlobalLayoutListener {
@@ -459,7 +479,7 @@ public final class YearMonthTransformer {
         @Override
         public void onGlobalLayout() {
             if (rootChild2.getAlpha() == 0) {
-                animShowMonth(month);
+                transitShow(month);
             } else {
                 animHideLabel();
             }

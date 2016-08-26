@@ -30,7 +30,7 @@ public class TransitRootView extends ScrollView {
     }
 
     private void init() {
-        setFillViewport(false);
+        setFillViewport(true);
 
         frameLayout = new FrameLayout(getContext());
         transitView = new MonthView(getContext());

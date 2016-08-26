@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.missmess.calendarview.AnimTransiter;
 import com.missmess.calendarview.CalendarDay;
 import com.missmess.calendarview.CalendarMonth;
 import com.missmess.calendarview.MonthView;
@@ -53,26 +54,24 @@ public class MainActivity extends AppCompatActivity {
         });
         transformer.setOnTransitListener(new YearMonthTransformer.OnTransitListener() {
             @Override
-            public void onY2MTransitStart(int duration) {
-                transformer.alphaView(rl_title, duration, false);
+            public void onY2MTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView) {
+                transiter.slideOutView(rl_title, false);
             }
 
             @Override
-            public void onY2MTransitEnd(int duration) {
-                ll_data.setVisibility(View.VISIBLE);
-                transformer.alphaView(ll_data, duration, true);
+            public void onY2MTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView) {
+                transiter.slideInView(ll_data, false);
+//                transiter.alphaView(ll_data, true);
             }
 
             @Override
-            public void onM2YTransitStart(int duration) {
-                ll_data.setVisibility(View.GONE);
-                transformer.alphaView(ll_data, duration, false);
+            public void onM2YTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView) {
+                transiter.slideOutView(ll_data, true);
             }
 
             @Override
-            public void onM2YTransitEnd(int duration) {
-                rl_title.setVisibility(View.VISIBLE);
-                transformer.alphaView(rl_title, duration, true);
+            public void onM2YTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView) {
+                transiter.slideInView(rl_title, true);
             }
         });
     }
