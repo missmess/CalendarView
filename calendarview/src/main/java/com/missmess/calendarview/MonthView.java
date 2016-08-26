@@ -12,12 +12,12 @@ import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
-import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class MonthView extends View {
@@ -72,7 +72,7 @@ public class MonthView extends View {
     private int selectedDay = 0;
     private float downX;
     private float downY;
-    protected SparseArray<Integer> decorColors;
+    protected HashMap<Integer, Integer> decorColors;
     private boolean mShowWeekDivider;
 
     public MonthView(Context context) {
@@ -119,7 +119,7 @@ public class MonthView extends View {
 
         typedArray.recycle();
         mPadding = getPaddingLeft();
-        decorColors = new SparseArray<>();
+        decorColors = new HashMap<>();
         initView();
     }
 

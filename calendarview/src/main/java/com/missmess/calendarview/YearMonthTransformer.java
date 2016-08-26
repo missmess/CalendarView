@@ -406,9 +406,8 @@ public final class YearMonthTransformer {
         monthView.setYearAndMonth(yearView.getYear(), month);
         Map<Integer, Integer> map = yearView.getMonthDecors(month);
         if (map != null) {
-            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-                monthView.decorateDay(entry.getKey(), entry.getValue());
-            }
+            monthView.decorColors.clear();
+            monthView.decorColors.putAll(map);
         }
     }
 
@@ -416,7 +415,8 @@ public final class YearMonthTransformer {
     private void passPropertyM2M(MonthView start, MonthView end) {
         end.setToday(start.today);
         end.setYearAndMonth(start.getCurrentYear(), start.getCurrentMonth());
-        end.decorColors = start.decorColors;
+        end.decorColors.clear();
+        end.decorColors.putAll(start.decorColors);
     }
 
     // pass property of MonthView to YearView
