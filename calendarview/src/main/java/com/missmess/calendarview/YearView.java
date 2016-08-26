@@ -471,6 +471,11 @@ public class YearView extends ViewGroup {
         return year;
     }
 
+    public String getYearString() {
+        boolean chinaArea = Locale.getDefault().equals(Locale.CHINA);
+        return chinaArea ? year + "年" : year + "";
+    }
+
     // add decors relative to month
     private void addMonthDecorsInternal(CalendarDay calendarDay, @ColorInt int color) {
         if(calendarDay.getYear() == year) {

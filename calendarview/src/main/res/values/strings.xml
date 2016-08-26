@@ -2,4 +2,6 @@
     <string name="app_name">CalendarView</string>
 
     <string name="sans_serif" translatable="false">sans-serif</string>
+    <string name="event_str">Total events：%1$d</string>
+    <string name="event_type_str">Total event types：%1$d</string>
 </resources>

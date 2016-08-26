@@ -129,6 +129,7 @@ public class MonthView extends View {
         mPadding = getPaddingLeft();
         decorColors = new HashMap<>();
         initView();
+        setYearAndMonth(today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1);
     }
 
     private int calculateNumRows() {
@@ -337,9 +338,6 @@ public class MonthView extends View {
 
     protected void onDraw(Canvas canvas) {
 //        Log.d("MonthView", "onDraw");
-        if (mYear == 0) {
-            setYearAndMonth(today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1);
-        }
 
         if(mShowMonthTitle) {
             drawMonthTitle(canvas);

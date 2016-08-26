@@ -20,6 +20,9 @@ import java.util.Map;
  * YearView and MonthView transition animator helper.
  * use this to implement transition.
  *
+ * <p>You should implements animation of all your custom views by your own,
+ * using {@link OnTransitListener}. If any view not configured, it will show or hide
+ * immediately without animations</p>
  * <p>pls work together with {@link TransitRootView}</p>
  *
  * @author wl
@@ -30,8 +33,9 @@ public final class YearMonthTransformer {
     private final int STAY_DELAY_TIME = 200;
     private final int BASE_TRANSITION_ANIM_DURATION = 300;
     private final int LABEL_SHOWIN_DURATION = 300;
-    private final int LABEL_SHOWOUT_DURATION = 400;
+    private final int LABEL_SHOWOUT_DURATION = 300;
     private final int LABEL_ANIM_OFFSET = 100;
+    private final float MAX_TRANSIT_FACTOR = 1.3f;
     private final TransitRootView mRootView;
     private final View rootChild1;
     private final View rootChild2;
@@ -345,7 +349,7 @@ public final class YearMonthTransformer {
         animSet.playTogether(animators, positionAnim);
         int transitDuration = obtainTransitAnimDuration(Math.abs(finT - oriT), child.getHeight());
         animSet.setDuration(transitDuration);
-        animSet.setInterpolator(new AccelerateInterpolator());
+        animSet.setInterpolator(new DecelerateInterpolator());
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -387,8 +391,8 @@ public final class YearMonthTransformer {
         float factor = (float) transitT / (float) childHeight / 2f;
         if(factor < 1)
             factor = 1;
-        if(factor > 1.3f)
-            factor = 1.3f;
+        if(factor > MAX_TRANSIT_FACTOR)
+            factor = MAX_TRANSIT_FACTOR;
         return (int) (factor * BASE_TRANSITION_ANIM_DURATION);
     }
 
