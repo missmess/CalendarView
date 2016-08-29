@@ -1,7 +1,7 @@
 package com.missmess.calendardemo;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,7 +18,6 @@ import com.missmess.calendarview.YearMonthTransformer;
 import com.missmess.calendarview.YearView;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class TransitDemoActivity extends AppCompatActivity {
@@ -81,11 +80,7 @@ public class TransitDemoActivity extends AppCompatActivity {
 
     private void initYearView() {
         yearView.setYear(YEAR);
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, YEAR);
-        calendar.set(Calendar.MONTH, Calendar.MAY);
-        calendar.set(Calendar.DAY_OF_MONTH, 17);
-        yearView.setToday(calendar);
+        yearView.setToday(new CalendarDay(YEAR, 5, 17));
 
         for(DayEvent event : yearEvents) {
             CalendarDay calendarDay = new CalendarDay(event.getYear(), event.getMonth(), event.getDay());

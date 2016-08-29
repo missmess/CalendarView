@@ -57,7 +57,7 @@ public class YearView extends ViewGroup {
     protected int daysInWeek = 7;
 
     protected int year;
-    protected Calendar today;
+    protected CalendarDay today;
 
     private int width;
 
@@ -73,8 +73,9 @@ public class YearView extends ViewGroup {
 
     public YearView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        today = Calendar.getInstance();
-        year = today.get(Calendar.YEAR);
+        setWillNotDraw(false);
+        today = new CalendarDay(Calendar.getInstance());
+        year = today.getYear();
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.YearView);
         Resources resources = context.getResources();
 
@@ -207,7 +208,7 @@ public class YearView extends ViewGroup {
      *
      * @param today 当前时间
      */
-    public void setToday(Calendar today) {
+    public void setToday(CalendarDay today) {
         this.today = today;
     }
 
@@ -221,7 +222,7 @@ public class YearView extends ViewGroup {
         if (showYearLunarLabel && chinaArea) { //显示农历
             String animal;
             String zhiGan;
-            if (year == today.get(Calendar.YEAR)) { //显示年=今年
+            if (year == today.getYear()) { //显示年=今年
                 Lunar lunar = new Lunar(today);
                 animal = lunar.animalsYear();
                 zhiGan = lunar.cyclical();

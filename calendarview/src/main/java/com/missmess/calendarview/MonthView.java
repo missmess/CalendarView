@@ -29,7 +29,7 @@ import java.util.Locale;
  * ...
  */
 public class MonthView extends View {
-    protected final int DEFAULT_NUM_ROWS = 6;
+    private final int DEFAULT_NUM_ROWS = 6;
     protected int dayCircleRadius;
     protected int SPACE_BETWEEN_WEEK_AND_DAY = 0;
     protected int normalDayTextSize;
@@ -68,7 +68,7 @@ public class MonthView extends View {
     protected int dayRowHeight = 0;
     protected int mWidth;
     private int mYear = 0;
-    protected Calendar today;
+    protected CalendarDay today;
 
     private int mNumRows = DEFAULT_NUM_ROWS;
     protected boolean mShowMonthTitle;
@@ -82,7 +82,8 @@ public class MonthView extends View {
     private float downX;
     private float downY;
     protected HashMap<Integer, Integer> decorColors;
-    private AttributeSet mAttrs;
+    private TypedArray mTypeArray;
+    private boolean isCopy;
 
     public MonthView(Context context) {
         this(context, null);
@@ -90,11 +91,20 @@ public class MonthView extends View {
 
     public MonthView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mAttrs = attrs;
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MonthView);
+        mTypeArray = context.obtainStyledAttributes(attrs, R.styleable.MonthView);
 
+        init(context, mTypeArray);
+    }
+
+    private MonthView(Context context, TypedArray typedArray, Void copy) {
+        super(context);
+        isCopy = true;
+        init(context, typedArray);
+    }
+
+    private void init(Context context, TypedArray typedArray) {
         Resources resources = context.getResources();
-        today = Calendar.getInstance();
+        today = new CalendarDay(Calendar.getInstance());
 
         mDayOfWeekTypeface = resources.getString(R.string.sans_serif);
         mMonthTitleTypeface = resources.getString(R.string.sans_serif);
@@ -127,11 +137,11 @@ public class MonthView extends View {
             WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + spaceBetweenWeekAndDivider;
         }
 
-        typedArray.recycle();
+//        typedArray.recycle();
         mPadding = getPaddingLeft();
         decorColors = new HashMap<>();
         initView();
-        setYearAndMonth(today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1);
+        setYearAndMonth(today.getYear(), today.getMonth());
     }
 
     private int calculateNumRows() {
@@ -145,7 +155,7 @@ public class MonthView extends View {
      * 设置当前时间
      * @param today 当前时间
      */
-    public void setToday(Calendar today) {
+    public void setToday(CalendarDay today) {
         this.today = today;
     }
 
@@ -209,7 +219,7 @@ public class MonthView extends View {
 
                 mDayNumPaint.setColor(circleTextColor);
                 canvas.drawText(dayStr, x, y, mDayNumPaint);
-            } else if (isToday(mYear, mMonth, day)) { //today
+            } else if (isToday(mYear, mMonth + 1, day)) { //today
                 mDayCirclePaint.setColor(todayCircleBgColor);
                 canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
 
@@ -240,8 +250,9 @@ public class MonthView extends View {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, mYear);
         calendar.set(Calendar.MONTH, mMonth);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
         long millis = calendar.getTimeInMillis();
-        return DateUtils.formatDateTime(getContext(), millis, flags);
+        return DateUtils.formatDateRange(getContext(), millis, millis, flags);
     }
 
     private void onDayClick(CalendarDay calendarDay) {
@@ -253,7 +264,7 @@ public class MonthView extends View {
     }
 
     private boolean isToday(int year, int month, int monthDay) {
-        return (year == today.get(Calendar.YEAR)) && (month == today.get(Calendar.MONTH)) && (monthDay == today.get(Calendar.DAY_OF_MONTH));
+        return (year == today.getYear()) && (month == today.getMonth()) && (monthDay == today.getDay());
     }
 
     private CalendarDay getDayFromLocation(float x, float y) {
@@ -395,13 +406,21 @@ public class MonthView extends View {
                     } else if(isClickMonth((int)x, (int)y)) {
                         // month title clicked
                         if(mOnMonthClicker != null) {
-                            mOnMonthClicker.onMonthClick(this, new CalendarMonth(mYear, mMonth));
+                            mOnMonthClicker.onMonthClick(this, new CalendarMonth(mYear, mMonth + 1));
                         }
                     }
                 }
                 break;
         }
         return true;
+    }
+
+    /**
+     * 设置当前显示的年和月
+     * @param calendarMonth calendarMonth
+     */
+    public void setYearAndMonth(CalendarMonth calendarMonth) {
+        setYearAndMonth(calendarMonth.getYear(), calendarMonth.getMonth());
     }
 
     /**
@@ -427,6 +446,7 @@ public class MonthView extends View {
         mNumCells = CalendarUtils.getDaysInMonth(mMonth, mYear);
 
         mNumRows = calculateNumRows();
+        invalidate();
     }
 
     public void decorateDay(int day, @ColorInt int color) {
@@ -514,20 +534,28 @@ public class MonthView extends View {
         return MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT + SPACE_BETWEEN_WEEK_AND_DAY + dayRowHeight * rows;
     }
 
-    public MonthView createCopy() {
-        return new MonthView(getContext(), mAttrs);
+    // get a copy with same attributes defined in layout.
+    protected MonthView staticCopy() {
+        if(isCopy)
+            // this is a copy, should not make a copy again.
+            return null;
+        return new MonthView(getContext(), mTypeArray, null);
     }
 
-    public int getCurrentMonth() {
-        return mMonth + 1;
-    }
-
-    public int getCurrentYear() {
-        return mYear;
+    public CalendarMonth getCurrentMonth() {
+        return new CalendarMonth(mYear, mMonth + 1);
     }
 
     public void setOnDayClickListener(OnDayClickListener onDayClickListener) {
         mOnDayClickListener = onDayClickListener;
+    }
+
+    public OnMonthTitleClickListener getOnMonthTitleClickListener() {
+        return mOnMonthClicker;
+    }
+
+    public OnDayClickListener getOnDayClickListener() {
+        return mOnDayClickListener;
     }
 
     public void setOnMonthTitleClickListener(OnMonthTitleClickListener onMonthTitleClickListener) {

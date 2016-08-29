@@ -2,7 +2,6 @@ package com.missmess.calendarview;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -140,7 +139,7 @@ public class Lunar {
      * 当前日历生成对应农历日期
      * @param cal 当前时间日历
      */
-    public Lunar(Calendar cal) {
+    public Lunar(CalendarDay cal) {
         int yearCyl, monCyl, dayCyl;
         int leapMonth;
         Date baseDate;
@@ -153,7 +152,7 @@ public class Lunar {
         }
 
         //求出和1900年1月31日相差的天数
-        int offset = (int) ((cal.getTime().getTime() - baseDate.getTime()) / 86400000L);
+        int offset = (int) ((cal.getDate().getTime() - baseDate.getTime()) / 86400000L);
         dayCyl = offset + 40;
         monCyl = 14;
 

@@ -313,7 +313,7 @@ public final class YearMonthTransformer {
     }
 
     private void transitHide() {
-        MonthView child = (MonthView) mYearView.getChildAt(mMonthView.getCurrentMonth() - 1);
+        MonthView child = (MonthView) mYearView.getChildAt(mMonthView.getCurrentMonth().getMonth() - 1);
         // screen position
         int[] fromLocation = new int[2];
         mMonthView.getLocationOnScreen(fromLocation);
@@ -441,14 +441,15 @@ public final class YearMonthTransformer {
     // pass property of YearView to MonthView
     private void passPropertyM2M(MonthView start, MonthView end) {
         end.setToday(start.today);
-        end.setYearAndMonth(start.getCurrentYear(), start.getCurrentMonth());
+        CalendarMonth calendarMonth = start.getCurrentMonth();
+        end.setYearAndMonth(calendarMonth.getYear(), calendarMonth.getMonth());
         end.decorColors.clear();
         end.decorColors.putAll(start.decorColors);
     }
 
     // pass property of MonthView to YearView
     private void passPropertyM2Y(MonthView monthView, YearView yearView) {
-        yearView.setYear(monthView.getCurrentYear());
+        yearView.setYear(monthView.getCurrentMonth().getYear());
     }
 
     private ObjectAnimator createMonthPropertyAnimator(MonthView start, MonthView end, MonthView target) {

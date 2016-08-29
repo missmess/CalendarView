@@ -1,12 +1,15 @@
 package com.missmess.calendarview;
 
+import android.support.annotation.NonNull;
+
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * @author wl
  * @since 2016/08/22 12:04
  */
-public class CalendarDay {
+public class CalendarDay implements Comparable<CalendarDay> {
     int month;
     int year;
     int day;
@@ -21,7 +24,8 @@ public class CalendarDay {
 
     public CalendarDay(Calendar calendar) {
         year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH);
+        month = calendar.get(Calendar.MONTH) + 1;
+        day = calendar.get(Calendar.DAY_OF_MONTH);
     }
 
     public void setDay(int year, int month, int day) {
@@ -42,8 +46,33 @@ public class CalendarDay {
         return year;
     }
 
+    public Date getDate() {
+        return new Date(year - 1900, month - 1, day);
+    }
+
+    @Override
+    public int compareTo(@NonNull CalendarDay another) {
+        if(another.getYear() > year || (another.getYear() == year && another.getMonth() > month)
+                || (another.getYear() == year && another.getMonth() == month && another.getDay() > day)) {
+            return -1;
+        } else if(another.getYear() == year && another.getMonth() == month && another.getDay() == day) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o != null && o instanceof CalendarDay) {
+            int result = compareTo((CalendarDay) o);
+            return result == 0;
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
-        return "{ year: " + year + ", month: " + month + ", day: " + day + " }";
+        return "CalendarDay: { year: " + year + ", month: " + month + ", day: " + day + " }";
     }
 }
