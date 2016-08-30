@@ -48,6 +48,7 @@
     </declare-styleable>
 
     <declare-styleable name="MonthViewPager">
+        <attr name="show_indicator" format="boolean"/>
         <attr name="ic_previous_month" format="reference"/>
         <attr name="ic_next_month" format="reference"/>
     </declare-styleable>

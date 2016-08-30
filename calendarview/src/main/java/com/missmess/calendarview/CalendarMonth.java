@@ -21,13 +21,20 @@ public class CalendarMonth implements Comparable<CalendarMonth> {
     }
 
     public CalendarMonth(Calendar calendar) {
-        year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        setMonth(year, month);
     }
 
     public void setMonth(int year, int month) {
         this.year = year;
         this.month = month;
+        if(year < 1900) {
+            throw new IllegalArgumentException("year can not small than 1900");
+        }
+        if(month < 1 || month > 12) {
+            throw new IllegalArgumentException("month " + month + "doesn't exist");
+        }
     }
 
     public int getMonth() {
@@ -80,6 +87,6 @@ public class CalendarMonth implements Comparable<CalendarMonth> {
 
     @Override
     public String toString() {
-        return "CalendarMonth: { year: " + year + ", month: " + month + " }";
+        return "CalendarMonth: { " + year + "-" + month + " }";
     }
 }

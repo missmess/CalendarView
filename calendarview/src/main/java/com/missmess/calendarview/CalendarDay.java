@@ -23,15 +23,24 @@ public class CalendarDay implements Comparable<CalendarDay> {
     }
 
     public CalendarDay(Calendar calendar) {
-        year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH) + 1;
-        day = calendar.get(Calendar.DAY_OF_MONTH);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        setDay(year, month, day);
     }
 
     public void setDay(int year, int month, int day) {
         this.year = year;
         this.month = month;
         this.day = day;
+
+        if(year < 1900) {
+            throw new IllegalArgumentException("year can not small than 1900");
+        }
+        int maxDays = CalendarUtils.getDaysInMonth(month - 1, year);
+        if(day > maxDays) {
+            throw new IllegalArgumentException("this date doesn't exist");
+        }
     }
 
     public int getDay() {
@@ -73,6 +82,6 @@ public class CalendarDay implements Comparable<CalendarDay> {
 
     @Override
     public String toString() {
-        return "CalendarDay: { year: " + year + ", month: " + month + ", day: " + day + " }";
+        return "CalendarDay: { " + year + "-" + month + "-" + day + " }";
     }
 }

@@ -44,6 +44,7 @@ public class MonthViewPager extends ViewGroup {
     private boolean rightAble = true;
     private OnDragListener mDragListener;
     private OnMonthChangeListener mChangeListener;
+    private boolean mShowIndicator;
 
     public MonthViewPager(Context context) {
         this(context, null);
@@ -54,6 +55,7 @@ public class MonthViewPager extends ViewGroup {
         setWillNotDraw(false);
 
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MonthViewPager);
+        mShowIndicator = typedArray.getBoolean(R.styleable.MonthViewPager_show_indicator, true);
         ic_previous = typedArray.getDrawable(R.styleable.MonthViewPager_ic_previous_month);
         ic_next = typedArray.getDrawable(R.styleable.MonthViewPager_ic_next_month);
         if(ic_previous == null) {
@@ -94,11 +96,13 @@ public class MonthViewPager extends ViewGroup {
         super.addView(childLeft, params);
         super.addView(childMiddle, params);
         super.addView(childRight, params);
-        // add indicators
-        indicator_left = createIndicator(ic_previous);
-        super.addView(indicator_left);
-        indicator_right = createIndicator(ic_next);
-        super.addView(indicator_right);
+        if(mShowIndicator) {
+            // add indicators
+            indicator_left = createIndicator(ic_previous);
+            super.addView(indicator_left);
+            indicator_right = createIndicator(ic_next);
+            super.addView(indicator_right);
+        }
     }
 
     private ImageView createIndicator(Drawable icon) {
@@ -184,22 +188,27 @@ public class MonthViewPager extends ViewGroup {
         if(mChangeListener != null) {
             mChangeListener.onMonthChanged(this, left, childMiddle, right, currentMonth, old);
         }
+        requestLayout();
     }
 
     private void checkEdge() {
         CalendarMonth cm = childMiddle.getCurrentMonth();
         if(cm.equals(leftEdge)) {
-            indicator_left.setVisibility(View.GONE);
+            if(indicator_left != null)
+                indicator_left.setVisibility(View.GONE);
             leftAble = false;
         } else {
-            indicator_left.setVisibility(View.VISIBLE);
+            if(indicator_left != null)
+                indicator_left.setVisibility(View.VISIBLE);
             leftAble = true;
         }
         if(cm.equals(rightEdge)) {
-            indicator_right.setVisibility(View.GONE);
+            if(indicator_right != null)
+                indicator_right.setVisibility(View.GONE);
             rightAble = false;
         } else {
-            indicator_right.setVisibility(View.VISIBLE);
+            if(indicator_right != null)
+                indicator_right.setVisibility(View.VISIBLE);
             rightAble = true;
         }
     }
@@ -210,31 +219,41 @@ public class MonthViewPager extends ViewGroup {
         if(childLeft == null || childMiddle == null || childRight == null) {
             throw new IllegalStateException("MonthViewPager should host a MonthView child");
         }
-        int childWidthSpec = MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY);
-        measureChild(childLeft, childWidthSpec, heightMeasureSpec);
-        measureChild(childMiddle, childWidthSpec, heightMeasureSpec);
-        measureChild(childRight, childWidthSpec, heightMeasureSpec);
+        int height = childMiddle.getMaxHeight();
+
+        //measure MonthView children
+        int childWidthSpec = MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.AT_MOST);
+        int childHeightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
+        childLeft.measure(childWidthSpec, childHeightSpec);
+        childMiddle.measure(childWidthSpec, childHeightSpec);
+        childRight.measure(childWidthSpec, childHeightSpec);
 
         // measure indicator ImageView
-        measureChild(indicator_left, widthMeasureSpec, heightMeasureSpec);
-        measureChild(indicator_right, widthMeasureSpec, heightMeasureSpec);
+        if(mShowIndicator) {
+            int indWidthSpec = MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.AT_MOST);
+            int indHeightSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
+            indicator_left.measure(indWidthSpec, indHeightSpec);
+            indicator_right.measure(indWidthSpec, indHeightSpec);
+        }
 
-        setMeasuredDimension(mWidth, childMiddle.getMaxHeight());
+        setMeasuredDimension(mWidth, height);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        childMiddle.layout(0, 0, mWidth, childMiddle.getMeasuredHeight());
-        childLeft.layout(-mWidth, 0, 0, childLeft.getMeasuredHeight());
-        childRight.layout(mWidth, 0, 2 * mWidth, childRight.getMeasuredHeight());
+        childMiddle.layout(0, 0, mWidth, childMiddle.getShouldHeight());
+        childLeft.layout(-mWidth, 0, 0, childLeft.getShouldHeight());
+        childRight.layout(mWidth, 0, 2 * mWidth, childRight.getShouldHeight());
 
-        int month_header_height = childMiddle.MONTH_HEADER_HEIGHT;
-        int left_height = indicator_left.getMeasuredHeight();
-        int right_height = indicator_right.getMeasuredHeight();
-        int top1 = (month_header_height - left_height) / 2;
-        int top2 = (month_header_height - right_height) / 2;
-        indicator_left.layout(indicate_margin, top1, indicator_left.getMeasuredWidth() + indicate_margin, top1 + left_height);
-        indicator_right.layout(mWidth - indicate_margin - indicator_right.getMeasuredWidth(), top2, mWidth - indicate_margin, top2 + right_height);
+        if(mShowIndicator) {
+            int month_header_height = childMiddle.MONTH_HEADER_HEIGHT;
+            int left_height = indicator_left.getMeasuredHeight();
+            int right_height = indicator_right.getMeasuredHeight();
+            int top1 = (month_header_height - left_height) / 2;
+            int top2 = (month_header_height - right_height) / 2;
+            indicator_left.layout(indicate_margin, top1, indicator_left.getMeasuredWidth() + indicate_margin, top1 + left_height);
+            indicator_right.layout(mWidth - indicate_margin - indicator_right.getMeasuredWidth(), top2, mWidth - indicate_margin, top2 + right_height);
+        }
     }
 
     @Override
@@ -274,11 +293,11 @@ public class MonthViewPager extends ViewGroup {
 
         @Override
         public int clampViewPositionHorizontal(View child, int left, int dx) {
-            if(dx < 0 && !leftAble) {
+            if(dx > 0 && !leftAble) {
                 // can't move left
                 return 0;
             }
-            if(dx > 0 && !rightAble) {
+            if(dx < 0 && !rightAble) {
                 // can't move right
                 return 0;
             }
