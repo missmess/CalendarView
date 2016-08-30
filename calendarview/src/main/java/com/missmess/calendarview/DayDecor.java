@@ -24,11 +24,19 @@ public class DayDecor {
         decorMaps.putAll(decors);
     }
 
-    public @ColorInt int getDecorColor(int year, int month, int day) {
+    public @ColorInt Integer getDecorColor(int year, int month, int day) {
         return getDecorColor(new CalendarDay(year, month, day));
     }
 
-    public @ColorInt int getDecorColor(CalendarDay calendarDay) {
+    public @ColorInt Integer getDecorColor(CalendarDay calendarDay) {
         return decorMaps.get(calendarDay);
+    }
+
+    public void clear() {
+        decorMaps.clear();
+    }
+
+    public Map<CalendarDay, Integer> getInnerMap() {
+        return decorMaps;
     }
 }

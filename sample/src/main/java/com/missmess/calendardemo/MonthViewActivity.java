@@ -1,20 +1,27 @@
 package com.missmess.calendardemo;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.missmess.calendardemo.control.GetDecorsTask;
+import com.missmess.calendardemo.model.DayEvent;
 import com.missmess.calendarview.CalendarDay;
 import com.missmess.calendarview.CalendarMonth;
+import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.MonthViewPager;
+
+import java.util.List;
 
 public class MonthViewActivity extends AppCompatActivity {
 
     private MonthViewPager monthViewPager;
     private TextView textView;
+    private ProgressDialog progressDialog;
+    private List<DayEvent> yearEvents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +30,10 @@ public class MonthViewActivity extends AppCompatActivity {
         // find view
         monthViewPager = (MonthViewPager) findViewById(R.id.mvp);
         textView = (TextView) findViewById(R.id.tv);
+        progressDialog = new ProgressDialog(this);
 
         init();
+        getEvents();
     }
 
     private void init() {
@@ -34,13 +43,19 @@ public class MonthViewActivity extends AppCompatActivity {
         monthViewPager.setOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
-                Toast.makeText(MonthViewActivity.this, "month changed! from " + old.toString() + " to " + currentMonth.toString(), Toast.LENGTH_LONG).show();
+                Log.d("onMonthChanged", "old=" + old.toString() + ";current=" + currentMonth.toString());
+                textView.setText(R.string.app_name);
             }
         });
         monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
             @Override
             public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
-                textView.setText(String.format("This is all events in %s", calendarDay.toString()));
+                for(DayEvent event : yearEvents) {
+                    if(event.isThisDay(calendarDay)) {
+                        textView.setText(String.format("Today: %s\nThere is %d events", calendarDay.toString(), event.getEventDetails().length));
+                        return;
+                    }
+                }
             }
         });
         monthViewPager.setOnMonthTitleClickListener(new MonthView.OnMonthTitleClickListener() {
@@ -55,5 +70,28 @@ public class MonthViewActivity extends AppCompatActivity {
                 Log.d("OnDragListener", "left==" + left + ";dx==" + dx);
             }
         });
+    }
+
+    private void getEvents() {
+        new GetDecorsTask(new GetDecorsTask.DecorResult() {
+            @Override
+            public void onStart() {
+                progressDialog.show();
+            }
+
+            @Override
+            public void onResult(List<DayEvent> events) {
+                yearEvents = events;
+
+                DayDecor dayDecor = new DayDecor();
+                for(DayEvent event : yearEvents) {
+                    CalendarDay calendarDay = new CalendarDay(event.getYear(), event.getMonth(), event.getDay());
+                    dayDecor.putOne(calendarDay, event.getType().getColor());
+                }
+                monthViewPager.setDecors(dayDecor);
+
+                progressDialog.dismiss();
+            }
+        }).execute(2016);
     }
 }

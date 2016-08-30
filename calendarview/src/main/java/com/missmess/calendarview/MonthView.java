@@ -17,7 +17,6 @@ import android.view.View;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -81,9 +80,9 @@ public class MonthView extends View {
     private int selectedDay = 0;
     private float downX;
     private float downY;
-    protected HashMap<Integer, Integer> decorColors;
     private TypedArray mTypeArray;
     private boolean isCopy;
+    private DayDecor mDecors;
 
     public MonthView(Context context) {
         this(context, null);
@@ -139,7 +138,6 @@ public class MonthView extends View {
 
 //        typedArray.recycle();
         mPadding = getPaddingLeft();
-        decorColors = new HashMap<>();
         initView();
         setYearAndMonth(today.getYear(), today.getMonth());
     }
@@ -157,6 +155,7 @@ public class MonthView extends View {
      */
     public void setToday(CalendarDay today) {
         this.today = today;
+        invalidate();
     }
 
     private void drawWeekLabels(Canvas canvas) {
@@ -212,8 +211,8 @@ public class MonthView extends View {
 
                 mDayNumPaint.setColor(circleTextColor);
                 canvas.drawText(dayStr, x, y, mDayNumPaint);
-            }  else if(decorColors.get(day) != null){
-                Integer color = decorColors.get(day);
+            }  else if(mDecors != null && mDecors.getDecorColor(mYear, mMonth + 1, day) != null){
+                Integer color = mDecors.getDecorColor(mYear, mMonth + 1, day);
                 mDayCirclePaint.setColor(color);
                 canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
 
@@ -306,11 +305,6 @@ public class MonthView extends View {
 
     public void clearSelection() {
         selectedDay = 0;
-//        invalidate();
-    }
-
-    public void clearDecors() {
-        decorColors.clear();
 //        invalidate();
     }
 
@@ -430,7 +424,6 @@ public class MonthView extends View {
      */
     public void setYearAndMonth(int year, int month) {
         clearSelection();
-        clearDecors();
 
         mYear = year;
         mMonth = month - 1;
@@ -449,12 +442,13 @@ public class MonthView extends View {
         invalidate();
     }
 
-    public void decorateDay(int day, @ColorInt int color) {
-        if(day < 1 || day > mNumCells) {
-            throw new IllegalArgumentException("day " + day + " does not exist in this month");
-        }
-        decorColors.put(day, color);
+    public void setDecors(DayDecor mDecors) {
+        this.mDecors = mDecors;
         invalidate();
+    }
+
+    public DayDecor getDecors() {
+        return mDecors;
     }
 
     public void showMonthTitle(boolean show) {

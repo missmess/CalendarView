@@ -8,9 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
-import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,9 +16,7 @@ import android.view.ViewGroup;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class YearView extends ViewGroup {
     protected int DAY_LABEL_CIRCLE_RADIUS;
@@ -68,8 +64,7 @@ public class YearView extends ViewGroup {
     private float downX;
     private float downY;
     private int[] monthRowHeight = new int[4];
-    private Map<CalendarDay, Integer> decorMaps;
-    private SparseArray<Map<Integer, Integer>> monthDecors;
+    private DayDecor mDecors;
 
     public YearView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -110,7 +105,6 @@ public class YearView extends ViewGroup {
             lineSpacingBetweenYearAndMonth = 0;
         }
 
-        monthDecors = new SparseArray<>();
         initPaint();
         addMonth();
     }
@@ -172,13 +166,6 @@ public class YearView extends ViewGroup {
             MonthView monthView = (MonthView) getChildAt(i - 1);
             // update today
             monthView.setToday(today);
-            // add decorates
-            Map<Integer, Integer> map = getMonthDecors(i);
-            if (map != null) {
-                for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-                    monthView.decorateDay(entry.getKey(), entry.getValue());
-                }
-            }
             //layout month
             int measuredHeight = monthView.getMeasuredHeight();
             int measuredWidth = monthView.getMeasuredWidth();
@@ -421,23 +408,17 @@ public class YearView extends ViewGroup {
         return rect;
     }
 
-    public void decorateDay(CalendarDay calendarDay, @ColorInt int color) {
-        if(decorMaps == null) {
-            decorMaps = new HashMap<>();
+    public void setDecors(DayDecor decors) {
+        this.mDecors = decors;
+        for(int i = 0; i < getChildCount(); i++) {
+            MonthView monthView = (MonthView) getChildAt(i);
+            // add decorates
+            monthView.setDecors(mDecors);
         }
-        decorMaps.put(calendarDay, color);
-
-        // add decors mapping to month
-        addMonthDecorsInternal(calendarDay, color);
     }
 
-    /**
-     * 清除标记的所有日期
-     */
-    public void clearDecors() {
-        decorMaps.clear();
-        decorMaps = null;
-        monthDecors.clear();
+    public DayDecor getDecors() {
+        return mDecors;
     }
 
     /**
@@ -447,25 +428,6 @@ public class YearView extends ViewGroup {
      */
     public void setYear(int year) {
         this.year = year;
-
-        // when year changed, should update month decors collection
-        // clear old
-        monthDecors.clear();
-        // add new
-        if(decorMaps == null)
-            return;
-        for(Map.Entry<CalendarDay, Integer> entry : decorMaps.entrySet()) {
-            addMonthDecorsInternal(entry.getKey(), entry.getValue());
-        }
-    }
-
-    /**
-     * 获得某个月的decorators
-     * @param month month
-     * @return map - day mapping to color. if null, no decors at this month.
-     */
-    public Map<Integer, Integer> getMonthDecors(int month) {
-        return monthDecors.get(month);
     }
 
     public int getYear() {
@@ -475,20 +437,6 @@ public class YearView extends ViewGroup {
     public String getYearString() {
         boolean chinaArea = Locale.getDefault().equals(Locale.CHINA);
         return chinaArea ? year + "年" : year + "";
-    }
-
-    // add decors relative to month
-    private void addMonthDecorsInternal(CalendarDay calendarDay, @ColorInt int color) {
-        if(calendarDay.getYear() == year) {
-            int month = calendarDay.getMonth();
-            int day = calendarDay.getDay();
-            Map<Integer, Integer> tmp = monthDecors.get(month);
-            if(tmp == null) {
-                tmp = new HashMap<>();
-            }
-            tmp.put(day, color);
-            monthDecors.put(month, tmp);
-        }
     }
 
     public void setOnMonthClickListener(OnMonthClickListener onMonthClickListener) {

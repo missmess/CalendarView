@@ -45,6 +45,7 @@ public class MonthViewPager extends ViewGroup {
     private OnDragListener mDragListener;
     private OnMonthChangeListener mChangeListener;
     private boolean mShowIndicator;
+    private DayDecor mDecors;
 
     public MonthViewPager(Context context) {
         this(context, null);
@@ -82,22 +83,25 @@ public class MonthViewPager extends ViewGroup {
         if(getChildCount() > 0 || !(child instanceof MonthView)) {
             throw new IllegalStateException("MonthViewPager can host only one MonthView child");
         }
-        params.width = ViewGroup.LayoutParams.MATCH_PARENT;
         childMiddle = (MonthView) child;
         childLeft = childMiddle.staticCopy();
         childLeft.setYearAndMonth(childMiddle.getCurrentMonth().previous());
         childRight = childMiddle.staticCopy();
         childRight.setYearAndMonth(childMiddle.getCurrentMonth().next());
+
         // correct attrs
         correctAttrs(childLeft);
         correctAttrs(childMiddle);
         correctAttrs(childRight);
+
         // add three child
+        params.width = ViewGroup.LayoutParams.MATCH_PARENT;
         super.addView(childLeft, params);
         super.addView(childMiddle, params);
         super.addView(childRight, params);
+
+        // add indicators
         if(mShowIndicator) {
-            // add indicators
             indicator_left = createIndicator(ic_previous);
             super.addView(indicator_left);
             indicator_right = createIndicator(ic_next);
@@ -211,6 +215,19 @@ public class MonthViewPager extends ViewGroup {
                 indicator_right.setVisibility(View.VISIBLE);
             rightAble = true;
         }
+    }
+
+    public void setDecors(DayDecor decors) {
+        this.mDecors = decors;
+        if(childMiddle != null) {
+            childLeft.setDecors(decors);
+            childMiddle.setDecors(decors);
+            childRight.setDecors(decors);
+        }
+    }
+
+    public DayDecor getDecors() {
+        return mDecors;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.missmess.calendardemo;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -7,11 +8,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.missmess.calendardemo.adapter.EventAdapter;
+import com.missmess.calendardemo.control.GetDecorsTask;
 import com.missmess.calendardemo.model.DayEvent;
 import com.missmess.calendardemo.model.EventType;
 import com.missmess.calendarview.AnimTransiter;
 import com.missmess.calendarview.CalendarDay;
 import com.missmess.calendarview.CalendarMonth;
+import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.TransitRootView;
 import com.missmess.calendarview.YearMonthTransformer;
@@ -34,6 +37,7 @@ public class TransitDemoActivity extends AppCompatActivity {
     private TextView tv_year;
     private TextView textView1;
     private TextView textView2;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,42 +54,45 @@ public class TransitDemoActivity extends AppCompatActivity {
         rl_title = findViewById(R.id.rl_title);
         monthView = (MonthView) findViewById(R.id.mv);
         transformer = new YearMonthTransformer(rootView, yearView, monthView);
+        progressDialog = new ProgressDialog(this);
 
-        // obtain events and decors
-        createEvents();
-        // init YearView
-        initYearView();
-        // init other view data
-        initDatas();
         // init listener
         initListener();
+        // obtain events and decors
+        getEvents();
     }
 
-    private void createEvents() {
-        DayEvent dayEvent1 = new DayEvent(YEAR, 3, 14, EventType.EAT, new String[]{"a big turkey", "picnic"});
-        DayEvent dayEvent2 = new DayEvent(YEAR, 3, 15, EventType.ENTERTAINMENT, new String[]{"play VR game", "watch movie"});
-        DayEvent dayEvent3 = new DayEvent(YEAR, 6, 25, EventType.BEAUTY, new String[]{"Yoga lesson"});
-        DayEvent dayEvent4 = new DayEvent(YEAR, 8, 13, EventType.SPORT, new String[]{"swimming match"});
-        DayEvent dayEvent5 = new DayEvent(YEAR, 11, 30, EventType.SPORT, new String[]{"play basketball", "i don't like football", "ping pang!"});
+    private void getEvents() {
+        new GetDecorsTask(new GetDecorsTask.DecorResult() {
+            @Override
+            public void onStart() {
+                progressDialog.show();
+            }
 
-        if(yearEvents == null) {
-            yearEvents = new ArrayList<>();
-        }
-        yearEvents.add(dayEvent1);
-        yearEvents.add(dayEvent2);
-        yearEvents.add(dayEvent3);
-        yearEvents.add(dayEvent4);
-        yearEvents.add(dayEvent5);
+            @Override
+            public void onResult(List<DayEvent> events) {
+                yearEvents = events;
+
+                // init YearView
+                initYearView();
+                // init other view data
+                initDatas();
+
+                progressDialog.dismiss();
+            }
+        }).execute(YEAR);
     }
 
     private void initYearView() {
         yearView.setYear(YEAR);
         yearView.setToday(new CalendarDay(YEAR, 5, 17));
 
+        DayDecor dayDecor = new DayDecor();
         for(DayEvent event : yearEvents) {
             CalendarDay calendarDay = new CalendarDay(event.getYear(), event.getMonth(), event.getDay());
-            yearView.decorateDay(calendarDay, event.getType().getColor());
+            dayDecor.putOne(calendarDay, event.getType().getColor());
         }
+        yearView.setDecors(dayDecor);
     }
 
     private void initDatas() {

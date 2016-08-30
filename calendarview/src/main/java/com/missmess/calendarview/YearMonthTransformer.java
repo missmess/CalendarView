@@ -14,8 +14,6 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
-import java.util.Map;
-
 /**
  * YearView and MonthView transition animator helper.
  * use this to implement transition.
@@ -284,7 +282,8 @@ public final class YearMonthTransformer {
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                mTransiter.setDuration(LABEL_SHOWOUT_DURATION);
+                // increase 50 to ensure animation finish
+                mTransiter.setDuration(LABEL_SHOWOUT_DURATION + 50);
                 if(transitListener != null) {
                     transitListener.onM2YTransitStart(mTransiter, mYearView, mMonthView);
                 }
@@ -431,11 +430,7 @@ public final class YearMonthTransformer {
     private void passPropertyY2M(YearView yearView, MonthView monthView, int month) {
         monthView.setToday(yearView.today);
         monthView.setYearAndMonth(yearView.getYear(), month);
-        Map<Integer, Integer> map = yearView.getMonthDecors(month);
-        if (map != null) {
-            monthView.decorColors.clear();
-            monthView.decorColors.putAll(map);
-        }
+        monthView.setDecors(yearView.getDecors());
     }
 
     // pass property of YearView to MonthView
@@ -443,8 +438,7 @@ public final class YearMonthTransformer {
         end.setToday(start.today);
         CalendarMonth calendarMonth = start.getCurrentMonth();
         end.setYearAndMonth(calendarMonth.getYear(), calendarMonth.getMonth());
-        end.decorColors.clear();
-        end.decorColors.putAll(start.decorColors);
+        end.setDecors(start.getDecors());
     }
 
     // pass property of MonthView to YearView
