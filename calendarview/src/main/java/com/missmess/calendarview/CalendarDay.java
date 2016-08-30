@@ -81,6 +81,11 @@ public class CalendarDay implements Comparable<CalendarDay> {
     }
 
     @Override
+    public int hashCode() {
+        return year * 10000 + month * 100 + day;
+    }
+
+    @Override
     public String toString() {
         return "CalendarDay: { " + year + "-" + month + "-" + day + " }";
     }
