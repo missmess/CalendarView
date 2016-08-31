@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
@@ -105,6 +106,10 @@ public class YearView extends ViewGroup {
             lineSpacingBetweenYearAndMonth = 0;
         }
 
+        // no background will cause a performance problem in TransitRootView
+        if(getBackground() == null) {
+            setBackgroundColor(Color.WHITE);
+        }
         initPaint();
         addMonth();
     }
