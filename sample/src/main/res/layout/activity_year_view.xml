@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.missmess.calendarview.YearView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:calendar="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:id="@+id/yv"
     android:layout_height="match_parent"
-    xmlns:calendar="http://schemas.android.com/apk/res-auto"
     calendar:showYearLabel="true"
     calendar:showYearLunarLabel="true"
+    calendar:dividerColor="#0000FF"
+    calendar:yearHeaderDashColor="@color/colorPrimary"
+    calendar:yearHeaderLunarTextColor="#666666"
+    calendar:yearHeaderLunarTextSize="14sp"
+    calendar:yearHeaderTextColor="#CCBB00"
+    calendar:yearHeaderTextHeight="50dp"
+    calendar:yearHeaderTextSize="40sp"
+    calendar:monthLabelTextColor="#00CCBB"
+    calendar:monthLabelTextHeight="30dp"
+    calendar:monthLabelTextSize="15sp"
+    calendar:dayLabelTextColor="#666666"
+    calendar:dayLabelRowHeight="19dp"
+    calendar:dayLabelTextSize="9sp"
+    calendar:dayLabelCircleRadius="8dp"
+    calendar:dayLabelCircleTextColor="#FFFFFF"
+    calendar:todayLabelCircleBgColor="#AAAAAA"
+    calendar:todayLabelTextColor="#FF6600"
     tools:context="com.missmess.calendardemo.YearViewActivity">
 
 </com.missmess.calendarview.YearView>

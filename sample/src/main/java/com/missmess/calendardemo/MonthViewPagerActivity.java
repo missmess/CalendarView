@@ -16,7 +16,7 @@ import com.missmess.calendarview.MonthViewPager;
 
 import java.util.List;
 
-public class MonthViewActivity extends AppCompatActivity {
+public class MonthViewPagerActivity extends AppCompatActivity {
 
     private MonthViewPager monthViewPager;
     private TextView textView;
@@ -33,13 +33,14 @@ public class MonthViewActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
 
         init();
+        // request all events(daemon)
         getEvents();
     }
 
     private void init() {
-        monthViewPager.setMonthRange(new CalendarMonth(2015, 12), new CalendarMonth(2017, 2));
         monthViewPager.setCurrentMonth(new CalendarMonth(2016, 3));
         monthViewPager.setToday(new CalendarDay(2016, 3, 12));
+        monthViewPager.setMonthRange(new CalendarMonth(2015, 12), new CalendarMonth(2017, 2));
         monthViewPager.setOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {

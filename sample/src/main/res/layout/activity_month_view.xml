@@ -6,11 +6,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.missmess.calendardemo.MonthViewActivity">
+    tools:context=".MonthViewPagerActivity">
 
     <com.missmess.calendarview.MonthViewPager
         android:id="@+id/mvp"
         android:layout_width="match_parent"
+        calendar:show_indicator="true"
+        calendar:ic_next_month="@mipmap/right_icon"
+        calendar:ic_previous_month="@mipmap/left_icon"
         android:layout_height="match_parent">
 
         <com.missmess.calendarview.MonthView

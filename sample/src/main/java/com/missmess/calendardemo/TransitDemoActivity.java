@@ -113,7 +113,7 @@ public class TransitDemoActivity extends AppCompatActivity {
     private void initListener() {
         yearView.setOnMonthClickListener(new YearView.OnMonthClickListener() {
             @Override
-            public void onMonthClick(YearView simpleMonthView, CalendarMonth calendarMonth) {
+            public void onMonthClick(YearView yearView, CalendarMonth calendarMonth) {
                 transformer.applyShow(calendarMonth.getMonth());
             }
         });

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * daemon request to get events
+ *
  * @author wl
  * @since 2016/08/30 16:11
  */

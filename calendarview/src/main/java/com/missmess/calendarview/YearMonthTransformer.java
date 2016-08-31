@@ -28,7 +28,7 @@ import android.widget.FrameLayout;
  */
 public final class YearMonthTransformer {
     // delay time leave views to anim pass in or out.
-    private final int STAY_DELAY_TIME = 200;
+    private final int STAY_DELAY_TIME = 300;
     private final int BASE_TRANSITION_ANIM_DURATION = 300;
     private final int LABEL_SHOWIN_DURATION = 300;
     private final int LABEL_SHOWOUT_DURATION = 300;
@@ -348,7 +348,7 @@ public final class YearMonthTransformer {
         animSet.playTogether(animators, positionAnim);
         int transitDuration = obtainTransitAnimDuration(Math.abs(finT - oriT), child.getHeight());
         animSet.setDuration(transitDuration);
-        animSet.setInterpolator(new DecelerateInterpolator());
+        animSet.setInterpolator(new AccelerateInterpolator());
         animSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {

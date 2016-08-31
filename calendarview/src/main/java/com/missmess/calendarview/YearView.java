@@ -80,7 +80,7 @@ public class YearView extends ViewGroup {
         yearHeaderTextColor = typedArray.getColor(R.styleable.YearView_yearHeaderTextColor, resources.getColor(R.color.year_header_text_color));
         yearHeaderLunarTextColor = typedArray.getColor(R.styleable.YearView_yearHeaderLunarTextColor, resources.getColor(R.color.year_header_lunar_text_color));
         yearHeaderDashColor = typedArray.getColor(R.styleable.YearView_yearHeaderDashColor, resources.getColor(R.color.year_header_dash_color));
-        monthTextColor = typedArray.getColor(R.styleable.YearView_monthLabelTextColor, resources.getColor(R.color.month_labe_text_color));
+        monthTextColor = typedArray.getColor(R.styleable.YearView_monthLabelTextColor, resources.getColor(R.color.month_label_text_color));
         dayLabelTextColor = typedArray.getColor(R.styleable.YearView_dayLabelTextColor, resources.getColor(R.color.day_label_text_color));
         dayLabelTextTodayColor = typedArray.getColor(R.styleable.YearView_dayLabelCircleTextColor, resources.getColor(R.color.day_label_text_today_color));
         todayCircleBgColor = typedArray.getColor(R.styleable.YearView_todayLabelCircleBgColor, resources.getColor(R.color.day_label_circle_bg_color));
@@ -408,6 +408,11 @@ public class YearView extends ViewGroup {
         return rect;
     }
 
+    /**
+     * set decorators associate with a day, decorators will display a specified color circle
+     * in the day.
+     * @param decors DayDecor
+     */
     public void setDecors(DayDecor decors) {
         this.mDecors = decors;
         for(int i = 0; i < getChildCount(); i++) {
@@ -434,6 +439,10 @@ public class YearView extends ViewGroup {
         return year;
     }
 
+    /**
+     * get year localized string
+     * @return year string
+     */
     public String getYearString() {
         boolean chinaArea = Locale.getDefault().equals(Locale.CHINA);
         return chinaArea ? year + "年" : year + "";
@@ -444,7 +453,7 @@ public class YearView extends ViewGroup {
     }
 
     public interface OnMonthClickListener {
-        void onMonthClick(YearView simpleMonthView, CalendarMonth calendarDay);
+        void onMonthClick(YearView yearView, CalendarMonth calendarMonth);
     }
 
 }

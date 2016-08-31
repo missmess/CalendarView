@@ -19,9 +19,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, YearViewActivity.class));
                 break;
             case R.id.button1:
-                startActivity(new Intent(this, MonthViewActivity.class));
+                startActivity(new Intent(this, MonthViewDemoActivity.class));
                 break;
             case R.id.button2:
+                startActivity(new Intent(this, MonthViewPagerActivity.class));
+                break;
+            case R.id.button3:
                 startActivity(new Intent(this, TransitDemoActivity.class));
                 break;
         }

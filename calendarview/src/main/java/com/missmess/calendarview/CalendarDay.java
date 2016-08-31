@@ -18,6 +18,10 @@ public class CalendarDay implements Comparable<CalendarDay> {
         this(Calendar.getInstance());
     }
 
+    public CalendarDay(CalendarMonth calendarMonth, int day) {
+        setDay(calendarMonth.getYear(), calendarMonth.getMonth(), day);
+    }
+
     public CalendarDay(int year, int month, int day) {
         setDay(year, month, day);
     }

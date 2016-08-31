@@ -75,6 +75,8 @@ public class MonthViewPager extends ViewGroup {
     private void init() {
         dragger = ViewDragHelper.create(this, 1f, new DragCallBack());
         clicker = new BtnClicker();
+        leftEdge = new CalendarMonth(1900, 2);
+        rightEdge = new CalendarMonth(2049, 12);
     }
 
     @Override

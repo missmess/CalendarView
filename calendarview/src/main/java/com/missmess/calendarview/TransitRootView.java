@@ -37,7 +37,6 @@ public class TransitRootView extends ScrollView {
         transitView.showMonthTitle(false);
         transitView.showWeekLabel(false);
         transitView.setVisibility(View.GONE);
-        transitView.setEnabled(false);
         frameLayout.addView(transitView);
     }
 
@@ -97,7 +96,6 @@ public class TransitRootView extends ScrollView {
      */
     public MonthView useTransitView() {
         transitView.setVisibility(View.VISIBLE);
-        transitView.setEnabled(true);
         return transitView;
     }
 
@@ -106,6 +104,5 @@ public class TransitRootView extends ScrollView {
      */
     public void recycleTransitView() {
         transitView.setVisibility(View.GONE);
-        transitView.setEnabled(false);
     }
 }

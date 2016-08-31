@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:calendar="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    tools:context="com.missmess.calendardemo.MonthViewDemoActivity">
+
+    <com.missmess.calendarview.MonthView
+        android:id="@+id/mv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        calendar:showMonthTitle="true"
+        calendar:showWeekLabel="true"
+        calendar:showWeekDivider="true"
+        calendar:monthHeaderHeight="60dp"
+        calendar:monthTextSize="21sp"
+        calendar:monthTitleColor="#CCBB22"
+        calendar:weekLabelTextColor="#559955"
+        calendar:weekLabelTextSize="12sp"
+        calendar:dayTextColor="#22BBCC"
+        calendar:dayTextSize="14sp"
+        calendar:dayRowHeight="44dp"
+        calendar:dayCircleTextColor="@android:color/white"
+        calendar:dayCircleRadius="17dp"
+        calendar:selectDayCircleBgColor="@color/colorPrimary"
+        calendar:todayCircleBgColor="#798798"
+        calendar:todayTextColor="#FF6600"/>
+
+</RelativeLayout>

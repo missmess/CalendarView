@@ -3,6 +3,8 @@ package com.missmess.calendardemo.model;
 import com.missmess.calendarview.CalendarDay;
 
 /**
+ * day event bean
+ *
  * @author wl
  * @since 2016/08/26 12:06
  */

@@ -3,6 +3,8 @@ package com.missmess.calendardemo.model;
 import android.support.annotation.ColorInt;
 
 /**
+ * event type enum
+ *
  * @author wl
  * @since 2016/08/26 12:09
  */
