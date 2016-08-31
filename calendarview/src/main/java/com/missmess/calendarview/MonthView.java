@@ -188,7 +188,7 @@ public class MonthView extends View {
         int[] pos = getMonthDrawPoint();
 //        StringBuilder stringBuilder = new StringBuilder(getMonthAndYearString().toLowerCase());
 //        stringBuilder.setCharAt(0, Character.toUpperCase(stringBuilder.charAt(0)));
-        canvas.drawText(getMonthAndYearString(), pos[0], pos[1], mMonthTitlePaint);
+        canvas.drawText(getMonthTitleString(), pos[0], pos[1], mMonthTitlePaint);
     }
 
     /**
@@ -244,7 +244,7 @@ public class MonthView extends View {
         return (mDayOfWeekStart < mWeekStart ? (mDayOfWeekStart + mNumDays) : mDayOfWeekStart) - mWeekStart;
     }
 
-    private String getMonthAndYearString() {
+    public String getMonthTitleString() {
         int flags = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NO_MONTH_DAY;
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, mYear);
@@ -252,6 +252,10 @@ public class MonthView extends View {
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         long millis = calendar.getTimeInMillis();
         return DateUtils.formatDateRange(getContext(), millis, millis, flags);
+    }
+
+    public int getMonthTitleWidth() {
+        return (int) mMonthTitlePaint.measureText(getMonthTitleString());
     }
 
     private void onDayClick(CalendarDay calendarDay) {
@@ -290,7 +294,7 @@ public class MonthView extends View {
         int centerX = pos[0];
         int bottom = pos[1];
         int extra = 10;
-        int width = (int) mMonthTitlePaint.measureText(getMonthAndYearString());
+        int width = getMonthTitleWidth();
         Rect monthTitleRect = new Rect(centerX - width / 2 - extra, bottom - MONTH_LABEL_TEXT_SIZE - extra,
                 centerX + width / 2 + extra, bottom + extra);
 

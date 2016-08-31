@@ -146,6 +146,10 @@ public class MonthViewPager extends ViewGroup {
         }
     }
 
+    /**
+     * set MonthViewPager to show this month
+     * @param calendarMonth month
+     */
     public void setCurrentMonth(CalendarMonth calendarMonth) {
         childMiddle.setYearAndMonth(calendarMonth);
         if(!childMiddle.getCurrentMonth().equals(currentMonth))
@@ -162,6 +166,11 @@ public class MonthViewPager extends ViewGroup {
         return childMiddle;
     }
 
+    /**
+     * set range of month showing in MonthViewPager.
+     * @param start start month
+     * @param end end month
+     */
     public void setMonthRange(CalendarMonth start, CalendarMonth end) {
         leftEdge = start;
         rightEdge = end;
@@ -197,6 +206,14 @@ public class MonthViewPager extends ViewGroup {
 
     private void checkEdge() {
         CalendarMonth cm = childMiddle.getCurrentMonth();
+        // when edge is not containing current, correct current month.
+        if(cm.compareTo(leftEdge) < 0) {
+            setCurrentMonth(leftEdge);
+        }
+        if(cm.compareTo(rightEdge) > 0) {
+            setCurrentMonth(rightEdge);
+        }
+
         if(cm.equals(leftEdge)) {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.GONE);
@@ -297,6 +314,21 @@ public class MonthViewPager extends ViewGroup {
         return true;
     }
 
+    private float calcuIndicatorAlphaAtDistance(float d, float w, float i, float m) {
+        float min = 0.2f;
+        float a;
+        float point1 = w / 2f - m / 2f - i;
+        float point2 = w / 2f + m / 2f + i;
+        if (d < point1) {
+            a = 1f - d * (1f - min) / point1;
+        } else if (d <= point2) {
+            a = min;
+        } else {
+            a = min + (d - point2) * (1f - min) / point1;
+        }
+        return a;
+    }
+
     private class DragCallBack extends ViewDragHelper.Callback {
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
@@ -310,11 +342,11 @@ public class MonthViewPager extends ViewGroup {
 
         @Override
         public int clampViewPositionHorizontal(View child, int left, int dx) {
-            if(dx > 0 && !leftAble) {
+            if(left > 0 && !leftAble) {
                 // can't move left
                 return 0;
             }
-            if(dx < 0 && !rightAble) {
+            if(left < 0 && !rightAble) {
                 // can't move right
                 return 0;
             }
@@ -340,10 +372,20 @@ public class MonthViewPager extends ViewGroup {
 
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
-//            Log.d("dragHelper", String.format("dx=%d", dx));
-            if(changedView == childMiddle) {
+            if(changedView == childMiddle) { // childMiddle is scrolling
+                // offset left and right children
                 childLeft.offsetLeftAndRight(dx);
                 childRight.offsetLeftAndRight(dx);
+                // if close to edge, alpha to 0;
+                // alpha indicators
+                if(mShowIndicator) {
+                    int monthTitleWidth = childMiddle.getMonthTitleWidth();
+                    int ind_width = indicator_left.getRight();
+                    int distance = Math.abs(left);
+                    float alpha = calcuIndicatorAlphaAtDistance(distance, mWidth, ind_width, monthTitleWidth);
+                    indicator_left.setAlpha(alpha);
+                    indicator_right.setAlpha(alpha);
+                }
                 ViewCompat.postInvalidateOnAnimation(MonthViewPager.this);
                 if(mDragListener != null) {
                     mDragListener.onDrag(childMiddle, left, dx);
@@ -396,27 +438,58 @@ public class MonthViewPager extends ViewGroup {
         }
     }
 
+    /**
+     * set day click listener
+     * @param onDayClickListener listener
+     */
     public void setOnDayClickListener(MonthView.OnDayClickListener onDayClickListener) {
         childMiddle.setOnDayClickListener(onDayClickListener);
     }
 
+    /**
+     * set month label click listener
+     * @param onMonthTitleClickListener listener
+     */
     public void setOnMonthTitleClickListener(MonthView.OnMonthTitleClickListener onMonthTitleClickListener) {
         childMiddle.setOnMonthTitleClickListener(onMonthTitleClickListener);
     }
 
+    /**
+     * set a listener to listen current showing month changed event in MonthViewPager
+     * @param listener listener
+     */
     public void setOnMonthChangeListener(OnMonthChangeListener listener) {
         this.mChangeListener = listener;
     }
 
+    /**
+     * set a listener to listen MonthViewPager drag event;
+     * @param onDragListener listener
+     */
     public void setOnDragListener(OnDragListener onDragListener) {
         this.mDragListener = onDragListener;
     }
 
     public interface OnMonthChangeListener {
+        /**
+         * current month has changed
+         * @param monthViewPager MonthViewPager
+         * @param previous left MonthView
+         * @param current current MonthView
+         * @param next right MonthView
+         * @param currentMonth new month
+         * @param old old month
+         */
         void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old);
     }
 
     public interface OnDragListener {
+        /**
+         * drag callback
+         * @param middle current middle
+         * @param left left
+         * @param dx x offset
+         */
         void onDrag(MonthView middle, int left, int dx);
     }
 }
