@@ -169,8 +169,6 @@ public class YearView extends ViewGroup {
 
         for (int i = 1; i <= 12; i++) {
             MonthView monthView = (MonthView) getChildAt(i - 1);
-            // update today
-            monthView.setToday(today);
             //layout month
             int measuredHeight = monthView.getMeasuredHeight();
             int measuredWidth = monthView.getMeasuredWidth();
@@ -202,6 +200,11 @@ public class YearView extends ViewGroup {
      */
     public void setToday(CalendarDay today) {
         this.today = today;
+        for(int i = 0; i < getChildCount(); i++) {
+            MonthView monthView = (MonthView) getChildAt(i);
+            // add decorates
+            monthView.setToday(today);
+        }
     }
 
     private void drawYearHeaderLabels(Canvas canvas) {

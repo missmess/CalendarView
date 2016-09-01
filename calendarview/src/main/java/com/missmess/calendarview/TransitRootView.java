@@ -32,11 +32,21 @@ public class TransitRootView extends FrameLayout {
         transitView.showMonthTitle(false);
         transitView.showWeekLabel(false);
         transitView.setVisibility(View.GONE);
-        addView(transitView);
+        super.addView(transitView);
+    }
+
+    @Override
+    public void addView(View child) {
+        addView(child, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     @Override
     public void addView(View child, ViewGroup.LayoutParams params) {
+        cookChild(child);
+        super.addView(child, params);
+    }
+
+    private void cookChild(View child) {
         if(getChildCount() > 3) {
             throw new IllegalStateException("TransitRootView can host only two direct children in xml");
         }
@@ -46,8 +56,6 @@ public class TransitRootView extends FrameLayout {
             child2 = child;
             changeChildrenVisibility();
         }
-
-        super.addView(child, params);
     }
 
     // just one child visible at once, another set to gone.

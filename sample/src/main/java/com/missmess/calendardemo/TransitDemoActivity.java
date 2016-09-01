@@ -54,9 +54,15 @@ public class TransitDemoActivity extends AppCompatActivity {
         rl_title = findViewById(R.id.rl_title);
         monthView = (MonthView) findViewById(R.id.mv);
         transformer = new YearMonthTransformer(rootView, yearView, monthView);
-        progressDialog = new ProgressDialog(this);
 
-        // init listener
+        //init
+        yearView.setYear(YEAR);
+        yearView.setToday(new CalendarDay(YEAR, 5, 17));
+        tv_year.setText(yearView.getYearString());
+        adapter = new EventAdapter();
+        listView.setAdapter(adapter);
+
+        // add listener
         initListener();
         // obtain events and decors
         getEvents();
@@ -66,15 +72,14 @@ public class TransitDemoActivity extends AppCompatActivity {
         new GetDecorsTask(new GetDecorsTask.DecorResult() {
             @Override
             public void onStart() {
-                progressDialog.show();
+                progressDialog = ProgressDialog.show(TransitDemoActivity.this, null, "loading...", true, false);
             }
 
             @Override
             public void onResult(List<DayEvent> events) {
                 yearEvents = events;
-
-                // init YearView
-                initYearView();
+                // add decorators
+                addDecors();
                 // init other view data
                 initDatas();
 
@@ -83,10 +88,7 @@ public class TransitDemoActivity extends AppCompatActivity {
         }).execute(YEAR);
     }
 
-    private void initYearView() {
-        yearView.setYear(YEAR);
-        yearView.setToday(new CalendarDay(YEAR, 5, 17));
-
+    private void addDecors() {
         DayDecor dayDecor = new DayDecor();
         for(DayEvent event : yearEvents) {
             CalendarDay calendarDay = new CalendarDay(event.getYear(), event.getMonth(), event.getDay());
@@ -96,10 +98,6 @@ public class TransitDemoActivity extends AppCompatActivity {
     }
 
     private void initDatas() {
-        adapter = new EventAdapter();
-        listView.setAdapter(adapter);
-
-        tv_year.setText(yearView.getYearString());
         textView1.setText(getString(R.string.event_str, yearEvents.size()));
         ArrayList<EventType> temp = new ArrayList<>();
         for(DayEvent event : yearEvents) {

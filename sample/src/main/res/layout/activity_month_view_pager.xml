@@ -14,12 +14,13 @@
         calendar:show_indicator="true"
         calendar:ic_next_month="@mipmap/right_icon"
         calendar:ic_previous_month="@mipmap/left_icon"
+        calendar:month_marginTop="0dp"
         android:layout_height="match_parent">
 
         <com.missmess.calendarview.MonthView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            calendar:showMonthTitle="false"
+            calendar:showMonthTitle="true"
             calendar:showWeekDivider="false"
             calendar:showWeekLabel="true"/>
 

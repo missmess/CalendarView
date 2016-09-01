@@ -26,11 +26,10 @@ public class MonthViewPagerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_month_view);
+        setContentView(R.layout.activity_month_view_pager);
         // find view
         monthViewPager = (MonthViewPager) findViewById(R.id.mvp);
         textView = (TextView) findViewById(R.id.tv);
-        progressDialog = new ProgressDialog(this);
 
         init();
         // request all events(daemon)
@@ -77,7 +76,7 @@ public class MonthViewPagerActivity extends AppCompatActivity {
         new GetDecorsTask(new GetDecorsTask.DecorResult() {
             @Override
             public void onStart() {
-                progressDialog.show();
+                progressDialog = ProgressDialog.show(MonthViewPagerActivity.this, null, "loading...", false, false);
             }
 
             @Override
