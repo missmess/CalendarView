@@ -43,7 +43,9 @@ public class MonthViewPagerActivity extends AppCompatActivity {
         monthViewPager.setOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
-                Log.d("onMonthChanged", "old=" + old.toString() + ";current=" + currentMonth.toString());
+                Log.d("onMonthChanged", "old=" + old.toString() + ";current=" + currentMonth.toString() +
+                        ";left=" + (previous == null ? "null" : previous.getCurrentMonth().toString()) +
+                        ";right=" + (next == null ? "null" : next.getCurrentMonth().toString()));
                 textView.setText(R.string.app_name);
             }
         });
@@ -61,7 +63,7 @@ public class MonthViewPagerActivity extends AppCompatActivity {
         monthViewPager.setOnMonthTitleClickListener(new MonthView.OnMonthTitleClickListener() {
             @Override
             public void onMonthClick(MonthView monthView, CalendarMonth calendarMonth) {
-                monthViewPager.setCurrentMonth(new CalendarMonth(2017, 1));
+                monthViewPager.setCurrentMonth(new CalendarMonth(2017, 2));
             }
         });
         monthViewPager.setOnDragListener(new MonthViewPager.OnDragListener() {

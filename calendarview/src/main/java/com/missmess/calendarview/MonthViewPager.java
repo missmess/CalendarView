@@ -162,11 +162,22 @@ public class MonthViewPager extends ViewGroup {
      * @param end end month
      */
     public void setMonthRange(CalendarMonth start, CalendarMonth end) {
+        if(start.compareTo(end) > 0) {
+            throw new IllegalArgumentException("start month cannot larger than end month");
+        }
         leftEdge = start;
         rightEdge = end;
         checkEdge();
     }
 
+
+    /**
+     * <p>it'll be called at these situation:</p>
+     * <li>current middle view changed to another view</li>
+     * <li>current middle view changed its showing month</li>
+     *
+     * @param oldMiddle oldMiddle
+     */
     private void monthChanged(MonthView oldMiddle) {
         CalendarMonth old = currentMonth;
         currentMonth = childMiddle.getCurrentMonth();
@@ -359,9 +370,11 @@ public class MonthViewPager extends ViewGroup {
             int finalLeft = 0;
             if (xvel < -VEL_THRESHOLD || releasedChild.getLeft() < -DISTANCE_THRESHOLD) {
                 finalLeft = -mWidth;
+                onScrollToRight();
             }
             if (xvel > VEL_THRESHOLD || releasedChild.getLeft() > DISTANCE_THRESHOLD) {
                 finalLeft = mWidth;
+                onScrollToLeft();
             }
 //            Log.e("dragHelper", String.format("xvel=%f;left=%d;finalLeft=%d", xvel, releasedChild.getLeft(), finalLeft));
 
@@ -426,15 +439,35 @@ public class MonthViewPager extends ViewGroup {
         }
     }
 
+    // when MonthViewPager start to scroll to left.
+    private void onScrollToLeft() {
+        // destination is edge, hide left indicator
+        if (childLeft.getCurrentMonth().equals(leftEdge))
+            if (mShowIndicator) {
+                indicator_left.setVisibility(View.GONE);
+            }
+    }
+
+    // when MonthViewPager start to scroll to right.
+    private void onScrollToRight() {
+        // destination is edge, hide right indicator
+        if (childRight.getCurrentMonth().equals(rightEdge))
+            if (mShowIndicator) {
+                indicator_right.setVisibility(View.GONE);
+            }
+    }
+
     private class BtnClicker implements OnClickListener {
         @Override
         public void onClick(View v) {
             if(v == indicator_left) {
+                onScrollToLeft();
                 dragger.smoothSlideViewTo(childMiddle, mWidth, month_marginTop);
             } else if(v == indicator_right) {
+                onScrollToRight();
                 dragger.smoothSlideViewTo(childMiddle, -mWidth, month_marginTop);
             }
-            invalidate();
+            ViewCompat.postInvalidateOnAnimation(MonthViewPager.this);
         }
     }
 
@@ -474,9 +507,9 @@ public class MonthViewPager extends ViewGroup {
         /**
          * current month has changed
          * @param monthViewPager MonthViewPager
-         * @param previous left MonthView
+         * @param previous left MonthView (may be null when at the left edge)
          * @param current current MonthView
-         * @param next right MonthView
+         * @param next right MonthView (may be null when at the right edge)
          * @param currentMonth new month
          * @param old old month
          */
