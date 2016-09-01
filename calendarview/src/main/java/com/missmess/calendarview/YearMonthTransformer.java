@@ -130,8 +130,6 @@ public final class YearMonthTransformer {
         mvShowWeekLabel = mMonthView.mShowWeekLabel;
         passPropertyY2M(mYearView, mMonthView, month);
 
-        // scroll to top
-        mRootView.fullScroll(View.FOCUS_UP);
         // not handler any event again
         mRootView.setReceiveEvent(false);
         // start layout but not need to be visible
@@ -412,8 +410,6 @@ public final class YearMonthTransformer {
         mvShowWeekLabel = mMonthView.mShowWeekLabel;
         passPropertyM2Y(mMonthView, mYearView);
 
-        // scroll to top
-        mRootView.fullScroll(View.FOCUS_UP);
         // not handler click event again
         mRootView.setReceiveEvent(false);
         // necessary to be visible

@@ -374,6 +374,7 @@ public class MonthView extends View {
 //                break;
 //        }
 
+//        Log.d("MonthView", "onMeasure->" + this.getId());
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), getShouldHeight());
     }
 
@@ -443,6 +444,9 @@ public class MonthView extends View {
         mNumCells = CalendarUtils.getDaysInMonth(mMonth, mYear);
 
         mNumRows = calculateNumRows();
+
+        // we are not sure height will remain unchanged.
+        requestLayout();
         invalidate();
     }
 

@@ -6,7 +6,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
 
 /**
  * A TransitRootView should contains two direct children, the first child contains an YearView, and
@@ -16,8 +15,7 @@ import android.widget.ScrollView;
  * @author wl
  * @since 2016/08/25 11:33
  */
-public class TransitRootView extends ScrollView {
-    private FrameLayout frameLayout;
+public class TransitRootView extends FrameLayout {
     View child1;
     View child2;
     boolean mReceiveEvent = true;
@@ -30,27 +28,17 @@ public class TransitRootView extends ScrollView {
     }
 
     private void init() {
-        setFillViewport(true);
-
-        frameLayout = new FrameLayout(getContext());
         transitView = new MonthView(getContext());
         transitView.showMonthTitle(false);
         transitView.showWeekLabel(false);
         transitView.setVisibility(View.GONE);
-        frameLayout.addView(transitView);
+        addView(transitView);
     }
 
     @Override
     public void addView(View child, ViewGroup.LayoutParams params) {
-        if(getChildCount() == 0) {
-            super.addView(frameLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        }
-        addChild(child);
-    }
-
-    private void addChild(View child) {
-        if(getChildCount() > 2) {
-            throw new IllegalStateException("TransitRootView can host only two direct children");
+        if(getChildCount() > 3) {
+            throw new IllegalStateException("TransitRootView can host only two direct children in xml");
         }
         if(child1 == null) {
             child1 = child;
@@ -59,7 +47,7 @@ public class TransitRootView extends ScrollView {
             changeChildrenVisibility();
         }
 
-        frameLayout.addView(child, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        super.addView(child, params);
     }
 
     // just one child visible at once, another set to gone.
