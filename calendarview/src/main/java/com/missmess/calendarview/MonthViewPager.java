@@ -13,6 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * MonthViewPager should contains one MonthView child to config their styles, the MonthView child will only
  * obtain attributes, so do not find this child by findViewById, use MonthViewPager
@@ -33,8 +36,8 @@ public class MonthViewPager extends ViewGroup {
     private int mWidth;
     private Drawable ic_previous;
     private Drawable ic_next;
-    private ImageView indicator_left;
-    private ImageView indicator_right;
+    protected ImageView indicator_left;
+    protected ImageView indicator_right;
     private int indicate_margin;
     private BtnClicker clicker;
     private CalendarMonth leftEdge;
@@ -43,7 +46,7 @@ public class MonthViewPager extends ViewGroup {
     private boolean leftAble = true;
     private boolean rightAble = true;
     private OnDragListener mDragListener;
-    private OnMonthChangeListener mChangeListener;
+    private List<OnMonthChangeListener> mChangeListeners;
     private boolean mShowIndicator;
     private DayDecor mDecors;
     private int month_marginTop;
@@ -198,9 +201,12 @@ public class MonthViewPager extends ViewGroup {
             childRight.setYearAndMonth(currentMonth.next());
             right = childRight;
         }
-        // call listener
-        if(mChangeListener != null) {
-            mChangeListener.onMonthChanged(this, left, childMiddle, right, currentMonth, old);
+        // call listeners
+        if(mChangeListeners != null) {
+            for(OnMonthChangeListener listener : mChangeListeners) {
+                if(listener != null)
+                    listener.onMonthChanged(this, left, childMiddle, right, currentMonth, old);
+            }
         }
         requestLayout();
     }
@@ -246,6 +252,10 @@ public class MonthViewPager extends ViewGroup {
 
     public DayDecor getDecors() {
         return mDecors;
+    }
+
+    public boolean isShowingIndicator() {
+        return mShowIndicator;
     }
 
     @Override
@@ -488,11 +498,24 @@ public class MonthViewPager extends ViewGroup {
     }
 
     /**
-     * set a listener to listen current showing month changed event in MonthViewPager
+     * add a listener to listen current showing month changed event in MonthViewPager
      * @param listener listener
      */
-    public void setOnMonthChangeListener(OnMonthChangeListener listener) {
-        this.mChangeListener = listener;
+    public void addOnMonthChangeListener(OnMonthChangeListener listener) {
+        if (mChangeListeners == null) {
+            mChangeListeners = new ArrayList<>();
+        }
+        mChangeListeners.add(listener);
+    }
+
+    /**
+     * add a listener to listen current showing month changed event in MonthViewPager
+     * @param listener listener
+     */
+    public void removeOnMonthChangeListener(OnMonthChangeListener listener) {
+        if (mChangeListeners != null) {
+            mChangeListeners.remove(listener);
+        }
     }
 
     /**

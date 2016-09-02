@@ -441,6 +441,7 @@ public class YearView extends ViewGroup {
      */
     public void setYear(int year) {
         this.year = year;
+        requestLayout();
     }
 
     public int getYear() {

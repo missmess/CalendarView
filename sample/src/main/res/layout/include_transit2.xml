@@ -2,18 +2,24 @@
 <LinearLayout
     android:id="@+id/ll2"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:visibility="visible"
-    tools:showIn="@layout/activity_transit_demo">
+    xmlns:calendar="http://schemas.android.com/apk/res-auto">
 
-    <com.missmess.calendarview.MonthView
-        android:id="@+id/mv"
+    <com.missmess.calendarview.MonthViewPager
+        android:id="@+id/mvp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="20dp"/>
+        android:layout_height="wrap_content">
+
+        <com.missmess.calendarview.MonthView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            calendar:showMonthTitle="true"
+            calendar:showWeekLabel="true"
+            android:padding="20dp"/>
+    </com.missmess.calendarview.MonthViewPager>
 
     <LinearLayout
         android:id="@+id/ll_data"

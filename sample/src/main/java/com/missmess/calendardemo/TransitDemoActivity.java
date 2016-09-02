@@ -16,6 +16,7 @@ import com.missmess.calendarview.CalendarDay;
 import com.missmess.calendarview.CalendarMonth;
 import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
+import com.missmess.calendarview.MonthViewPager;
 import com.missmess.calendarview.TransitRootView;
 import com.missmess.calendarview.YearMonthTransformer;
 import com.missmess.calendarview.YearView;
@@ -29,7 +30,6 @@ public class TransitDemoActivity extends AppCompatActivity {
     private YearMonthTransformer transformer;
     private TransitRootView rootView;
     private YearView yearView;
-    private MonthView monthView;
     private View rl_title;
     private View ll_data;
     private ListView listView;
@@ -38,6 +38,7 @@ public class TransitDemoActivity extends AppCompatActivity {
     private TextView textView1;
     private TextView textView2;
     private ProgressDialog progressDialog;
+    private MonthViewPager monthViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +53,7 @@ public class TransitDemoActivity extends AppCompatActivity {
         yearView = (YearView) findViewById(R.id.yv);
         listView = (ListView) findViewById(R.id.lv);
         rl_title = findViewById(R.id.rl_title);
-        monthView = (MonthView) findViewById(R.id.mv);
-        transformer = new YearMonthTransformer(rootView, yearView, monthView);
+        monthViewPager = (MonthViewPager) findViewById(R.id.mvp);
 
         //init
         yearView.setYear(YEAR);
@@ -61,14 +61,16 @@ public class TransitDemoActivity extends AppCompatActivity {
         tv_year.setText(yearView.getYearString());
         adapter = new EventAdapter();
         listView.setAdapter(adapter);
+        monthViewPager.setMonthRange(new CalendarMonth(YEAR, 1), new CalendarMonth(YEAR, 12));
+        transformer = new YearMonthTransformer(rootView, yearView, monthViewPager);
 
         // add listener
         initListener();
         // obtain events and decors
-        getEvents();
+        getEvents(YEAR);
     }
 
-    private void getEvents() {
+    private void getEvents(int year) {
         new GetDecorsTask(new GetDecorsTask.DecorResult() {
             @Override
             public void onStart() {
@@ -85,7 +87,7 @@ public class TransitDemoActivity extends AppCompatActivity {
 
                 progressDialog.dismiss();
             }
-        }).execute(YEAR);
+        }).execute(year);
     }
 
     private void addDecors() {
@@ -115,7 +117,7 @@ public class TransitDemoActivity extends AppCompatActivity {
                 transformer.applyShow(calendarMonth.getMonth());
             }
         });
-        monthView.setOnDayClickListener(new MonthView.OnDayClickListener() {
+        monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
             @Override
             public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
                 for(DayEvent event : yearEvents) {
@@ -129,21 +131,28 @@ public class TransitDemoActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+        monthViewPager.addOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
+            @Override
+            public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
+                adapter.clear();
+                adapter.notifyDataSetChanged();
+            }
+        });
         transformer.setOnTransitListener(new YearMonthTransformer.OnTransitListener() {
             @Override
             public void onY2MTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView) {
-                transiter.slideOutView(tv_year, false);
+                transiter.slideOutViewVertical(tv_year, false);
                 transiter.alphaView(rl_title, false);
             }
 
             @Override
             public void onY2MTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView) {
-                transiter.slideInView(ll_data, false);
+                transiter.slideInViewVertical(ll_data, false);
             }
 
             @Override
             public void onM2YTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView) {
-                transiter.slideOutView(ll_data, true);
+                transiter.slideOutViewVertical(ll_data, true);
             }
 
             @Override
@@ -151,7 +160,7 @@ public class TransitDemoActivity extends AppCompatActivity {
                 // clear event info
                 adapter.clear();
                 adapter.notifyDataSetChanged();
-                transiter.slideInView(tv_year, true);
+                transiter.slideInViewVertical(tv_year, true);
                 transiter.alphaView(rl_title, true);
             }
         });

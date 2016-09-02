@@ -31,20 +31,22 @@ public class GetDecorsTask extends AsyncTask<Integer, Void, List<DayEvent>> {
     @Override
     protected List<DayEvent> doInBackground(Integer... params) {
         int year = params[0];
-        DayEvent dayEvent1 = new DayEvent(year, 3, 14, EventType.EAT, new String[]{"a big turkey", "picnic"});
-        DayEvent dayEvent2 = new DayEvent(year, 3, 15, EventType.ENTERTAINMENT, new String[]{"play VR game", "watch movie"});
-        DayEvent dayEvent3 = new DayEvent(year, 6, 25, EventType.BEAUTY, new String[]{"Yoga lesson"});
-        DayEvent dayEvent4 = new DayEvent(year, 8, 13, EventType.SPORT, new String[]{"swimming match"});
-        DayEvent dayEvent5 = new DayEvent(year, 11, 30, EventType.SPORT, new String[]{"play basketball", "i don't like football", "ping pang!"});
-
         ArrayList<DayEvent> yearEvents = new ArrayList<>();
-        yearEvents.add(dayEvent1);
-        yearEvents.add(dayEvent2);
-        yearEvents.add(dayEvent3);
-        yearEvents.add(dayEvent4);
-        yearEvents.add(dayEvent5);
+        if(year == 2016) {
+            DayEvent dayEvent1 = new DayEvent(year, 3, 14, EventType.EAT, new String[]{"a big turkey", "picnic"});
+            DayEvent dayEvent2 = new DayEvent(year, 3, 15, EventType.ENTERTAINMENT, new String[]{"play VR game", "watch movie"});
+            DayEvent dayEvent3 = new DayEvent(year, 6, 25, EventType.BEAUTY, new String[]{"Yoga lesson"});
+            DayEvent dayEvent4 = new DayEvent(year, 8, 13, EventType.SPORT, new String[]{"swimming match"});
+            DayEvent dayEvent5 = new DayEvent(year, 11, 30, EventType.SPORT, new String[]{"play basketball", "i don't like football", "ping pang!"});
 
-        SystemClock.sleep(1500);
+            yearEvents.add(dayEvent1);
+            yearEvents.add(dayEvent2);
+            yearEvents.add(dayEvent3);
+            yearEvents.add(dayEvent4);
+            yearEvents.add(dayEvent5);
+        }
+
+        SystemClock.sleep(1000);
         return yearEvents;
     }
 
