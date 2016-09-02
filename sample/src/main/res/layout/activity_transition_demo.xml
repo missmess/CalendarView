@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.missmess.calendarview.TransitRootView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/trv"
+    tools:context="com.missmess.calendardemo.TransitionDemoActivity">
+
+    <com.missmess.calendarview.YearView
+        android:id="@+id/yv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <com.missmess.calendarview.MonthView
+        android:id="@+id/mv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</com.missmess.calendarview.TransitRootView>

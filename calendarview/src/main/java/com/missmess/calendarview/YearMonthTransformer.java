@@ -36,15 +36,16 @@ public final class YearMonthTransformer {
     private final TransitRootView mRootView;
     private final View rootChild1;
     private final View rootChild2;
-    private final AnimTransiter mTransiter;
     private YearView mYearView;
     private MonthView mMonthView;
-    private final MonthViewObserver monthViewObserver;
     private boolean mvShowMonthTitle; //original month showing status
     private boolean mvShowWeekLabel; //before anim, week showing status
     private OnTransitListener transitListener;
     private boolean animating = false; //indicate transit process
+    private final MonthViewObserver monthViewObserver;
     private final MonthTitleClicker monthTitleClicker;
+    private final MonthClicker monthClicker;
+    private final AnimTransiter mTransiter;
     private MonthViewPager mMonthViewPager;
 
     /**
@@ -93,6 +94,7 @@ public final class YearMonthTransformer {
 
         monthViewObserver = new MonthViewObserver();
         monthTitleClicker = new MonthTitleClicker();
+        monthClicker = new MonthClicker();
         mTransiter = new AnimTransiter();
 
         updateYearView(yearView);
@@ -122,6 +124,7 @@ public final class YearMonthTransformer {
      */
     public void updateYearView(YearView yearView) {
         this.mYearView = yearView;
+        mYearView.setOnMonthClickListener(monthClicker);
     }
 
     /**
@@ -553,6 +556,13 @@ public final class YearMonthTransformer {
                 animHideLabel();
             }
             rootChild2.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        }
+    }
+
+    class MonthClicker implements YearView.OnMonthClickListener {
+        @Override
+        public void onMonthClick(YearView yearView, CalendarMonth calendarMonth) {
+            applyShow(calendarMonth.getMonth());
         }
     }
 

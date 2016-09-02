@@ -24,7 +24,7 @@ import com.missmess.calendarview.YearView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransitDemoActivity extends AppCompatActivity {
+public class ComplexDemoActivity extends AppCompatActivity {
     private final int YEAR = 2016;
     private List<DayEvent> yearEvents;
     private YearMonthTransformer transformer;
@@ -43,7 +43,7 @@ public class TransitDemoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_transit_demo);
+        setContentView(R.layout.activity_complex_demo);
         // find view
         rootView = (TransitRootView) findViewById(R.id.trv);
         ll_data = findViewById(R.id.ll_data);
@@ -74,7 +74,7 @@ public class TransitDemoActivity extends AppCompatActivity {
         new GetDecorsTask(new GetDecorsTask.DecorResult() {
             @Override
             public void onStart() {
-                progressDialog = ProgressDialog.show(TransitDemoActivity.this, null, "loading...", true, false);
+                progressDialog = ProgressDialog.show(ComplexDemoActivity.this, null, "loading...", true, false);
             }
 
             @Override
@@ -111,12 +111,6 @@ public class TransitDemoActivity extends AppCompatActivity {
     }
 
     private void initListener() {
-        yearView.setOnMonthClickListener(new YearView.OnMonthClickListener() {
-            @Override
-            public void onMonthClick(YearView yearView, CalendarMonth calendarMonth) {
-                transformer.applyShow(calendarMonth.getMonth());
-            }
-        });
         monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
             @Override
             public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
