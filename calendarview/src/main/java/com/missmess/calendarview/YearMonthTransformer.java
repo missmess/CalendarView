@@ -519,13 +519,13 @@ public final class YearMonthTransformer {
         PropertyValuesHolder pvh3 = PropertyValuesHolder.ofInt("dayCircleRadius", property3, end.dayCircleRadius);
         int property4 = start.dayRowHeight;
         PropertyValuesHolder pvh4 = PropertyValuesHolder.ofInt("dayRowHeight", property4, end.dayRowHeight);
-        int property5 = start.circleTextColor;
-        PropertyValuesHolder pvh5 = PropertyValuesHolder.ofObject("circleTextColor", argbEvaluator, property5, end.circleTextColor);
-        int property6 = start.todayCircleBgColor;
-        PropertyValuesHolder pvh6 = PropertyValuesHolder.ofObject("todayCircleBgColor", argbEvaluator, property6, end.todayCircleBgColor);
-        int property7 = start.todayTextColor;
-        PropertyValuesHolder pvh7 = PropertyValuesHolder.ofObject("todayTextColor", argbEvaluator, property7, end.todayTextColor);
-        return ObjectAnimator.ofPropertyValuesHolder(target, pvh1, pvh2, pvh3, pvh4, pvh5, pvh6, pvh7);
+//        int property5 = start.decorTextColor;
+//        PropertyValuesHolder pvh5 = PropertyValuesHolder.ofObject("decorTextColor", argbEvaluator, property5, end.decorTextColor);
+//        int property6 = start.todayCircleBgColor;
+//        PropertyValuesHolder pvh6 = PropertyValuesHolder.ofObject("todayCircleBgColor", argbEvaluator, property6, end.todayCircleBgColor);
+//        int property7 = start.todayTextColor;
+//        PropertyValuesHolder pvh7 = PropertyValuesHolder.ofObject("todayTextColor", argbEvaluator, property7, end.todayTextColor);
+        return ObjectAnimator.ofPropertyValuesHolder(target, pvh1, pvh2, pvh3, pvh4);
     }
 
     public void setOnTransitListener(OnTransitListener listener) {

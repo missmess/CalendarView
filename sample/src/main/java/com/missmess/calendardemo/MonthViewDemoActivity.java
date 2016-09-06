@@ -29,10 +29,27 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         monthView.setToday(new CalendarDay(2017, 2, 12));
         // add decorators
         DayDecor dayDecor = new DayDecor();
+        // circle bg
         dayDecor.putOne(new CalendarDay(2017, 2, 1), 0xFFFF6600);
-        dayDecor.putOne(new CalendarDay(2017, 2, 2), 0xFFDC66C0);
-        dayDecor.putOne(new CalendarDay(2017, 2, 19), 0xFF66AA76);
-        dayDecor.putOne(new CalendarDay(2017, 2, 24), 0xFF72E6BC);
+        // rectangle bg
+        int color = 0xFFAAAAAA;
+        dayDecor.putOne(new CalendarDay(2017, 2, 4), color, DayDecor.Style.RECTANGLE);
+        dayDecor.putOne(new CalendarDay(2017, 2, 11), color, DayDecor.Style.RECTANGLE);
+        dayDecor.putOne(new CalendarDay(2017, 2, 18), color, DayDecor.Style.RECTANGLE);
+        dayDecor.putOne(new CalendarDay(2017, 2, 25), color, DayDecor.Style.RECTANGLE);
+        // drawable bg
+        dayDecor.putOne(new CalendarDay(2017, 2, 19), getResources().getDrawable(R.drawable.a_decor));
+        // styled background and text
+        DayDecor.Style style = new DayDecor.Style();
+        style.setTextSize(getResources().getDimensionPixelSize(R.dimen.big_text));
+        style.setTextColor(0xFF72E6BC);
+        style.setBold(true);
+        style.setItalic(true);
+        style.setUnderline(true);
+        style.setStrikeThrough(true);
+        style.setPureColorBgShape(DayDecor.Style.CIRCLE);
+        style.setPureColorBg(0xFF66AA76);
+        dayDecor.putOne(new CalendarDay(2017, 2, 24), style);
         monthView.setDecors(dayDecor);
         // add listener
         monthView.setOnMonthTitleClickListener(new MonthView.OnMonthTitleClickListener() {
@@ -45,6 +62,7 @@ public class MonthViewDemoActivity extends AppCompatActivity {
             @Override
             public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
                 Toast.makeText(MonthViewDemoActivity.this, "day clicked: " + calendarDay.toString(), Toast.LENGTH_SHORT).show();
+                monthView.clearSelection();
             }
         });
     }

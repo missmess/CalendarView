@@ -7,8 +7,7 @@
 	<color name="year_header_dash_color">#FFFF0000</color>
 	<color name="month_label_text_color">#FFFF0000</color>
 	<color name="day_label_text_color">#FF222222</color>
-	<color name="day_label_text_today_color">#FFFFFFFF</color>
-	<color name="day_label_circle_bg_color">#00FFFFFF</color>
+	<color name="day_label_decor_text_color">#FFFFFFFF</color>
 	<color name="day_select_circle_bg_color">#FF0066FF</color>
 	<color name="week_label_text_color">#FF999999</color>
 	<color name="month_title_color">#FF333333</color>

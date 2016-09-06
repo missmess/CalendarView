@@ -38,8 +38,6 @@ public class YearView extends ViewGroup {
     protected Paint yearHeaderLunarTextPaint;
     protected Paint yearHeaderDashPaint;
     protected Paint monthLabelTextPaint;
-    protected Paint dayLabelTextPaint;
-    protected Paint dayLabelCircleBgPaint;
 
     protected int yearHeaderTextColor;
     protected int dividerColor;
@@ -47,9 +45,6 @@ public class YearView extends ViewGroup {
     protected int yearHeaderDashColor;
     protected int monthTextColor;
     protected int dayLabelTextColor;
-    protected int dayLabelTextTodayColor;
-    protected int todayCircleBgColor;
-    private int todayTextColor;
 
     protected int daysInWeek = 7;
 
@@ -83,9 +78,6 @@ public class YearView extends ViewGroup {
         yearHeaderDashColor = typedArray.getColor(R.styleable.YearView_yearHeaderDashColor, resources.getColor(R.color.year_header_dash_color));
         monthTextColor = typedArray.getColor(R.styleable.YearView_monthLabelTextColor, resources.getColor(R.color.month_label_text_color));
         dayLabelTextColor = typedArray.getColor(R.styleable.YearView_dayLabelTextColor, resources.getColor(R.color.day_label_text_color));
-        dayLabelTextTodayColor = typedArray.getColor(R.styleable.YearView_dayLabelCircleTextColor, resources.getColor(R.color.day_label_text_today_color));
-        todayCircleBgColor = typedArray.getColor(R.styleable.YearView_todayLabelCircleBgColor, resources.getColor(R.color.day_label_circle_bg_color));
-        todayTextColor = typedArray.getColor(R.styleable.YearView_todayLabelTextColor, resources.getColor(R.color.today_text_color));
 
         YEAR_HEADER_TEXT_SIZE = typedArray.getDimensionPixelSize(R.styleable.YearView_yearHeaderTextSize, resources.getDimensionPixelSize(R.dimen.year_header_text_size));
         YEAR_HEADER_LUNAR_TEXT_SIZE = typedArray.getDimensionPixelSize(R.styleable.YearView_yearHeaderLunarTextSize, resources.getDimensionPixelSize(R.dimen.year_header_lunar_text_size));
@@ -125,11 +117,8 @@ public class YearView extends ViewGroup {
         MonthView monthView = (MonthView) LayoutInflater.from(getContext()).inflate(R.layout.monthview_in_yearview, null);
         monthView.setNormalDayTextColor(dayLabelTextColor);
         monthView.setNormalDayTextSize(DAY_LABEL_TEXT_SIZE);
-        monthView.setCircleTextColor(dayLabelTextTodayColor);
-        monthView.setTodayCircleBgColor(todayCircleBgColor);
         monthView.setDayCircleRadius(DAY_LABEL_CIRCLE_RADIUS);
         monthView.setDayRowHeight(dayRowHeight);
-        monthView.setTodayTextColor(todayTextColor);
         return monthView;
     }
 
@@ -321,22 +310,6 @@ public class YearView extends ViewGroup {
         yearHeaderLunarTextPaint.setColor(yearHeaderLunarTextColor);
         yearHeaderLunarTextPaint.setStyle(Style.FILL);
         yearHeaderLunarTextPaint.setFakeBoldText(false);
-
-        dayLabelTextPaint = new Paint();
-        dayLabelTextPaint.setAntiAlias(true);
-        dayLabelTextPaint.setTextSize(DAY_LABEL_TEXT_SIZE);
-        dayLabelTextPaint.setColor(dayLabelTextColor);
-        dayLabelTextPaint.setStyle(Style.FILL);
-        dayLabelTextPaint.setTextAlign(Align.CENTER);
-        dayLabelTextPaint.setFakeBoldText(false);
-
-        dayLabelCircleBgPaint = new Paint();
-        dayLabelCircleBgPaint.setAntiAlias(true);
-        dayLabelCircleBgPaint.setTextSize(DAY_LABEL_TEXT_SIZE);
-        dayLabelCircleBgPaint.setColor(todayCircleBgColor);
-        dayLabelCircleBgPaint.setStyle(Style.FILL);
-        dayLabelCircleBgPaint.setTextAlign(Align.CENTER);
-        dayLabelCircleBgPaint.setFakeBoldText(false);
 
         dividerPaint = new Paint();
         dividerPaint.setAntiAlias(true);

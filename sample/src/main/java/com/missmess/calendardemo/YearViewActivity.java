@@ -32,7 +32,7 @@ public class YearViewActivity extends AppCompatActivity {
         yearView.setToday(new CalendarDay(2017, 2, 12));
         // add decorators
         DayDecor dayDecor = new DayDecor();
-        dayDecor.putOne(new CalendarDay(2017, 1, 1), Color.GREEN);
+        dayDecor.putOne(new CalendarDay(2017, 1, 1), Color.BLACK);
         dayDecor.putOne(new CalendarDay(2017, 4, 1), Color.RED);
         dayDecor.putOne(new CalendarDay(2017, 3, 3), Color.GRAY);
         dayDecor.putOne(new CalendarDay(2017, 5, 19), Color.GRAY);

@@ -17,24 +17,23 @@
         <attr name="dayLabelTextColor" format="color"/>
         <attr name="dayLabelTextSize" format="dimension"/>
         <attr name="dayLabelRowHeight" format="dimension"/>
-        <attr name="dayLabelCircleTextColor" format="color"/>
+        <!--<attr name="dayLabelCircleTextColor" format="color"/>
         <attr name="todayLabelCircleBgColor" format="color"/>
-        <attr name="todayLabelTextColor" format="color"/>
+        <attr name="todayLabelTextColor" format="color"/>-->
         <attr name="dayLabelCircleRadius" format="dimension"/>
     </declare-styleable>
 
     <declare-styleable name="MonthView">
-        <!-- circle radius cover up day -->
         <attr name="dayCircleRadius" format="dimension" />
-        <attr name="dayCircleTextColor" format="color"/>
+        <!--<attr name="dayCircleTextColor" format="color"/>-->
         <attr name="selectDayCircleBgColor" format="color" />
 
         <attr name="dayTextColor" format="color"/>
         <attr name="dayTextSize" format="dimension"/>
         <attr name="dayRowHeight" format="dimension" />
 
-        <attr name="todayCircleBgColor" format="color"/>
-        <attr name="todayTextColor" format="color"/>
+        <!--<attr name="todayCircleBgColor" format="color"/>
+        <attr name="todayTextColor" format="color"/>-->
 
         <attr name="monthTitleColor" format="color" />
         <attr name="monthTextSize" format="dimension" />

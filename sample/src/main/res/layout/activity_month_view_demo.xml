@@ -24,10 +24,7 @@
         calendar:dayTextColor="#22BBCC"
         calendar:dayTextSize="14sp"
         calendar:dayRowHeight="44dp"
-        calendar:dayCircleTextColor="@android:color/white"
         calendar:dayCircleRadius="17dp"
-        calendar:selectDayCircleBgColor="@color/colorPrimary"
-        calendar:todayCircleBgColor="#798798"
-        calendar:todayTextColor="#FF6600"/>
+        calendar:selectDayCircleBgColor="@color/colorPrimary" />
 
 </RelativeLayout>

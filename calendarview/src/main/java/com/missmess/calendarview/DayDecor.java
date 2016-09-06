@@ -1,5 +1,8 @@
 package com.missmess.calendarview;
 
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 
 import java.util.HashMap;
@@ -10,33 +13,179 @@ import java.util.Map;
  * @since 2016/08/30 11:33
  */
 public class DayDecor {
-    private Map<CalendarDay, Integer> decorMaps;
+    private Map<CalendarDay, Style> decorMaps;
 
     public DayDecor() {
         decorMaps = new HashMap<>();
     }
 
-    public void putOne(CalendarDay calendarDay, @ColorInt int color) {
-        decorMaps.put(calendarDay, color);
+    /**
+     * add or replace a decor with circle bg mapping to a CalendarDay.
+     * @param calendarDay calendarDay
+     * @param circleBgColor circle bg color
+     */
+    public void putOne(CalendarDay calendarDay, @ColorInt int circleBgColor) {
+        putOne(calendarDay, circleBgColor, Style.CIRCLE);
     }
 
-    public void putAll(Map<CalendarDay, Integer> decors) {
+    /**
+     * add or replace a decor with pure color bg mapping to a CalendarDay.
+     * @param calendarDay calendarDay
+     * @param bgColor color
+     * @param shape {@link Style#CIRCLE circle}, {@link Style#RECTANGLE rectangle}
+     */
+    public void putOne(CalendarDay calendarDay, @ColorInt int bgColor, int shape) {
+        Style style = new Style();
+        style.setPureColorBg(bgColor);
+        style.setPureColorBgShape(shape);
+        putOne(calendarDay, style);
+    }
+
+    /**
+     * add or replace a decor with specified drawable bg mapping to a CalendarDay.
+     * @param calendarDay calendarDay
+     * @param drawable drawable
+     */
+    public void putOne(CalendarDay calendarDay, Drawable drawable) {
+        Style style = new Style();
+        style.setDrawableBg(drawable);
+        putOne(calendarDay, style);
+    }
+
+    /**
+     * add or replace a decor with specified style bg mapping to a CalendarDay.
+     * @param calendarDay calendarDay
+     * @param style Style
+     */
+    public void putOne(CalendarDay calendarDay, Style style) {
+        decorMaps.put(calendarDay, style);
+    }
+
+    public void putAll(Map<CalendarDay, Style> decors) {
         decorMaps.putAll(decors);
     }
 
-    public @ColorInt Integer getDecorColor(int year, int month, int day) {
-        return getDecorColor(new CalendarDay(year, month, day));
+    /**
+     * get decor style
+     * @param year year
+     * @param month month
+     * @param day day
+     * @return {@link Style}
+     */
+    public Style getDecorStyle(int year, int month, int day) {
+        return getDecorStyle(new CalendarDay(year, month, day));
     }
 
-    public @ColorInt Integer getDecorColor(CalendarDay calendarDay) {
+    public Style getDecorStyle(CalendarDay calendarDay) {
         return decorMaps.get(calendarDay);
     }
 
+    public void remove(CalendarDay calendarDay) {
+        decorMaps.remove(calendarDay);
+    }
+
+    /**
+     * clear all decors
+     */
     public void clear() {
         decorMaps.clear();
     }
 
-    public Map<CalendarDay, Integer> getInnerMap() {
+    /**
+     * get style maps
+     * @return map
+     * @hide
+     */
+    public Map<CalendarDay, Style> getInnerMap() {
         return decorMaps;
+    }
+
+    public static class Style {
+        /**
+         * circle shape of pure color bg
+         */
+        public static int CIRCLE = 1;
+        /**
+         * rectangle shape of pure color bg
+         */
+        public static int RECTANGLE = 2;
+        // text
+        private boolean isBold = false;
+        private boolean isItalic = false;
+        private boolean underline = false;
+        private boolean strikeThrough = false;
+        private @ColorInt int textColor = 0;
+        private int textSize = 0;
+        // bg
+        private int pureColorBgShape = 0;
+        private @ColorInt int pureColorBg = Color.TRANSPARENT;
+        private Drawable drawableBg = null;
+
+        public void setBold(boolean bold) {
+            isBold = bold;
+        }
+
+        public void setItalic(boolean italic) {
+            isItalic = italic;
+        }
+
+        public void setUnderline(boolean underline) {
+            this.underline = underline;
+        }
+
+        public void setStrikeThrough(boolean strikeThrough) {
+            this.strikeThrough = strikeThrough;
+        }
+
+        public void setTextColor(int textColor) {
+            this.textColor = textColor;
+        }
+
+        public void setTextSize(int textSize) {
+            this.textSize = textSize;
+        }
+
+        public void setPureColorBgShape(int pureColorBgShape) {
+            this.pureColorBgShape = pureColorBgShape;
+        }
+
+        public void setPureColorBg(int pureColorBg) {
+            this.pureColorBg = pureColorBg;
+        }
+
+        public void setDrawableBg(Drawable drawableBg) {
+            this.drawableBg = drawableBg;
+        }
+
+        void styledTextPaint(Paint paint) {
+            paint.setFakeBoldText(isBold);
+            paint.setTextSkewX(isItalic ? -0.25f : 0f);
+            paint.setUnderlineText(underline);
+            paint.setStrikeThruText(strikeThrough);
+            if(textColor != 0)
+                paint.setColor(textColor);
+            if(textSize != 0)
+                paint.setTextSize(textSize);
+        }
+
+        public boolean isCircleBg() {
+            return pureColorBgShape == CIRCLE;
+        }
+
+        public boolean isRectBg() {
+            return pureColorBgShape == RECTANGLE;
+        }
+
+        public boolean isDrawableBg() {
+            return pureColorBgShape == 0 && drawableBg != null;
+        }
+
+        public @ColorInt int getPureColorBg() {
+            return pureColorBg;
+        }
+
+        public Drawable getDrawableBg() {
+            return drawableBg;
+        }
     }
 }

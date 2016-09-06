@@ -9,6 +9,7 @@ import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
@@ -50,13 +51,12 @@ public class MonthView extends View {
     protected Paint mWeekLabelPaint;
     protected Paint mDayNumPaint;
     protected Paint mMonthTitlePaint;
-    protected Paint mDayCirclePaint;
+    protected Paint mDayBgPaint;
 
-    protected int circleTextColor;
+    protected int decorTextColor;
     protected int mMonthTextColor;
     protected int mWeekColor;
     protected int normalDayTextColor;
-    protected int todayCircleBgColor;
     protected int todayTextColor;
 
     protected int mWeekStart = Calendar.SUNDAY;
@@ -83,6 +83,11 @@ public class MonthView extends View {
     private TypedArray mTypeArray;
     private boolean isCopy;
     private DayDecor mDecors;
+    private int halfDayWidth;
+    private DayDecor.Style todayStyle;
+    private DayDecor.Style selectionStyle;
+    private DayDecor.Style normalStyle;
+    private Rect drawRect;
 
     public MonthView(Context context) {
         this(context, null);
@@ -107,12 +112,11 @@ public class MonthView extends View {
 
         mDayOfWeekTypeface = resources.getString(R.string.sans_serif);
         mMonthTitleTypeface = resources.getString(R.string.sans_serif);
-        circleTextColor = typedArray.getColor(R.styleable.MonthView_dayCircleTextColor, resources.getColor(R.color.day_label_text_today_color));
+        decorTextColor = resources.getColor(R.color.day_label_decor_text_color);
         mMonthTextColor = typedArray.getColor(R.styleable.MonthView_monthTitleColor, resources.getColor(R.color.month_title_color));
         mWeekColor = typedArray.getColor(R.styleable.MonthView_weekLabelTextColor, resources.getColor(R.color.week_label_text_color));
         normalDayTextColor = typedArray.getColor(R.styleable.MonthView_dayTextColor, resources.getColor(R.color.day_label_text_color));
-        todayCircleBgColor = typedArray.getColor(R.styleable.MonthView_todayCircleBgColor, resources.getColor(R.color.day_label_circle_bg_color));
-        todayTextColor = typedArray.getColor(R.styleable.MonthView_todayTextColor, resources.getColor(R.color.today_text_color));
+        todayTextColor = resources.getColor(R.color.today_text_color);
         mSelectedCircleColor = typedArray.getColor(R.styleable.MonthView_selectDayCircleBgColor, resources.getColor(R.color.day_select_circle_bg_color));
 
         normalDayTextSize = typedArray.getDimensionPixelSize(R.styleable.MonthView_dayTextSize, resources.getDimensionPixelSize(R.dimen.text_size_day));
@@ -138,7 +142,9 @@ public class MonthView extends View {
 
 //        typedArray.recycle();
         mPadding = getPaddingLeft();
-        initView();
+        drawRect = new Rect();
+        initStyle();
+        initPaint();
         setYearAndMonth(today.getYear(), today.getMonth());
     }
 
@@ -156,6 +162,18 @@ public class MonthView extends View {
     public void setToday(CalendarDay today) {
         this.today = today;
         invalidate();
+    }
+
+    private void initStyle() {
+        todayStyle = new DayDecor.Style();
+        todayStyle.setBold(true);
+        todayStyle.setTextColor(todayTextColor);
+
+        selectionStyle = new DayDecor.Style();
+        selectionStyle.setPureColorBgShape(DayDecor.Style.CIRCLE);
+        selectionStyle.setPureColorBg(mSelectedCircleColor);
+
+        normalStyle = new DayDecor.Style();
     }
 
     private void drawWeekLabels(Canvas canvas) {
@@ -195,46 +213,55 @@ public class MonthView extends View {
      * draw the day of month
      */
     protected void drawMonthDays(Canvas canvas) {
-        int y = (dayRowHeight + normalDayTextSize) / 2 + SPACE_BETWEEN_WEEK_AND_DAY + MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT;
-        int paddingDay = (mWidth - 2 * mPadding) / (2 * mNumDays);
+        int dayTop = SPACE_BETWEEN_WEEK_AND_DAY + MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT;
+        int y = (dayRowHeight + normalDayTextSize) / 2 + dayTop;
+        int halfDay = halfDayWidth;
         int dayOffset = findDayOffset();
         int day = 1;
 
         while (day <= mNumCells) {
-            int x = paddingDay * (1 + dayOffset * 2) + mPadding;
+            int dayLeft = dayOffset * halfDay * 2 + mPadding;
+            int x = halfDay + dayLeft;
             String dayStr = String.format(Locale.getDefault(), "%d", day);
-            Rect rect = new Rect();
-            mDayNumPaint.getTextBounds(dayStr, 0, dayStr.length(), rect);
-            if(day == selectedDay) {
-                mDayCirclePaint.setColor(mSelectedCircleColor);
-                canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
 
-                mDayNumPaint.setColor(circleTextColor);
-                canvas.drawText(dayStr, x, y, mDayNumPaint);
-            }  else if(mDecors != null && mDecors.getDecorColor(mYear, mMonth + 1, day) != null){
-                Integer color = mDecors.getDecorColor(mYear, mMonth + 1, day);
-                mDayCirclePaint.setColor(color);
-                canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
-
-                mDayNumPaint.setColor(circleTextColor);
-                canvas.drawText(dayStr, x, y, mDayNumPaint);
-            } else if (isToday(mYear, mMonth + 1, day)) { //today
-                mDayCirclePaint.setColor(todayCircleBgColor);
-                canvas.drawCircle(x, y - rect.height() / 2, dayCircleRadius, mDayCirclePaint);
-
-                mDayNumPaint.setColor(todayTextColor);
-                mDayNumPaint.setFakeBoldText(true);
-                canvas.drawText(dayStr, x, y, mDayNumPaint);
-                mDayNumPaint.setFakeBoldText(false);
-            } else { //not today
+            mDayNumPaint.setColor(decorTextColor);
+            mDayNumPaint.setTextSize(normalDayTextSize);
+            DayDecor.Style style;
+            if(day == selectedDay) { //selected
+                style = selectionStyle;
+            }  else if(mDecors != null && mDecors.getDecorStyle(mYear, mMonth + 1, day) != null) { // exist decor
+                style = mDecors.getDecorStyle(mYear, mMonth + 1, day);
+            } else if (isToday(mYear, mMonth + 1, day)) { // today
+                style = todayStyle;
+            } else { // normal
+                style = normalStyle;
                 mDayNumPaint.setColor(normalDayTextColor);
-                canvas.drawText(dayStr, x, y, mDayNumPaint);
             }
+            style.styledTextPaint(mDayNumPaint);
 
+            // get text height
+            mDayNumPaint.getTextBounds(dayStr, 0, dayStr.length(), drawRect);
+            int textHeight = drawRect.height();
+            // draw bg
+            if(style.isCircleBg()) {
+                mDayBgPaint.setColor(style.getPureColorBg());
+                canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
+            } else if(style.isRectBg()) {
+                mDayBgPaint.setColor(style.getPureColorBg());
+                canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
+            } else if(style.isDrawableBg()) {
+                Drawable drawable = style.getDrawableBg();
+                drawable.setBounds(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight);
+                drawable.draw(canvas);
+            }
+            canvas.drawText(dayStr, x, y, mDayNumPaint);
+
+            // goto next day
             dayOffset++;
             if (dayOffset == mNumDays) {
                 dayOffset = 0;
                 y += dayRowHeight;
+                dayTop += dayRowHeight;
             }
             day++;
         }
@@ -272,7 +299,7 @@ public class MonthView extends View {
 
     private CalendarDay getDayFromLocation(float x, float y) {
         int padding = mPadding;
-        if ((x < padding) || (x > mWidth - mPadding)) {
+        if ((x < padding) || (x > mWidth - padding)) {
             return null;
         }
 
@@ -281,7 +308,7 @@ public class MonthView extends View {
             return null;
 
         int yDay = (int) yDayOffset / dayRowHeight;
-        int day = 1 + ((int) ((x - padding) * mNumDays / (mWidth - padding - mPadding)) - findDayOffset()) + yDay * mNumDays;
+        int day = 1 + ((int) ((x - padding) / (2 * halfDayWidth)) - findDayOffset()) + yDay * mNumDays;
 
         if (mMonth > 11 || mMonth < 0 || CalendarUtils.getDaysInMonth(mMonth, mYear) < day || day < 1)
             return null;
@@ -309,10 +336,10 @@ public class MonthView extends View {
 
     public void clearSelection() {
         selectedDay = 0;
-//        invalidate();
+        invalidate();
     }
 
-    protected void initView() {
+    protected void initPaint() {
         mMonthTitlePaint = new Paint();
         mMonthTitlePaint.setFakeBoldText(true);
         mMonthTitlePaint.setAntiAlias(true);
@@ -322,12 +349,10 @@ public class MonthView extends View {
         mMonthTitlePaint.setTextAlign(Align.CENTER);
         mMonthTitlePaint.setStyle(Style.FILL);
 
-        mDayCirclePaint = new Paint();
-        mDayCirclePaint.setFakeBoldText(true);
-        mDayCirclePaint.setAntiAlias(true);
-        mDayCirclePaint.setColor(todayCircleBgColor);
-        mDayCirclePaint.setTextAlign(Align.CENTER);
-        mDayCirclePaint.setStyle(Style.FILL);
+        mDayBgPaint = new Paint();
+        mDayBgPaint.setAntiAlias(true);
+        mDayBgPaint.setColor(mSelectedCircleColor);
+        mDayBgPaint.setStyle(Style.FILL);
 
         mWeekLabelPaint = new Paint();
         mWeekLabelPaint.setAntiAlias(true);
@@ -380,6 +405,7 @@ public class MonthView extends View {
 
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mWidth = w;
+        halfDayWidth = (mWidth - 2 * mPadding) / (2 * mNumDays);
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -483,7 +509,6 @@ public class MonthView extends View {
 
     public void setNormalDayTextSize(int px) {
         normalDayTextSize = px;
-        mDayNumPaint.setTextSize(normalDayTextSize);
     }
 
     public void setDayCircleRadius(int px) {
@@ -492,18 +517,6 @@ public class MonthView extends View {
 
     public void setDayRowHeight(int px) {
         dayRowHeight = px;
-    }
-
-    public void setCircleTextColor(@ColorInt int color) {
-        circleTextColor = color;
-    }
-
-    public void setTodayCircleBgColor(@ColorInt int color) {
-        todayCircleBgColor = color;
-    }
-
-    public void setTodayTextColor(@ColorInt int color) {
-        todayTextColor = color;
     }
 
     void setWeekLabelOffset(int weekLabelOffset) {

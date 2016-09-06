@@ -22,9 +22,6 @@
     calendar:dayLabelRowHeight="19dp"
     calendar:dayLabelTextSize="9sp"
     calendar:dayLabelCircleRadius="8dp"
-    calendar:dayLabelCircleTextColor="#FFFFFF"
-    calendar:todayLabelCircleBgColor="#AAAAAA"
-    calendar:todayLabelTextColor="#FF6600"
     tools:context="com.missmess.calendardemo.YearViewActivity">
 
 </com.missmess.calendarview.YearView>
