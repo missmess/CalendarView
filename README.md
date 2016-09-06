@@ -119,8 +119,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
   用来控制年历和月历过渡的类。首先需要使用TransitRootView作为根布局，增加两个子view，两个子view分别包含你的YearView和MonthView（或者MonthViewPager）。
   顺序不能颠倒，否则达不到指定的效果。详见demo。
 
-<span id="decorDetail"></span>
-######5、DayDecor和Style
+<h6 id="decorDetail">5、DayDecor和Style</h6>
 
   DayDecor可以为某一个显示的天，添加多种样式的Decorator或定义文字样式。示例：
   ```java
@@ -155,7 +154,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 ###接下来的工作
 ######还有一些工作需要完善，目前能想到的计划内的工作有以下两条：
 
-  ~~1、. 强化DayDecor的功能，包括对样式（加粗、斜体），任意背景，任意字体颜色的自定义。~~
+  ~~1、 强化DayDecor的功能，包括对样式（加粗、斜体），任意背景，任意字体颜色的自定义。~~
 
   2、 增加月历上滑显示到周历的功能。类似于小米日历的效果。
 
