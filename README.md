@@ -104,7 +104,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
  截图：
 
- ![image2](https://raw.githubusercontent.com/missmess/CalendarView/master/raw/mv.jpg)
+ ![image2](https://raw.githubusercontent.com/missmess/CalendarView/master/raw/mv2.jpg)
 
 ######3、MonthViewPager
 
