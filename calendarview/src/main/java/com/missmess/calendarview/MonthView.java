@@ -251,7 +251,25 @@ public class MonthView extends View {
                 canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
             } else if(style.isDrawableBg()) {
                 Drawable drawable = style.getDrawableBg();
-                drawable.setBounds(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight);
+                int dHeight = drawable.getIntrinsicHeight();
+                int dWidth = drawable.getIntrinsicWidth();
+
+                int left, right, top, bottom;
+                if(dWidth <= 0) { // fill
+                    left = dayLeft;
+                    right = dayLeft + 2 * halfDay;
+                } else { // remain original size
+                    left = x - dWidth / 2;
+                    right = x + dWidth / 2;
+                }
+                if(dHeight <= 0) {
+                    top = dayTop;
+                    bottom = dayTop + dayRowHeight;
+                } else {
+                    top = y - textHeight / 2 - dHeight / 2;
+                    bottom = y - textHeight / 2 + dHeight / 2;
+                }
+                drawable.setBounds(left, top, right, bottom);
                 drawable.draw(canvas);
             }
             canvas.drawText(dayStr, x, y, mDayNumPaint);
