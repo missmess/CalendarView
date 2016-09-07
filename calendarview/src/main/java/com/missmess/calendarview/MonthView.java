@@ -426,6 +426,19 @@ public class MonthView extends View {
         halfDayWidth = (mWidth - 2 * mPadding) / (2 * mNumDays);
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        recycle();
+    }
+
+    private void recycle() {
+        if(mTypeArray != null) {
+            mTypeArray.recycle();
+            mTypeArray = null;
+        }
+    }
+
     public boolean onTouchEvent(MotionEvent event) {
         if(!isEnabled()) {
             // still consume touch event
