@@ -10,6 +10,7 @@ import java.util.Date;
  * @since 2016/08/22 12:04
  */
 public class CalendarDay implements Comparable<CalendarDay> {
+    private CalendarMonth calendarMonth;
     int month;
     int year;
     int day;
@@ -37,6 +38,7 @@ public class CalendarDay implements Comparable<CalendarDay> {
         this.year = year;
         this.month = month;
         this.day = day;
+        calendarMonth = new CalendarMonth(year, month);
 
         if(year < 1900) {
             throw new IllegalArgumentException("year can not small than 1900");
@@ -56,7 +58,7 @@ public class CalendarDay implements Comparable<CalendarDay> {
     }
 
     public CalendarMonth getCalendarMonth() {
-        return new CalendarMonth(year, month);
+        return calendarMonth;
     }
 
     public int getYear() {
@@ -84,8 +86,8 @@ public class CalendarDay implements Comparable<CalendarDay> {
         if(o != null && o instanceof CalendarDay) {
             if(this == o)
                 return true;
-            int result = compareTo((CalendarDay) o);
-            return result == 0;
+            CalendarDay another = (CalendarDay) o;
+            return another.getYear() == year && another.getMonth() == month && another.getDay() == day;
         }
         return false;
     }

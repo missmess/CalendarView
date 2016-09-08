@@ -41,8 +41,8 @@ public class MonthViewPager extends ViewGroup {
     private int indicate_margin;
     private BtnClicker btnClicker;
     private DayClicker dayClicker;
-    private CalendarMonth leftEdge;
-    private CalendarMonth rightEdge;
+    private CalendarDay leftEdge;
+    private CalendarDay rightEdge;
     private CalendarMonth currentMonth;
     private boolean leftAble = true;
     private boolean rightAble = true;
@@ -86,8 +86,8 @@ public class MonthViewPager extends ViewGroup {
         dragger = ViewDragHelper.create(this, 1f, new DragCallBack());
         btnClicker = new BtnClicker();
         dayClicker = new DayClicker();
-        leftEdge = new CalendarMonth(1900, 2);
-        rightEdge = new CalendarMonth(2049, 12);
+        leftEdge = new CalendarDay(1900, 2, 1);
+        rightEdge = new CalendarDay(2049, 12, 31);
     }
 
     @Override
@@ -191,11 +191,10 @@ public class MonthViewPager extends ViewGroup {
         if(start.compareTo(end) > 0) {
             throw new IllegalArgumentException("start month cannot larger than end month");
         }
-        leftEdge = start;
-        rightEdge = end;
+        leftEdge = new CalendarDay(start, 1);
+        rightEdge = new CalendarDay(end, CalendarUtils.getDaysInMonth(end));
         checkEdge();
     }
-
 
     /**
      * <p>it'll be called at these situation:</p>
@@ -237,30 +236,35 @@ public class MonthViewPager extends ViewGroup {
     private void checkEdge() {
         CalendarMonth cm = childMiddle.getCurrentMonth();
         // when edge is not containing current, correct current month.
-        if(cm.compareTo(leftEdge) < 0) {
-            setCurrentMonth(leftEdge);
+        if(cm.compareTo(leftEdge.getCalendarMonth()) < 0) {
+            setCurrentMonth(leftEdge.getCalendarMonth());
         }
-        if(cm.compareTo(rightEdge) > 0) {
-            setCurrentMonth(rightEdge);
+        if(cm.compareTo(rightEdge.getCalendarMonth()) > 0) {
+            setCurrentMonth(rightEdge.getCalendarMonth());
         }
 
-        if(cm.equals(leftEdge)) {
+        if(cm.equals(leftEdge.getCalendarMonth())) {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.GONE);
             leftAble = false;
+
+            childMiddle.leftEdgeDay(leftEdge);
         } else {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.VISIBLE);
             leftAble = true;
+            childMiddle.leftEdgeDay(null);
         }
-        if(cm.equals(rightEdge)) {
+        if(cm.equals(rightEdge.getCalendarMonth())) {
             if(indicator_right != null)
                 indicator_right.setVisibility(View.GONE);
             rightAble = false;
+            childMiddle.rightEdgeDay(rightEdge);
         } else {
             if(indicator_right != null)
                 indicator_right.setVisibility(View.VISIBLE);
             rightAble = true;
+            childMiddle.rightEdgeDay(null);
         }
     }
 
@@ -499,7 +503,7 @@ public class MonthViewPager extends ViewGroup {
     // when MonthViewPager start to scroll to left.
     private void onScrollToLeft() {
         // destination is edge, hide left indicator
-        if (childLeft.getCurrentMonth().equals(leftEdge))
+        if (childLeft.getCurrentMonth().equals(leftEdge.getCalendarMonth()))
             if (mShowIndicator) {
                 indicator_left.setVisibility(View.GONE);
             }
@@ -508,7 +512,7 @@ public class MonthViewPager extends ViewGroup {
     // when MonthViewPager start to scroll to right.
     private void onScrollToRight() {
         // destination is edge, hide right indicator
-        if (childRight.getCurrentMonth().equals(rightEdge))
+        if (childRight.getCurrentMonth().equals(rightEdge.getCalendarMonth()))
             if (mShowIndicator) {
                 indicator_right.setVisibility(View.GONE);
             }

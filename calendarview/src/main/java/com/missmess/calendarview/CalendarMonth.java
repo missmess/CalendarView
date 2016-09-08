@@ -81,8 +81,8 @@ public class CalendarMonth implements Comparable<CalendarMonth> {
         if(o != null && o instanceof CalendarMonth) {
             if(this == o)
                 return true;
-            int result = compareTo((CalendarMonth) o);
-            return result == 0;
+            CalendarMonth another = (CalendarMonth) o;
+            return another.getYear() == year && another.getMonth() == month;
         }
         return false;
     }

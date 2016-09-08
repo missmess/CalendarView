@@ -91,6 +91,8 @@ public class MonthView extends View {
     private DayDecor.Style normalStyle;
     private DayDecor.Style otherMonthStyle;
     private Rect drawRect;
+    private CalendarDay leftEdge;
+    private CalendarDay rightEdge;
 
     public MonthView(Context context) {
         this(context, null);
@@ -227,6 +229,9 @@ public class MonthView extends View {
         int dayOffset = mShowOtherMonth ? 0 : firstDayOffset;
         int cells = dayOffset + (mShowOtherMonth ? mNumRows * mNumDays : mNumCells);
         for(int i = dayOffset; i < cells; i++) {
+            int dayLeft = dayOffset * halfDay * 2 + mPadding;
+            int x = halfDay + dayLeft;
+
             int day = i - firstDayOffset + 1;
             int month = mMonth + 1;
             if(day < 1) {
@@ -238,8 +243,6 @@ public class MonthView extends View {
                 month = new CalendarMonth(mYear, mMonth + 1).next().getMonth();
                 day = day - mNumCells;
             }
-            int dayLeft = dayOffset * halfDay * 2 + mPadding;
-            int x = halfDay + dayLeft;
 
             boolean selected = false;
             if(selectedDay != null && selectedDay.equals(new CalendarDay(mYear, month, day))) { //selected
@@ -360,6 +363,14 @@ public class MonthView extends View {
         invalidate();
     }
 
+    protected void leftEdgeDay(CalendarDay lEdge) {
+        leftEdge = lEdge;
+    }
+
+    protected void rightEdgeDay(CalendarDay rEdge) {
+        rightEdge = rEdge;
+    }
+
     private CalendarDay getDayFromLocation(float x, float y) {
         int padding = mPadding;
         if ((x < padding) || (x > mWidth - padding)) {
@@ -374,13 +385,21 @@ public class MonthView extends View {
         int day = 1 + ((int) ((x - padding) / (2 * halfDayWidth)) - findDayOffset()) + yDay * mNumDays;
 
         if(day < 1) {
-            CalendarMonth preM = new CalendarMonth(mYear, mMonth + 1).previous();
-            int preD = CalendarUtils.getDaysInMonth(preM) + day;
-            return new CalendarDay(preM, preD);
+            if(mShowOtherMonth) {
+                CalendarMonth preM = new CalendarMonth(mYear, mMonth + 1).previous();
+                int preD = CalendarUtils.getDaysInMonth(preM) + day;
+                return new CalendarDay(preM, preD);
+            } else {
+                return null;
+            }
         } else if(day > mNumCells) {
-            CalendarMonth nextM = new CalendarMonth(mYear, mMonth + 1).next();
-            int nextD = day - mNumCells;
-            return new CalendarDay(nextM, nextD);
+            if(mShowOtherMonth) {
+                CalendarMonth nextM = new CalendarMonth(mYear, mMonth + 1).next();
+                int nextD = day - mNumCells;
+                return new CalendarDay(nextM, nextD);
+            } else {
+                return null;
+            }
         } else
             return new CalendarDay(mYear, mMonth + 1, day);
     }
@@ -509,8 +528,13 @@ public class MonthView extends View {
                         && event.getEventTime() - event.getDownTime() < 500) {
                     CalendarDay calendarDay = getDayFromLocation(x, y);
                     if (calendarDay != null) {
+                        // if this location is out of range.
+                        if((leftEdge != null && calendarDay.compareTo(leftEdge) < 0)
+                                || (rightEdge != null && calendarDay.compareTo(rightEdge) > 0))
+                            break;
+                        // else
                         onDayClick(calendarDay);
-                    } else if(isClickMonth((int)x, (int)y)) {
+                    } else if(isClickMonth((int)x, (int)y)) { // clicked month title
                         // month title clicked
                         if(mOnMonthClicker != null) {
                             mOnMonthClicker.onMonthClick(this, new CalendarMonth(mYear, mMonth + 1));
