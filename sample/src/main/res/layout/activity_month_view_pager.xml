@@ -15,6 +15,8 @@
         calendar:ic_next_month="@mipmap/right_icon"
         calendar:ic_previous_month="@mipmap/left_icon"
         calendar:month_marginTop="0dp"
+        calendar:showOtherMonth="true"
+        calendar:otherMonthTextColor="#CCCCCC"
         android:layout_height="match_parent">
 
         <com.missmess.calendarview.MonthView
@@ -31,7 +33,7 @@
         android:textSize="20sp"
         android:id="@+id/tv"
         android:gravity="center"
-        android:text="@string/app_name"
+        android:text="@string/no_event"
         android:padding="15dp"
         android:layout_height="wrap_content"/>
 </LinearLayout>

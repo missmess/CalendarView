@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MonthViewPager should contains one MonthView child to config their styles, the MonthView child will only
- * obtain attributes, so do not find this child by findViewById, use MonthViewPager
- * to do something (e.g.: add listener) instead.
+ * MonthViewPager should contains one MonthView child to config their styles and attributes, the child will only
+ * remain its attributes, so do not find this child by findViewById, use MonthViewPager
+ * to do everything (e.g.: add listener, set showing month) instead.
  *
- * <p>MonthViewPager is similar to a ViewPager, it is easy to be used to display a sort of MonthView with same styles
+ * <p>MonthViewPager is similar to a ViewPager, it is adapt to display a sort of MonthView with a same styles
  * and a sequential month.</p>
  *
  * @author wl
@@ -39,7 +39,8 @@ public class MonthViewPager extends ViewGroup {
     protected ImageView indicator_left;
     protected ImageView indicator_right;
     private int indicate_margin;
-    private BtnClicker clicker;
+    private BtnClicker btnClicker;
+    private DayClicker dayClicker;
     private CalendarMonth leftEdge;
     private CalendarMonth rightEdge;
     private CalendarMonth currentMonth;
@@ -50,6 +51,8 @@ public class MonthViewPager extends ViewGroup {
     private boolean mShowIndicator;
     private DayDecor mDecors;
     private int month_marginTop;
+    private boolean mShowOtherMonth;
+    private int mOtherMonthColor;
 
     public MonthViewPager(Context context) {
         this(context, null);
@@ -61,6 +64,8 @@ public class MonthViewPager extends ViewGroup {
 
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MonthViewPager);
         mShowIndicator = typedArray.getBoolean(R.styleable.MonthViewPager_show_indicator, true);
+        mShowOtherMonth = typedArray.getBoolean(R.styleable.MonthViewPager_showOtherMonth, false);
+        mOtherMonthColor = typedArray.getColor(R.styleable.MonthViewPager_otherMonthTextColor, context.getResources().getColor(R.color.day_other_month_text_color));
         ic_previous = typedArray.getDrawable(R.styleable.MonthViewPager_ic_previous_month);
         ic_next = typedArray.getDrawable(R.styleable.MonthViewPager_ic_next_month);
         month_marginTop = typedArray.getDimensionPixelSize(R.styleable.MonthViewPager_month_marginTop, 0);
@@ -79,7 +84,8 @@ public class MonthViewPager extends ViewGroup {
 
     private void init() {
         dragger = ViewDragHelper.create(this, 1f, new DragCallBack());
-        clicker = new BtnClicker();
+        btnClicker = new BtnClicker();
+        dayClicker = new DayClicker();
         leftEdge = new CalendarMonth(1900, 2);
         rightEdge = new CalendarMonth(2049, 12);
     }
@@ -96,6 +102,10 @@ public class MonthViewPager extends ViewGroup {
         childRight = childMiddle.staticCopy();
         childRight.setYearAndMonth(childMiddle.getCurrentMonth().next());
 
+        childMiddle.setOnDayClickListener(dayClicker);
+        // add param
+        addChildAttrs();
+
         // add three child
         params.width = ViewGroup.LayoutParams.MATCH_PARENT;
         super.addView(childLeft, params);
@@ -111,13 +121,22 @@ public class MonthViewPager extends ViewGroup {
         }
     }
 
+    private void addChildAttrs() {
+        childLeft.mShowOtherMonth = mShowOtherMonth;
+        childLeft.setOtherMonthTextColor(mOtherMonthColor);
+        childMiddle.mShowOtherMonth = mShowOtherMonth;
+        childMiddle.setOtherMonthTextColor(mOtherMonthColor);
+        childRight.mShowOtherMonth = mShowOtherMonth;
+        childRight.setOtherMonthTextColor(mOtherMonthColor);
+    }
+
     private ImageView createIndicator(Drawable icon) {
         ImageView imageBtn = new ImageView(getContext());
         imageBtn.setScaleType(ImageView.ScaleType.CENTER);
         imageBtn.setImageDrawable(icon);
         imageBtn.setBackgroundResource(getThemeSelectableBackgroundId(getContext()));
         imageBtn.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        imageBtn.setOnClickListener(clicker);
+        imageBtn.setOnClickListener(btnClicker);
         return imageBtn;
     }
 
@@ -144,9 +163,13 @@ public class MonthViewPager extends ViewGroup {
      * @param calendarMonth month
      */
     public void setCurrentMonth(CalendarMonth calendarMonth) {
-        childMiddle.setYearAndMonth(calendarMonth);
-        if(!childMiddle.getCurrentMonth().equals(currentMonth))
+        if(calendarMonth == null)
+            return;
+
+        if(!calendarMonth.equals(currentMonth)) {
+            childMiddle.setYearAndMonth(calendarMonth);
             monthChanged(childMiddle);
+        }
     }
 
     public void setToday(CalendarDay today) {
@@ -256,6 +279,30 @@ public class MonthViewPager extends ViewGroup {
 
     public boolean isShowingIndicator() {
         return mShowIndicator;
+    }
+
+    /**
+     * select specified calendar day.
+     * @param calendarDay calendarDay; null to clear selection.
+     */
+    public void setSelection(CalendarDay calendarDay) {
+        if(childMiddle != null) {
+            childLeft.setSelection(calendarDay);
+            childMiddle.setSelection(calendarDay);
+            childRight.setSelection(calendarDay);
+        }
+    }
+
+    /**
+     * set style of selected day
+     * @param selectionStyle Style
+     */
+    public void setSelectionStyle(DayDecor.Style selectionStyle) {
+        if(childMiddle != null) {
+            childLeft.setSelectionStyle(selectionStyle);
+            childMiddle.setSelectionStyle(selectionStyle);
+            childRight.setSelectionStyle(selectionStyle);
+        }
     }
 
     @Override
@@ -440,7 +487,7 @@ public class MonthViewPager extends ViewGroup {
                         monthChanged(old);
                         // swap listener to current middle
                         childMiddle.setOnMonthTitleClickListener(old.getOnMonthTitleClickListener());
-                        childMiddle.setOnDayClickListener(old.getOnDayClickListener());
+                        childMiddle.setOnDayClickListener(dayClicker);
                         old.setOnMonthTitleClickListener(null);
                         old.setOnDayClickListener(null);
                     }
@@ -481,12 +528,47 @@ public class MonthViewPager extends ViewGroup {
         }
     }
 
+    // listen other month click event
+    private class DayClicker implements MonthView.OnDayClickListener {
+        MonthView.OnDayClickListener mListener;
+        void setListener(MonthView.OnDayClickListener listener) {
+            mListener = listener;
+        }
+        @Override
+        public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
+            if(mShowOtherMonth) {
+                int com = calendarDay.getCalendarMonth().compareTo(currentMonth);
+                if(com < 0) { // goto previous
+                    postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // simulate a click
+                            btnClicker.onClick(indicator_left);
+                        }
+                    }, 200);
+                } else if(com > 0) { // goto next
+                    postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // simulate a click
+                            btnClicker.onClick(indicator_right);
+                        }
+                    }, 200);
+                }
+            }
+            childLeft.setSelection(calendarDay);
+            childRight.setSelection(calendarDay);
+            if(mListener != null)
+                mListener.onDayClick(monthView, calendarDay);
+        }
+    }
+
     /**
      * set day click listener
      * @param onDayClickListener listener
      */
     public void setOnDayClickListener(MonthView.OnDayClickListener onDayClickListener) {
-        childMiddle.setOnDayClickListener(onDayClickListener);
+        dayClicker.setListener(onDayClickListener);
     }
 
     /**

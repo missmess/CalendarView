@@ -1,6 +1,5 @@
 package com.missmess.calendarview;
 
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
@@ -109,6 +108,8 @@ public class DayDecor {
          * rectangle shape of pure color bg
          */
         public static int RECTANGLE = 2;
+
+        // attributes
         // text
         private boolean isBold = false;
         private boolean isItalic = false;
@@ -118,9 +119,48 @@ public class DayDecor {
         private int textSize = 0;
         // bg
         private int pureColorBgShape = 0;
-        private @ColorInt int pureColorBg = Color.TRANSPARENT;
+        private @ColorInt int pureColorBg = 0;
         private Drawable drawableBg = null;
 
+        /**
+         * add text attributes to specified paint.
+         */
+        void styledTextPaint(Paint paint) {
+            paint.setFakeBoldText(isBold);
+            paint.setTextSkewX(isItalic ? -0.25f : 0f);
+            paint.setUnderlineText(underline);
+            paint.setStrikeThruText(strikeThrough);
+            if(textColor != 0)
+                paint.setColor(textColor);
+            if(textSize != 0)
+                paint.setTextSize(textSize);
+        }
+
+        /**
+         * combine a other Style with this. If an attribute in other is not configured, use attr of this,
+         * if configured, use other's instead.
+         * @param other a Style combine with this
+         */
+        void combine(Style other) {
+            setBold(other.isBold);
+            setItalic(other.isItalic);
+            setUnderline(other.isUnderline());
+            setStrikeThrough(other.isStrikeThrough());
+            if(other.getTextColor() != 0)
+                setTextColor(other.getTextColor());
+            if(other.getTextSize() != 0)
+                setTextSize(other.getTextSize());
+            if(other.getPureColorBgShape() != 0)
+                setPureColorBgShape(other.getPureColorBgShape());
+            if(other.getPureColorBg() != 0)
+                setPureColorBg(other.getPureColorBg());
+            if(other.getDrawableBg() != null)
+                setDrawableBg(other.getDrawableBg());
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        // SETTER & GETTER
+        ///////////////////////////////////////////////////////////////////////////
         public void setBold(boolean bold) {
             isBold = bold;
         }
@@ -157,15 +197,32 @@ public class DayDecor {
             this.drawableBg = drawableBg;
         }
 
-        void styledTextPaint(Paint paint) {
-            paint.setFakeBoldText(isBold);
-            paint.setTextSkewX(isItalic ? -0.25f : 0f);
-            paint.setUnderlineText(underline);
-            paint.setStrikeThruText(strikeThrough);
-            if(textColor != 0)
-                paint.setColor(textColor);
-            if(textSize != 0)
-                paint.setTextSize(textSize);
+        public boolean isBold() {
+            return isBold;
+        }
+
+        public boolean isItalic() {
+            return isItalic;
+        }
+
+        public boolean isUnderline() {
+            return underline;
+        }
+
+        public boolean isStrikeThrough() {
+            return strikeThrough;
+        }
+
+        public int getTextColor() {
+            return textColor;
+        }
+
+        public int getTextSize() {
+            return textSize;
+        }
+
+        public int getPureColorBgShape() {
+            return pureColorBgShape;
         }
 
         public boolean isCircleBg() {

@@ -467,7 +467,7 @@ public final class YearMonthTransformer {
         rootChild1.setVisibility(View.VISIBLE);
         rootChild1.setAlpha(0);
         // clear selection
-        mMonthView.clearSelection();
+        mMonthView.setSelection(null);
         // add layout listener
         mMonthView.getViewTreeObserver().addOnGlobalLayoutListener(monthViewObserver);
         return true;

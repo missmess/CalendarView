@@ -4,4 +4,5 @@
     <string name="sans_serif" translatable="false">sans-serif</string>
     <string name="event_str">Total events：%1$d</string>
     <string name="event_type_str">Total event types：%1$d</string>
+    <string name="no_event">No Event</string>
 </resources>

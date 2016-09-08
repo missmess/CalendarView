@@ -1,9 +1,12 @@
 package com.missmess.calendardemo;
 
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.missmess.calendardemo.control.GetDecorsTask;
@@ -17,7 +20,6 @@ import com.missmess.calendarview.MonthViewPager;
 import java.util.List;
 
 public class MonthViewPagerActivity extends AppCompatActivity {
-
     private MonthViewPager monthViewPager;
     private TextView textView;
     private ProgressDialog progressDialog;
@@ -46,7 +48,6 @@ public class MonthViewPagerActivity extends AppCompatActivity {
                 Log.d("onMonthChanged", "old=" + old.toString() + ";current=" + currentMonth.toString() +
                         ";left=" + (previous == null ? "null" : previous.getCurrentMonth().toString()) +
                         ";right=" + (next == null ? "null" : next.getCurrentMonth().toString()));
-                textView.setText(R.string.app_name);
             }
         });
         monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
@@ -54,10 +55,11 @@ public class MonthViewPagerActivity extends AppCompatActivity {
             public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
                 for(DayEvent event : yearEvents) {
                     if(event.isThisDay(calendarDay)) {
-                        textView.setText(String.format("Today: %s\nThere is %d events", calendarDay.toString(), event.getEventDetails().length));
+                        textView.setText(String.format("Today is \n%s\nToday have %d events", calendarDay.toString(), event.getEventDetails().length));
                         return;
                     }
                 }
+                textView.setText(R.string.no_event);
             }
         });
         monthViewPager.setOnMonthTitleClickListener(new MonthView.OnMonthTitleClickListener() {
@@ -95,5 +97,28 @@ public class MonthViewPagerActivity extends AppCompatActivity {
                 progressDialog.dismiss();
             }
         }).execute(2016);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.mvp_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.item1:
+                DayDecor.Style style = new DayDecor.Style();
+                style.setBold(true);
+                style.setTextSize(getResources().getDimensionPixelSize(R.dimen.big_text));
+                style.setPureColorBg(Color.BLACK);
+                monthViewPager.setSelectionStyle(style);
+                break;
+            case R.id.item2:
+                monthViewPager.setSelection(new CalendarDay(monthViewPager.getCurrentChild().getCurrentMonth(), 1));
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

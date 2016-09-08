@@ -79,6 +79,8 @@ public class CalendarMonth implements Comparable<CalendarMonth> {
     @Override
     public boolean equals(Object o) {
         if(o != null && o instanceof CalendarMonth) {
+            if(this == o)
+                return true;
             int result = compareTo((CalendarMonth) o);
             return result == 0;
         }

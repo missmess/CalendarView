@@ -1,7 +1,9 @@
 package com.missmess.calendardemo;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Toast;
 
 import com.missmess.calendarview.CalendarDay;
@@ -32,11 +34,7 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         // circle bg
         dayDecor.putOne(new CalendarDay(2017, 2, 1), 0xFFFF6600);
         // rectangle bg
-        int color = 0xFFAAAAAA;
-        dayDecor.putOne(new CalendarDay(2017, 2, 4), color, DayDecor.Style.RECTANGLE);
-        dayDecor.putOne(new CalendarDay(2017, 2, 11), color, DayDecor.Style.RECTANGLE);
-        dayDecor.putOne(new CalendarDay(2017, 2, 18), color, DayDecor.Style.RECTANGLE);
-        dayDecor.putOne(new CalendarDay(2017, 2, 25), color, DayDecor.Style.RECTANGLE);
+        dayDecor.putOne(new CalendarDay(2017, 2, 11), 0xFFAAAAAA, DayDecor.Style.RECTANGLE);
         // drawable bg
         dayDecor.putOne(new CalendarDay(2017, 2, 19), getResources().getDrawable(R.drawable.a_decor));
         // styled background and text
@@ -62,8 +60,29 @@ public class MonthViewDemoActivity extends AppCompatActivity {
             @Override
             public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
                 Toast.makeText(MonthViewDemoActivity.this, "day clicked: " + calendarDay.toString(), Toast.LENGTH_SHORT).show();
-                monthView.clearSelection();
             }
         });
+    }
+
+    public void click(View v) {
+        switch (v.getId()) {
+            case R.id.button5:
+                monthView.setSelection(null);
+                break;
+            case R.id.button6:
+                DayDecor.Style style = new DayDecor.Style();
+                style.setBold(true);
+                style.setTextSize(getResources().getDimensionPixelSize(R.dimen.big_text));
+                style.setPureColorBg(Color.BLACK);
+                monthView.setSelectionStyle(style);
+                break;
+            case R.id.button7:
+                if(monthView.getCurrentMonth().getYear() == 2017) {
+                    monthView.setYearAndMonth(2000, 3);
+                } else {
+                    monthView.setYearAndMonth(2017, 2);
+                }
+                break;
+        }
     }
 }

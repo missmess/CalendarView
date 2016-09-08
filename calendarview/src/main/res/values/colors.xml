@@ -9,6 +9,7 @@
 	<color name="day_label_text_color">#FF222222</color>
 	<color name="day_label_decor_text_color">#FFFFFFFF</color>
 	<color name="day_select_circle_bg_color">#FF0066FF</color>
+	<color name="day_other_month_text_color">#FFBABABA</color>
 	<color name="week_label_text_color">#FF999999</color>
 	<color name="month_title_color">#FF333333</color>
 	<color name="today_text_color">#FFFF6600</color>

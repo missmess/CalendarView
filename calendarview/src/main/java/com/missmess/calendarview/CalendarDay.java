@@ -55,6 +55,10 @@ public class CalendarDay implements Comparable<CalendarDay> {
         return month;
     }
 
+    public CalendarMonth getCalendarMonth() {
+        return new CalendarMonth(year, month);
+    }
+
     public int getYear() {
         return year;
     }
@@ -78,6 +82,8 @@ public class CalendarDay implements Comparable<CalendarDay> {
     @Override
     public boolean equals(Object o) {
         if(o != null && o instanceof CalendarDay) {
+            if(this == o)
+                return true;
             int result = compareTo((CalendarDay) o);
             return result == 0;
         }

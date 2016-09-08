@@ -42,6 +42,7 @@ public class MonthView extends View {
     protected int monthHeaderSizeCache;
     protected int weekLabelOffset = 0;
     protected int monthLabelOffset = 0;
+    private int mOtherMonthTextColor;
 
     protected int mPadding = 0;
 
@@ -73,11 +74,12 @@ public class MonthView extends View {
     protected boolean mShowMonthTitle;
     protected boolean mShowWeekLabel;
     private boolean mShowWeekDivider;
+    protected boolean mShowOtherMonth;
 
     private static final String DAY_OF_WEEK_FORMAT = "EEEEE";
     private OnDayClickListener mOnDayClickListener;
     private OnMonthTitleClickListener mOnMonthClicker;
-    private int selectedDay = 0;
+    private CalendarDay selectedDay;
     private float downX;
     private float downY;
     private TypedArray mTypeArray;
@@ -87,6 +89,7 @@ public class MonthView extends View {
     private DayDecor.Style todayStyle;
     private DayDecor.Style selectionStyle;
     private DayDecor.Style normalStyle;
+    private DayDecor.Style otherMonthStyle;
     private Rect drawRect;
 
     public MonthView(Context context) {
@@ -174,6 +177,9 @@ public class MonthView extends View {
         selectionStyle.setPureColorBg(mSelectedCircleColor);
 
         normalStyle = new DayDecor.Style();
+
+        otherMonthStyle = new DayDecor.Style();
+        otherMonthStyle.setTextColor(mOtherMonthTextColor);
     }
 
     private void drawWeekLabels(Canvas canvas) {
@@ -216,33 +222,59 @@ public class MonthView extends View {
         int dayTop = SPACE_BETWEEN_WEEK_AND_DAY + MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT;
         int y = (dayRowHeight + normalDayTextSize) / 2 + dayTop;
         int halfDay = halfDayWidth;
-        int dayOffset = findDayOffset();
-        int day = 1;
+        int firstDayOffset = findDayOffset();
 
-        while (day <= mNumCells) {
+        int dayOffset = mShowOtherMonth ? 0 : firstDayOffset;
+        int cells = dayOffset + (mShowOtherMonth ? mNumRows * mNumDays : mNumCells);
+        for(int i = dayOffset; i < cells; i++) {
+            int day = i - firstDayOffset + 1;
+            int month = mMonth + 1;
+            if(day < 1) {
+                CalendarMonth calendarMonth = new CalendarMonth(mYear, mMonth + 1).previous();
+                month = calendarMonth.getMonth();
+                int preMDays = CalendarUtils.getDaysInMonth(calendarMonth);
+                day = preMDays + day;
+            } else if(day > mNumCells) {
+                month = new CalendarMonth(mYear, mMonth + 1).next().getMonth();
+                day = day - mNumCells;
+            }
             int dayLeft = dayOffset * halfDay * 2 + mPadding;
             int x = halfDay + dayLeft;
-            String dayStr = String.format(Locale.getDefault(), "%d", day);
 
+            boolean selected = false;
+            if(selectedDay != null && selectedDay.equals(new CalendarDay(mYear, month, day))) { //selected
+                selected = true;
+            }
+
+            // default color and size
             mDayNumPaint.setColor(decorTextColor);
             mDayNumPaint.setTextSize(normalDayTextSize);
+            // set style
             DayDecor.Style style;
-            if(day == selectedDay) { //selected
-                style = selectionStyle;
-            }  else if(mDecors != null && mDecors.getDecorStyle(mYear, mMonth + 1, day) != null) { // exist decor
+            if(month != mMonth + 1) { // other month
+                style = otherMonthStyle;
+            } else if(mDecors != null && mDecors.getDecorStyle(mYear, mMonth + 1, day) != null) { // exist decor
                 style = mDecors.getDecorStyle(mYear, mMonth + 1, day);
-            } else if (isToday(mYear, mMonth + 1, day)) { // today
+            } else if (today.equals(new CalendarDay(mYear, mMonth + 1, day))) { // today
                 style = todayStyle;
+            } else if (selected) { // today
+                style = selectionStyle;
             } else { // normal
                 style = normalStyle;
-                mDayNumPaint.setColor(normalDayTextColor);
+                style.setTextColor(normalDayTextColor);
             }
             style.styledTextPaint(mDayNumPaint);
-
             // get text height
+            String dayStr = String.format(Locale.getDefault(), "%d", day);
             mDayNumPaint.getTextBounds(dayStr, 0, dayStr.length(), drawRect);
             int textHeight = drawRect.height();
-            // draw bg
+
+            // when selected, background always use selection style,
+            // whenever it used be.
+            if(selected) {
+                style = selectionStyle;
+            }
+            // draw background
             if(style.isCircleBg()) {
                 mDayBgPaint.setColor(style.getPureColorBg());
                 canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
@@ -281,7 +313,6 @@ public class MonthView extends View {
                 y += dayRowHeight;
                 dayTop += dayRowHeight;
             }
-            day++;
         }
     }
 
@@ -304,15 +335,29 @@ public class MonthView extends View {
     }
 
     private void onDayClick(CalendarDay calendarDay) {
-        selectedDay = calendarDay.getDay();
         if (mOnDayClickListener != null) {
             mOnDayClickListener.onDayClick(this, calendarDay);
         }
+        setSelection(calendarDay);
+    }
+
+    public void setSelectionStyle(DayDecor.Style selectionStyle) {
+        this.selectionStyle.combine(selectionStyle);
         invalidate();
     }
 
-    private boolean isToday(int year, int month, int monthDay) {
-        return (year == today.getYear()) && (month == today.getMonth()) && (monthDay == today.getDay());
+    /**
+     * select specified calendar day.
+     * @param calendarDay calendarDay; null to clear selection.
+     */
+    public void setSelection(CalendarDay calendarDay) {
+        if(selectedDay == calendarDay) // not changed
+            return;
+        if(calendarDay != null && calendarDay.equals(selectedDay)) //same day
+            return;
+
+        selectedDay = calendarDay;
+        invalidate();
     }
 
     private CalendarDay getDayFromLocation(float x, float y) {
@@ -328,10 +373,16 @@ public class MonthView extends View {
         int yDay = (int) yDayOffset / dayRowHeight;
         int day = 1 + ((int) ((x - padding) / (2 * halfDayWidth)) - findDayOffset()) + yDay * mNumDays;
 
-        if (mMonth > 11 || mMonth < 0 || CalendarUtils.getDaysInMonth(mMonth, mYear) < day || day < 1)
-            return null;
-
-        return new CalendarDay(mYear, mMonth + 1, day);
+        if(day < 1) {
+            CalendarMonth preM = new CalendarMonth(mYear, mMonth + 1).previous();
+            int preD = CalendarUtils.getDaysInMonth(preM) + day;
+            return new CalendarDay(preM, preD);
+        } else if(day > mNumCells) {
+            CalendarMonth nextM = new CalendarMonth(mYear, mMonth + 1).next();
+            int nextD = day - mNumCells;
+            return new CalendarDay(nextM, nextD);
+        } else
+            return new CalendarDay(mYear, mMonth + 1, day);
     }
 
     private boolean isClickMonth(int x, int y) {
@@ -350,11 +401,6 @@ public class MonthView extends View {
         int x = mWidth / 2;
         int y = MONTH_HEADER_HEIGHT / 2 + (MONTH_LABEL_TEXT_SIZE / 3) + monthLabelOffset;
         return new int[] {x, y};
-    }
-
-    public void clearSelection() {
-        selectedDay = 0;
-        invalidate();
     }
 
     protected void initPaint() {
@@ -439,6 +485,11 @@ public class MonthView extends View {
         }
     }
 
+    protected void setOtherMonthTextColor(@ColorInt int color) {
+        mOtherMonthTextColor = color;
+        otherMonthStyle.setTextColor(color);
+    }
+
     public boolean onTouchEvent(MotionEvent event) {
         if(!isEnabled()) {
             // still consume touch event
@@ -485,7 +536,8 @@ public class MonthView extends View {
      * @param month 月
      */
     public void setYearAndMonth(int year, int month) {
-        clearSelection();
+        if(year == mYear && month == mMonth + 1)
+            return;
 
         mYear = year;
         mMonth = month - 1;

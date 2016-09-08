@@ -5,6 +5,10 @@ import java.util.Calendar;
 
 public class CalendarUtils
 {
+    public static int getDaysInMonth(CalendarMonth calendarMonth) {
+        return getDaysInMonth(calendarMonth.getMonth() - 1, calendarMonth.getYear());
+    }
+
 	public static int getDaysInMonth(int month, int year) {
         switch (month) {
             case Calendar.JANUARY:

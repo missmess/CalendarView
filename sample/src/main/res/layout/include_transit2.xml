@@ -11,6 +11,7 @@
     <com.missmess.calendarview.MonthViewPager
         android:id="@+id/mvp"
         android:layout_width="match_parent"
+        calendar:showOtherMonth="true"
         android:layout_height="wrap_content">
 
         <com.missmess.calendarview.MonthView

@@ -128,8 +128,6 @@ public class ComplexDemoActivity extends AppCompatActivity {
         monthViewPager.addOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
-                adapter.clear();
-                adapter.notifyDataSetChanged();
             }
         });
         transformer.setOnTransitListener(new YearMonthTransformer.OnTransitListener() {
