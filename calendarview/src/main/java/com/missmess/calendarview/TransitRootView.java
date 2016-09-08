@@ -1,10 +1,12 @@
 package com.missmess.calendarview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 
 /**
@@ -12,18 +14,79 @@ import android.widget.FrameLayout;
  * the second contains a MonthView.
  * This view can help display Y and M transition animation and manage the animations of your other views.
  *
+ * <p>You should implements animation of all your custom views by your own,
+ * using {@link #setOnTransitListener(OnTransitListener) setOnTransitListener}. If any view not configured,
+ * it will show or hide immediately without animations</p>
+ *
  * @author wl
  * @since 2016/08/25 11:33
  */
 public class TransitRootView extends FrameLayout {
+    private final int DEFAULT_Y_TIME = 300;
+    private final int DEFAULT_M_TIME = 300;
+    private final int DEFAULT_BASE_TRANSIT_TIME = 300;
     View child1;
     View child2;
     boolean mReceiveEvent = true;
     private MonthView transitView;
+    private final int y2m_interpolator;
+    private final int m2y_interpolator;
+    private final int y_anim_dura;
+    private final int m_anim_dura;
+    private final int transit_dura;
+    private YearMonthTransformer transformer;
+    private OnTransitListener transitListener;
+
+    /**
+     * transition listener. use this to implement animations of your custom views
+     * to show in or show out. You can also make some initialization operation.
+     */
+    public interface OnTransitListener {
+        /**
+         * When YearView to MonthView transit process start.
+         * use this to animate views to show out in YearView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
+         */
+        void onY2MTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView);
+        /**
+         * When YearView to MonthView transit process finished.
+         * use this to animate views to show in in MonthView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
+         */
+        void onY2MTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView);
+        /**
+         * When MonthView to YearView transit process start.
+         * use this to animate views to show out in MonthView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
+         */
+        void onM2YTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView);
+        /**
+         * When MonthView to YearView transit process finished.
+         * use this to animate views to show in in YearView layout.
+         * @param transiter animation helpers
+         * @param yearView yearView
+         * @param monthView monthView
+         */
+        void onM2YTransitEnd(AnimTransiter transiter, YearView yearView, MonthView monthView);
+    }
 
     public TransitRootView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.TransitRootView);
+        y2m_interpolator = typedArray.getResourceId(R.styleable.TransitRootView_y2m_interpolator, android.R.interpolator.decelerate_quint);
+        m2y_interpolator = typedArray.getResourceId(R.styleable.TransitRootView_m2y_interpolator, android.R.interpolator.decelerate_quad);
+        y_anim_dura = typedArray.getInteger(R.styleable.TransitRootView_y_anim_duration, DEFAULT_Y_TIME);
+        m_anim_dura = typedArray.getInteger(R.styleable.TransitRootView_m_anim_duration, DEFAULT_M_TIME);
+        transit_dura = typedArray.getInteger(R.styleable.TransitRootView_transit_base_duration, DEFAULT_BASE_TRANSIT_TIME);
+
+        typedArray.recycle();
         init();
     }
 
@@ -90,7 +153,7 @@ public class TransitRootView extends FrameLayout {
      * use a TransitView to show transition animation
      * @return a useable MonthView
      */
-    public MonthView useTransitView() {
+    protected MonthView useTransitView() {
         transitView.setVisibility(View.VISIBLE);
         return transitView;
     }
@@ -98,7 +161,54 @@ public class TransitRootView extends FrameLayout {
     /**
      * should call this to recycle the TransitView
      */
-    public void recycleTransitView() {
+    protected void recycleTransitView() {
         transitView.setVisibility(View.GONE);
+    }
+
+    public void setOnTransitListener(OnTransitListener listener) {
+        this.transitListener = listener;
+    }
+
+    public OnTransitListener getOnTransitListener() {
+        return transitListener;
+    }
+
+    /**
+     * assign YearView and MonthView to transit. It should be called before any other operations
+     * @param yearView YearView
+     * @param monthView MonthView
+     */
+    public void assignView(YearView yearView, MonthView monthView) {
+        transformer = new YearMonthTransformer(this, yearView, monthView);
+        assignTransitAttrs();
+    }
+    /**
+     * assign YearView and MonthViewPager to transit. It should be called before any other operations
+     * @param yearView YearView
+     * @param monthViewPager MonthViewPager
+     */
+    public void assignView(YearView yearView, MonthViewPager monthViewPager) {
+        transformer = new YearMonthTransformer(this, yearView, monthViewPager);
+        assignTransitAttrs();
+    }
+
+    private void assignTransitAttrs() {
+        transformer.setMDelayTime(m_anim_dura);
+        transformer.setYDelayTime(y_anim_dura);
+        transformer.setBaseTransitionTime(transit_dura);
+        transformer.setShowInterpolator(AnimationUtils.loadInterpolator(getContext(), y2m_interpolator));
+        transformer.setHideInterpolator(AnimationUtils.loadInterpolator(getContext(), m2y_interpolator));
+    }
+
+    public void applyShow(int month) {
+        if(transformer == null)
+            throw new IllegalStateException("call assignView() before this method");
+        transformer.applyShow(month);
+    }
+
+    public boolean applyHide() {
+        if(transformer == null)
+            throw new IllegalStateException("call assignView() before this method");
+        return transformer.applyHide();
     }
 }

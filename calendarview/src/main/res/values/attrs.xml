@@ -55,4 +55,12 @@
         <attr name="otherMonthTextColor" format="color" />
         <attr name="showOtherMonth" format="boolean"/>
     </declare-styleable>
+
+    <declare-styleable name="TransitRootView">
+        <attr name="y2m_interpolator" format="reference" />
+        <attr name="m2y_interpolator" format="reference" />
+        <attr name="y_anim_duration" format="integer" />
+        <attr name="transit_base_duration" format="integer" />
+        <attr name="m_anim_duration" format="integer" />
+    </declare-styleable>
 </resources>

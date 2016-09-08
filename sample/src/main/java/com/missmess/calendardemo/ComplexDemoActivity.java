@@ -18,7 +18,6 @@ import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.MonthViewPager;
 import com.missmess.calendarview.TransitRootView;
-import com.missmess.calendarview.YearMonthTransformer;
 import com.missmess.calendarview.YearView;
 
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import java.util.List;
 public class ComplexDemoActivity extends AppCompatActivity {
     private final int YEAR = 2016;
     private List<DayEvent> yearEvents;
-    private YearMonthTransformer transformer;
     private TransitRootView rootView;
     private YearView yearView;
     private View rl_title;
@@ -62,7 +60,7 @@ public class ComplexDemoActivity extends AppCompatActivity {
         adapter = new EventAdapter();
         listView.setAdapter(adapter);
         monthViewPager.setMonthRange(new CalendarMonth(YEAR, 1), new CalendarMonth(YEAR, 12));
-        transformer = new YearMonthTransformer(rootView, yearView, monthViewPager);
+        rootView.assignView(yearView, monthViewPager);
 
         // add listener
         initListener();
@@ -130,7 +128,7 @@ public class ComplexDemoActivity extends AppCompatActivity {
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
             }
         });
-        transformer.setOnTransitListener(new YearMonthTransformer.OnTransitListener() {
+        rootView.setOnTransitListener(new TransitRootView.OnTransitListener() {
             @Override
             public void onY2MTransitStart(AnimTransiter transiter, YearView yearView, MonthView monthView) {
                 transiter.slideOutViewVertical(tv_year, false);
@@ -160,7 +158,7 @@ public class ComplexDemoActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (!transformer.applyHide())
+        if (!rootView.applyHide())
             super.onBackPressed();
     }
 

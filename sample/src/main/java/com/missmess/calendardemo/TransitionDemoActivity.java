@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.TransitRootView;
-import com.missmess.calendarview.YearMonthTransformer;
 import com.missmess.calendarview.YearView;
 
 public class TransitionDemoActivity extends AppCompatActivity {
@@ -13,7 +12,6 @@ public class TransitionDemoActivity extends AppCompatActivity {
     private TransitRootView transitRootView;
     private YearView yearView;
     private MonthView monthView;
-    private YearMonthTransformer transformer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,12 +24,12 @@ public class TransitionDemoActivity extends AppCompatActivity {
         monthView = (MonthView) findViewById(R.id.mv);
 
         //init
-        transformer = new YearMonthTransformer(transitRootView, yearView, monthView);
+        transitRootView.assignView(yearView, monthView);
     }
 
     @Override
     public void onBackPressed() {
-        if(!transformer.applyHide()) {
+        if(!transitRootView.applyHide()) {
             super.onBackPressed();
         }
     }
