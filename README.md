@@ -25,9 +25,9 @@
 
 * 包含年历，月历。并且每个控件都有全方面的自定义属性。
 * 为某一天添加自定义文字样式和背景。
-* 包含滚动月历。
+* 包含滚动月历。支持显示其它月份。
 * 支持多种监听。
-* 实现了一个年历和月历之间控制过渡的类。可以帮助你实现美观的过渡动画。
+* 增加了一个帮助实现年历到月历的过渡动画的viewgroup。
 
 ---
 
@@ -36,7 +36,7 @@
 Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   `
-    compile "com.missmess.calendarview:calendarview:1.1.0"
+    compile "com.missmess.calendarview:calendarview:1.1.2"
   `
 
 ---
@@ -108,16 +108,28 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
 ######3、MonthViewPager
 
-  可滚动的月历，左右滑动或点击indicator切换显示的月份。
+  可滚动的月历，左右滑动或点击indicator切换显示的月份。使用MonthViewPager需要在xml中为它设置一个子view。这个子view
+  可以添加属性，但是不可以直接通过findViewById使用它。这个子view仅用作定义样式。
 
   截图：
 
   ![gif2](https://raw.githubusercontent.com/missmess/CalendarView/master/raw/mvp.gif)
 
-######4、TransitRootView和YearMonthTransformer
+######4、TransitRootView
 
-  用来控制年历和月历过渡的类。首先需要使用TransitRootView作为根布局，增加两个子view，两个子view分别包含你的YearView和MonthView（或者MonthViewPager）。
+  这个viewgroup用来控制年历和月历之间的过渡。在xml中需要使用TransitRootView作为根布局，增加两个子view或viewgroup，它们分别包含你的YearView和MonthView（或者MonthViewPager）。
   顺序不能颠倒，否则达不到指定的效果。详见demo。
+
+  提供了多个自定义属性用来控制过渡过程：
+  ```xml
+  <declare-styleable name="TransitRootView">
+	  <attr name="y2m_interpolator" format="reference" />
+	  <attr name="m2y_interpolator" format="reference" />
+	  <attr name="y_anim_duration" format="integer" />
+	  <attr name="transit_base_duration" format="integer" />
+	  <attr name="m_anim_duration" format="integer" />
+  </declare-styleable>
+  ```
 
 <h6 id='decorDetail'>5、DayDecor和Style</h6>
 
