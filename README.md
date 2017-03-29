@@ -108,8 +108,9 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
 ######3、MonthViewPager
 
-  可滚动的月历，左右滑动或点击indicator切换显示的月份。使用MonthViewPager需要在xml中为它设置一个子view。这个子view
-  可以添加属性，但是不可以直接通过findViewById使用它。这个子view仅用作定义样式。
+  可滚动的月历，左右滑动或点击indicator切换显示的月份。
+
+  **使用MonthViewPager需要在xml中为它设置一个子view。这个子view只可以用来添加属性，但是不可以通过findViewById使用它。这个子view仅用作定义样式。**
 
   截图：
 
