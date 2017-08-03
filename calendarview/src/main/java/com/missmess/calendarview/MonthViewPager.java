@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
@@ -39,7 +40,6 @@ public class MonthViewPager extends ViewGroup {
     protected ImageView indicator_left;
     protected ImageView indicator_right;
     private int indicate_margin;
-    private BtnClicker btnClicker;
     private DayClicker dayClicker;
     private CalendarDay leftEdge;
     private CalendarDay rightEdge;
@@ -84,7 +84,6 @@ public class MonthViewPager extends ViewGroup {
 
     private void init() {
         dragger = ViewDragHelper.create(this, 1f, new DragCallBack());
-        btnClicker = new BtnClicker();
         dayClicker = new DayClicker();
         leftEdge = new CalendarDay(1900, 2, 1);
         rightEdge = new CalendarDay(2049, 12, 31);
@@ -115,8 +114,20 @@ public class MonthViewPager extends ViewGroup {
         // add indicators
         if(mShowIndicator) {
             indicator_left = createIndicator(ic_previous);
+            indicator_left.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    smoothScrollToLeft();
+                }
+            });
             super.addView(indicator_left);
             indicator_right = createIndicator(ic_next);
+            indicator_right.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    smoothScrollToRight();
+                }
+            });
             super.addView(indicator_right);
         }
     }
@@ -136,7 +147,6 @@ public class MonthViewPager extends ViewGroup {
         imageBtn.setImageDrawable(icon);
         imageBtn.setBackgroundResource(getThemeSelectableBackgroundId(getContext()));
         imageBtn.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        imageBtn.setOnClickListener(btnClicker);
         return imageBtn;
     }
 
@@ -166,10 +176,22 @@ public class MonthViewPager extends ViewGroup {
         if(calendarMonth == null)
             return;
 
-        if(!calendarMonth.equals(currentMonth)) {
-            childMiddle.setYearAndMonth(calendarMonth);
-            monthChanged(childMiddle);
+        if(calendarMonth.equals(currentMonth)) // not the same with current
+            return;
+
+        if(isInRange(calendarMonth) == -1) {
+            setCurrentMonth(leftEdge.getCalendarMonth());
+            return;
         }
+
+        if(isInRange(calendarMonth) == 1) {
+            setCurrentMonth(rightEdge.getCalendarMonth());
+            return;
+        }
+
+        // in range
+        childMiddle.setYearAndMonth(calendarMonth);
+        monthChanged(childMiddle);
     }
 
     public void setToday(CalendarDay today) {
@@ -209,8 +231,9 @@ public class MonthViewPager extends ViewGroup {
         if(currentMonth.equals(old))
             return;
 
-        // lookup range
-        checkEdge();
+        if(!checkEdge())
+            // if not in range, works below become unnecessary.
+            return;
 
         // setup left right view
         MonthView left = null;
@@ -233,39 +256,65 @@ public class MonthViewPager extends ViewGroup {
         requestLayout();
     }
 
-    private void checkEdge() {
-        CalendarMonth cm = childMiddle.getCurrentMonth();
-        // when edge is not containing current, correct current month.
-        if(cm.compareTo(leftEdge.getCalendarMonth()) < 0) {
+    /**
+     * Check if the month is in range.
+     * @param cm month
+     * @return -1 - smaller than the minimum month, 1 - larger than the maximum month, 0 - in range.
+     */
+    private int isInRange(CalendarMonth cm) {
+        if(cm.compareTo(leftEdge.getCalendarMonth()) < 0)
+            return -1;
+
+        if(cm.compareTo(rightEdge.getCalendarMonth()) > 0)
+            return 1;
+
+        return 0;
+    }
+
+    /**
+     * Check if current middle month is in range, if not, we set it to closet edge month.
+     * If in, we setup the indicators.
+     * 
+     * @return false - not in range, true - in range.
+     */
+    private boolean checkEdge() {
+        MonthView middle = childMiddle;
+        CalendarMonth cm = middle.getCurrentMonth();
+        // not in range.
+        if(isInRange(cm) == -1) {
             setCurrentMonth(leftEdge.getCalendarMonth());
+            return false;
         }
-        if(cm.compareTo(rightEdge.getCalendarMonth()) > 0) {
+        if(isInRange(cm) == 1) {
             setCurrentMonth(rightEdge.getCalendarMonth());
+            return false;
         }
 
+        // in range, setup indicators.
         if(cm.equals(leftEdge.getCalendarMonth())) {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.GONE);
             leftAble = false;
 
-            childMiddle.leftEdgeDay(leftEdge);
+            middle.leftEdgeDay(leftEdge);
         } else {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.VISIBLE);
             leftAble = true;
-            childMiddle.leftEdgeDay(null);
+            middle.leftEdgeDay(null);
         }
         if(cm.equals(rightEdge.getCalendarMonth())) {
             if(indicator_right != null)
                 indicator_right.setVisibility(View.GONE);
             rightAble = false;
-            childMiddle.rightEdgeDay(rightEdge);
+            middle.rightEdgeDay(rightEdge);
         } else {
             if(indicator_right != null)
                 indicator_right.setVisibility(View.VISIBLE);
             rightAble = true;
-            childMiddle.rightEdgeDay(null);
+            middle.rightEdgeDay(null);
         }
+        return true;
     }
 
     public void setDecors(DayDecor decors) {
@@ -307,6 +356,34 @@ public class MonthViewPager extends ViewGroup {
             childMiddle.setSelectionStyle(selectionStyle);
             childRight.setSelectionStyle(selectionStyle);
         }
+    }
+
+    /**
+     * Smooth slide to left month
+     * @return false - in left edge we can not able to slide left again.
+     */
+    public boolean smoothScrollToLeft() {
+        if(!leftAble)
+            return false;
+
+        onScrollToLeft();
+        dragger.smoothSlideViewTo(childMiddle, mWidth, month_marginTop);
+        ViewCompat.postInvalidateOnAnimation(MonthViewPager.this);
+        return true;
+    }
+
+    /**
+     * Smooth slide to right month
+     * @return false - in right edge we can not able to slide right again.
+     */
+    public boolean smoothScrollToRight() {
+        if(!rightAble)
+            return false;
+
+        onScrollToRight();
+        dragger.smoothSlideViewTo(childMiddle, -mWidth, month_marginTop);
+        ViewCompat.postInvalidateOnAnimation(MonthViewPager.this);
+        return true;
     }
 
     @Override
@@ -518,20 +595,6 @@ public class MonthViewPager extends ViewGroup {
             }
     }
 
-    private class BtnClicker implements OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if(v == indicator_left) {
-                onScrollToLeft();
-                dragger.smoothSlideViewTo(childMiddle, mWidth, month_marginTop);
-            } else if(v == indicator_right) {
-                onScrollToRight();
-                dragger.smoothSlideViewTo(childMiddle, -mWidth, month_marginTop);
-            }
-            ViewCompat.postInvalidateOnAnimation(MonthViewPager.this);
-        }
-    }
-
     // listen other month click event
     private class DayClicker implements MonthView.OnDayClickListener {
         MonthView.OnDayClickListener mListener;
@@ -546,16 +609,14 @@ public class MonthViewPager extends ViewGroup {
                     postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            // simulate a click
-                            btnClicker.onClick(indicator_left);
+                            smoothScrollToLeft();
                         }
                     }, 200);
                 } else if(com > 0) { // goto next
                     postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            // simulate a click
-                            btnClicker.onClick(indicator_right);
+                            smoothScrollToRight();
                         }
                     }, 200);
                 }
@@ -622,7 +683,7 @@ public class MonthViewPager extends ViewGroup {
          * @param currentMonth new month
          * @param old old month
          */
-        void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old);
+        void onMonthChanged(MonthViewPager monthViewPager, @Nullable MonthView previous, MonthView current, @Nullable MonthView next, CalendarMonth currentMonth, CalendarMonth old);
     }
 
     public interface OnDragListener {

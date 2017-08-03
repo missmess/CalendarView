@@ -118,6 +118,9 @@ public class MonthViewPagerActivity extends AppCompatActivity {
             case R.id.item2:
                 monthViewPager.setSelection(new CalendarDay(monthViewPager.getCurrentChild().getCurrentMonth(), 1));
                 break;
+            case R.id.item3:
+                monthViewPager.setCurrentMonth(new CalendarMonth(2016, 1));
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
