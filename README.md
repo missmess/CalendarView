@@ -1,4 +1,5 @@
-#CalendarView
+CalendarView
+=
 
   一个Android日历控件库，包含年历，月历，滚动月历，以及一个实现了年历、月历过渡的控件。它们既可以单独使用，也可以组合使用。
   主要特点是包含丰富的自定义属性；年历月历可以为某一天添加各种样式的decorator。支持android api 11以上。
@@ -21,22 +22,23 @@
 
 ---
 
-###主要功能简介
+### 主要功能简介
 
 * 包含年历，月历。并且每个控件都有全方面的自定义属性。
 * 为某一天添加自定义文字样式和背景。
-* 包含滚动月历。支持显示其它月份。
+* 包含滚动月历。支持滑动显示其它月份。
 * 支持多种监听。
-* 增加了一个帮助实现年历到月历的过渡动画的viewgroup。
+* 月历和周历滑动切换功能。
+* 提供一个帮助实现年历到月历的过渡动画的viewgroup。
 
 ---
 
-###添加到项目中
+### 添加到项目中
 
 Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   `
-    compile "com.missmess.calendarview:calendarview:1.1.2"
+    compile "com.missmess.calendarview:calendarview:2.0.0"
   `
 
 ---
@@ -45,7 +47,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
 介绍一下主要的控件和api，更详细的可以下载demo来了解~
 
-######1、YearView
+###### 1、YearView
 
   年历，显示一年的所有日期。YearView提供了16个自定义属性，用于完全定义你想要的布局：
 ```xml
@@ -81,7 +83,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   ![image1](https://raw.githubusercontent.com/missmess/CalendarView/master/raw/yv.jpg)
 
-######2、MonthView
+###### 2、MonthView
 
   月历。提供了13个自定义属性来控制MonthView布局。
   ```xml
@@ -106,7 +108,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
  ![image2](https://raw.githubusercontent.com/missmess/CalendarView/master/raw/mv2.jpg)
 
-######3、MonthViewPager
+###### 3、MonthViewPager
 
   可滚动的月历，左右滑动或点击indicator切换显示的月份。
 
@@ -116,7 +118,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   ![gif2](https://raw.githubusercontent.com/missmess/CalendarView/master/raw/mvp.gif)
 
-######4、TransitRootView
+###### 4、TransitRootView
 
   这个viewgroup用来控制年历和月历之间的过渡。在xml中需要使用TransitRootView作为根布局，增加两个子view或viewgroup，它们分别包含你的YearView和MonthView（或者MonthViewPager）。
   顺序不能颠倒，否则达不到指定的效果。详见demo。
@@ -162,23 +164,77 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 	monthView.setDecors(dayDecor);
   ```
 
+###### 6、周历到月历切换
+  
+  支持月历周历的竖直滑动切换。需要配合nested scrolling。示例：
+  ```xml
+      <!-- 顶层需使用CoordinatorLayout -->
+      <android.support.design.widget.CoordinatorLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+  
+          <com.missmess.calendarview.MonthViewPager
+              android:id="@+id/mvp"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              calendar:ic_next_month="@mipmap/right_icon"
+              calendar:ic_previous_month="@mipmap/left_icon"
+              calendar:month_marginTop="0dp"
+              calendar:otherMonthTextColor="#CCCCCC"
+              calendar:showOtherMonth="true"
+              calendar:show_indicator="false">
+  
+              <com.missmess.calendarview.MonthView
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  calendar:showMonthTitle="false"
+                  calendar:showWeekDivider="false"
+                  calendar:dayRowHeight="50dp"
+                  calendar:showWeekLabel="false"/>
+  
+          </com.missmess.calendarview.MonthViewPager>
+  
+  		  <!-- 这个view将覆盖MonthViewPager，并且需要支持nested scrolling -->
+  		  <!-- 需要增加behavior,  使用@string/monthViewPager_scroll_behavior-->
+          <android.support.v4.widget.NestedScrollView
+              android:id="@+id/scrollView"
+              android:layout_width="match_parent"
+              calendar:layout_behavior="@string/monthViewPager_scroll_behavior"
+              android:background="@android:color/white"
+              android:layout_height="match_parent" >
+  
+              <TextView
+                  android:id="@+id/tv"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:gravity="center"
+                  android:padding="15dp"
+                  android:text="@string/no_event"
+                  android:textSize="20sp"/>
+  
+          </android.support.v4.widget.NestedScrollView>
+      </android.support.design.widget.CoordinatorLayout>
+  ```
+  通过上述步骤就能实现周历、月历切换功能。
+
 ---
 
-###接下来的工作
-######还有一些工作需要完善，目前能想到的计划内的工作有以下两条：
+### 接下来的工作
+###### 还有一些工作需要完善，目前能想到的计划内的工作有以下两条：
 
   ~~1、 强化DayDecor的功能，包括对样式（加粗、斜体），任意背景，任意字体颜色的自定义。~~
 
-  2、 增加月历上滑显示到周历的功能。类似于小米日历的效果。
+  ~~2、 增加月历上滑显示到周历的功能。类似于小米日历的效果。~~
+
+  3、周历上切换时，默认设置selection也根据切换变化。
 
 ---
 
-###关于作者
+### 关于作者
 有任何问题和BUG，欢迎反馈给我，可以用以下联系方式跟我交流：
 
-* QQ: 478271233
-* 邮箱：<478271233@qq.com>
+* 邮箱：<tarcy3620@126.com>
 * GitHub: [@missmess](https://github.com/missmess)
 
 ---
-######CopyRight：`missmess`
+###### CopyRight：`missmess`
