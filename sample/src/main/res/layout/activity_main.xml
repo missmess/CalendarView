@@ -51,4 +51,13 @@
         android:onClick="click"
         android:text="A Complex Demo"
         android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:onClick="click"
+        android:text="XIAOMI calendar Demo"
+        android:textAllCaps="false"/>
 </LinearLayout>

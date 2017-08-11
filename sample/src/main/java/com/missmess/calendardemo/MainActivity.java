@@ -30,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.button4:
                 startActivity(new Intent(this, ComplexDemoActivity.class));
                 break;
+            case R.id.button5:
+                startActivity(new Intent(this, XiaomiCalendarActivity.class));
+                break;
         }
     }
 }

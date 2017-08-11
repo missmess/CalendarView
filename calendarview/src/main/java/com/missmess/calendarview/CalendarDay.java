@@ -41,11 +41,11 @@ public class CalendarDay implements Comparable<CalendarDay> {
         calendarMonth = new CalendarMonth(year, month);
 
         if(year < 1900) {
-            throw new IllegalArgumentException("year can not small than 1900");
+            throw new IllegalArgumentException("year can not smaller than 1900: " + year);
         }
         int maxDays = CalendarUtils.getDaysInMonth(month - 1, year);
         if(day > maxDays) {
-            throw new IllegalArgumentException("this date doesn't exist");
+            throw new IllegalArgumentException("date {" + year + month + day + "} doesn't exist");
         }
     }
 

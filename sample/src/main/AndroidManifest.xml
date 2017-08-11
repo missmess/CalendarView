@@ -25,6 +25,7 @@
         </activity>
         <activity android:name=".TransitionDemoActivity">
         </activity>
+        <activity android:name=".XiaomiCalendarActivity" android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

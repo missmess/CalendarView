@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
@@ -28,6 +31,7 @@ import java.util.List;
  * @author wl
  * @since 2016/08/26 15:41
  */
+@CoordinatorLayout.DefaultBehavior(MonthBehavior.class)
 public class MonthViewPager extends ViewGroup {
     private static final int VEL_THRESHOLD = 3000;
     private ViewDragHelper dragger;
@@ -43,7 +47,6 @@ public class MonthViewPager extends ViewGroup {
     private DayClicker dayClicker;
     private CalendarDay leftEdge;
     private CalendarDay rightEdge;
-    private CalendarMonth currentMonth;
     private boolean leftAble = true;
     private boolean rightAble = true;
     private OnDragListener mDragListener;
@@ -53,6 +56,7 @@ public class MonthViewPager extends ViewGroup {
     private int month_marginTop;
     private boolean mShowOtherMonth;
     private int mOtherMonthColor;
+    private boolean mMonthMode = true;
 
     public MonthViewPager(Context context) {
         this(context, null);
@@ -133,12 +137,8 @@ public class MonthViewPager extends ViewGroup {
     }
 
     private void addChildAttrs() {
-        childLeft.mShowOtherMonth = mShowOtherMonth;
-        childLeft.setOtherMonthTextColor(mOtherMonthColor);
-        childMiddle.mShowOtherMonth = mShowOtherMonth;
-        childMiddle.setOtherMonthTextColor(mOtherMonthColor);
-        childRight.mShowOtherMonth = mShowOtherMonth;
-        childRight.setOtherMonthTextColor(mOtherMonthColor);
+        setShowOtherMonthInternal(mShowOtherMonth);
+        setOtherMonthColorInternal(mOtherMonthColor);
     }
 
     private ImageView createIndicator(Drawable icon) {
@@ -172,32 +172,45 @@ public class MonthViewPager extends ViewGroup {
      * set MonthViewPager to show this month
      * @param calendarMonth month
      */
-    public void setCurrentMonth(CalendarMonth calendarMonth) {
-        if(calendarMonth == null)
+    public void setCurrentMonth(@NonNull CalendarMonth calendarMonth) {
+        setCurrentMonth(calendarMonth, false);
+    }
+
+    /**
+     * set MonthViewPager to show this month
+     * @param calendarMonth month
+     */
+    private void setCurrentMonth(@NonNull CalendarMonth calendarMonth, boolean selectionAsWeekIndex) {
+        CalendarMonth oldMonth = childMiddle.getCurrentMonth();
+        if(calendarMonth.equals(oldMonth))
             return;
 
-        if(calendarMonth.equals(currentMonth)) // not the same with current
-            return;
-
-        if(isInRange(calendarMonth) == -1) {
-            setCurrentMonth(leftEdge.getCalendarMonth());
-            return;
+        int code = isInRange(calendarMonth);
+        if(code == -1) {
+            calendarMonth = leftEdge.getCalendarMonth();
         }
 
-        if(isInRange(calendarMonth) == 1) {
-            setCurrentMonth(rightEdge.getCalendarMonth());
-            return;
+        if(code == 1) {
+            calendarMonth = rightEdge.getCalendarMonth();
         }
 
-        // in range
+        // set current month
         childMiddle.setYearAndMonth(calendarMonth);
-        monthChanged(childMiddle);
+        if(selectionAsWeekIndex) {
+            int selectionLineIndex = childMiddle.getSelectionLineIndex();
+            childMiddle.setWeekIndex(selectionLineIndex == -1 ? 0 : selectionLineIndex);
+        }
+        onMiddleChildChanged(oldMonth);
     }
 
     public void setToday(CalendarDay today) {
         childLeft.setToday(today);
         childMiddle.setToday(today);
         childRight.setToday(today);
+    }
+
+    public CalendarMonth getCurrentMonth() {
+        return childMiddle.getCurrentMonth();
     }
 
     public MonthView getCurrentChild() {
@@ -215,45 +228,92 @@ public class MonthViewPager extends ViewGroup {
         }
         leftEdge = new CalendarDay(start, 1);
         rightEdge = new CalendarDay(end, CalendarUtils.getDaysInMonth(end));
-        checkEdge();
+
+        int code = isInRange(childMiddle.getCurrentMonth());
+        if(code == -1) {
+            setCurrentMonth(leftEdge.getCalendarMonth());
+        }
+        if(code == 1) {
+            setCurrentMonth(rightEdge.getCalendarMonth());
+        }
+
+        if(childMiddle != null) {
+            childLeft.leftEdgeDay(leftEdge);
+            childLeft.rightEdgeDay(rightEdge);
+            childMiddle.leftEdgeDay(leftEdge);
+            childMiddle.rightEdgeDay(rightEdge);
+            childRight.leftEdgeDay(leftEdge);
+            childRight.rightEdgeDay(rightEdge);
+        }
+
+        checkIfInEdge();
     }
 
     /**
-     * <p>it'll be called at these situation:</p>
-     * <li>current middle view changed to another view</li>
-     * <li>current middle view changed its showing month</li>
+     * Do works that check is in edge, setup left and right child.
+     * It is called when middle child changed, this means:
      *
-     * @param oldMiddle oldMiddle
+     * <li>after scrolling, middle child has changed to another view.</li>
+     * <li>middle child changes its showing month.</li>
+     * <li>middle child changes its display mode.</li>
+     *
+     * @param oldMonth old month
      */
-    private void monthChanged(MonthView oldMiddle) {
-        CalendarMonth old = currentMonth;
-        currentMonth = childMiddle.getCurrentMonth();
-        if(currentMonth.equals(old))
-            return;
+    private void onMiddleChildChanged(CalendarMonth oldMonth) {
+        checkIfInEdge();
 
-        if(!checkEdge())
-            // if not in range, works below become unnecessary.
-            return;
+        MonthView middle = childMiddle;
+        CalendarMonth currentMonth = middle.getCurrentMonth();
 
-        // setup left right view
+        // code below do works that setup left and right child.
         MonthView left = null;
         MonthView right = null;
         if (leftAble) {
-            childLeft.setYearAndMonth(currentMonth.previous());
             left = childLeft;
-        }
-        if (rightAble) {
-            childRight.setYearAndMonth(currentMonth.next());
-            right = childRight;
-        }
-        // call listeners
-        if(mChangeListeners != null) {
-            for(OnMonthChangeListener listener : mChangeListeners) {
-                if(listener != null)
-                    listener.onMonthChanged(this, left, childMiddle, right, currentMonth, old);
+            // In month mode, we always set left view with previous month.
+            // In week mode, we set left view with previous week, may in same month, may in previous month.
+            if(mMonthMode) {
+                left.setYearAndMonth(currentMonth.previous());
+            } else {
+                int week = middle.getWeekIndex() - 1;
+                if(week < 0) {
+                    left.setYearAndMonth(currentMonth.previous());
+                    if(middle.findDayOffset() == 0)
+                        left.setWeekIndex(left.getWeekRows() - 1);
+                    else
+                        left.setWeekIndex(left.getWeekRows() - 2);
+                } else {
+                    left.setYearAndMonth(currentMonth);
+                    left.setWeekIndex(week);
+                }
             }
         }
-        requestLayout();
+        if (rightAble) {
+            right = childRight;
+            if(mMonthMode) {
+                right.setYearAndMonth(currentMonth.next());
+            } else {
+                int week = middle.getWeekIndex() + 1;
+                if(week > middle.getWeekRows() - 1) {
+                    right.setYearAndMonth(currentMonth.next());
+                    if(right.findDayOffset() == 0)
+                        right.setWeekIndex(0);
+                    else
+                        right.setWeekIndex(1);
+                } else {
+                    right.setYearAndMonth(currentMonth);
+                    right.setWeekIndex(week);
+                }
+            }
+        }
+        // call listeners
+        boolean monthChanged = !oldMonth.equals(currentMonth);
+        if(monthChanged && mChangeListeners != null) {
+            for(OnMonthChangeListener listener : mChangeListeners) {
+                if(listener != null)
+                    listener.onMonthChanged(this, left, middle, right, currentMonth, oldMonth);
+            }
+        }
     }
 
     /**
@@ -272,49 +332,33 @@ public class MonthViewPager extends ViewGroup {
     }
 
     /**
-     * Check if current middle month is in range, if not, we set it to closet edge month.
-     * If in, we setup the indicators.
-     * 
-     * @return false - not in range, true - in range.
+     * Check if we are scrolled to the left or right edge.
      */
-    private boolean checkEdge() {
-        MonthView middle = childMiddle;
-        CalendarMonth cm = middle.getCurrentMonth();
-        // not in range.
-        if(isInRange(cm) == -1) {
-            setCurrentMonth(leftEdge.getCalendarMonth());
-            return false;
-        }
-        if(isInRange(cm) == 1) {
-            setCurrentMonth(rightEdge.getCalendarMonth());
-            return false;
-        }
+    private void checkIfInEdge() {
+        CalendarMonth cm = childMiddle.getCurrentMonth();
 
-        // in range, setup indicators.
-        if(cm.equals(leftEdge.getCalendarMonth())) {
+        // In month mode, if current month equals edge month, we are at edge.
+        // In week mode, if current month equals edge month and week index equals 0, we are at edge.
+        if((mMonthMode && cm.equals(leftEdge.getCalendarMonth()))
+                || (!mMonthMode && cm.equals(leftEdge.getCalendarMonth()) && childMiddle.getWeekIndex() == 0)) {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.GONE);
             leftAble = false;
-
-            middle.leftEdgeDay(leftEdge);
         } else {
             if(indicator_left != null)
                 indicator_left.setVisibility(View.VISIBLE);
             leftAble = true;
-            middle.leftEdgeDay(null);
         }
-        if(cm.equals(rightEdge.getCalendarMonth())) {
+        if((mMonthMode && cm.equals(rightEdge.getCalendarMonth()))
+                || (!mMonthMode && cm.equals(rightEdge.getCalendarMonth()) && childMiddle.getWeekIndex() == childMiddle.getWeekRows() - 1)) {
             if(indicator_right != null)
                 indicator_right.setVisibility(View.GONE);
             rightAble = false;
-            middle.rightEdgeDay(rightEdge);
         } else {
             if(indicator_right != null)
                 indicator_right.setVisibility(View.VISIBLE);
             rightAble = true;
-            middle.rightEdgeDay(null);
         }
-        return true;
     }
 
     public void setDecors(DayDecor decors) {
@@ -332,6 +376,32 @@ public class MonthViewPager extends ViewGroup {
 
     public boolean isShowingIndicator() {
         return mShowIndicator;
+    }
+
+    public void setShowOtherMonth(boolean show) {
+        this.mShowOtherMonth = show;
+        setShowOtherMonthInternal(show);
+    }
+
+    public void setOtherMonthColor(@ColorInt int color) {
+        this.mOtherMonthColor = color;
+        setOtherMonthColorInternal(color);
+    }
+
+    private void setOtherMonthColorInternal(int color) {
+        if(childMiddle != null) {
+            childLeft.setOtherMonthTextColor(color);
+            childMiddle.setOtherMonthTextColor(color);
+            childRight.setOtherMonthTextColor(color);
+        }
+    }
+
+    private void setShowOtherMonthInternal(boolean show) {
+        if(childMiddle != null) {
+            childLeft.setShowOtherMonth(show);
+            childMiddle.setShowOtherMonth(show);
+            childRight.setShowOtherMonth(show);
+        }
     }
 
     /**
@@ -458,6 +528,48 @@ public class MonthViewPager extends ViewGroup {
         return true;
     }
 
+    public void setMonthMode() {
+        if(mMonthMode)
+            return;
+
+        mMonthMode = true;
+        childLeft.showMonthMode();
+        childMiddle.showMonthMode();
+        childRight.showMonthMode();
+        setShowOtherMonthInternal(mShowOtherMonth);
+        setOtherMonthColorInternal(mOtherMonthColor);
+        onMiddleChildChanged(childMiddle.getCurrentMonth());
+    }
+
+    public void setWeekMode() {
+        if(!mMonthMode)
+            return;
+
+        mMonthMode = false;
+        childLeft.showWeekMode();
+        childMiddle.showWeekMode();
+        childRight.showWeekMode();
+        setShowOtherMonthInternal(true);
+        setOtherMonthColorInternal(childMiddle.normalDayTextColor);
+        onMiddleChildChanged(childMiddle.getCurrentMonth());
+    }
+
+    public boolean isMonthMode() {
+        return mMonthMode;
+    }
+
+    /**
+     * Maximum scroll range for scrolling.
+     *
+     * @return In week mode, return the distance between week index and top.
+     * In month mode, return the distance between selection index(if exist, otherwise 0) and top.
+     */
+    int getMaximumScrollRange() {
+        MonthView monthView = childMiddle;
+        int index = monthView.getWeekIndex();
+        return monthView.getHeightWithRows(index);
+    }
+
     private float calcuIndicatorAlphaAtDistance(float d, float w, float i, float m) {
         float min = 0.2f;
         float a;
@@ -565,7 +677,8 @@ public class MonthViewPager extends ViewGroup {
                     }
 
                     if(childMiddle != old) {
-                        monthChanged(old);
+                        CalendarMonth oldMonth = old.getCurrentMonth();
+                        onMiddleChildChanged(oldMonth);
                         // swap listener to current middle
                         childMiddle.setOnMonthTitleClickListener(old.getOnMonthTitleClickListener());
                         childMiddle.setOnDayClickListener(dayClicker);
@@ -603,26 +716,34 @@ public class MonthViewPager extends ViewGroup {
         }
         @Override
         public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
-            if(mShowOtherMonth) {
-                int com = calendarDay.getCalendarMonth().compareTo(currentMonth);
-                if(com < 0) { // goto previous
-                    postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            smoothScrollToLeft();
-                        }
-                    }, 200);
-                } else if(com > 0) { // goto next
-                    postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            smoothScrollToRight();
-                        }
-                    }, 200);
-                }
-            }
             childLeft.setSelection(calendarDay);
             childRight.setSelection(calendarDay);
+            if(mShowOtherMonth) {
+                int com = calendarDay.getCalendarMonth().compareTo(childMiddle.getCurrentMonth());
+                if(com < 0) { // goto previous
+                    if(mMonthMode) {
+                        postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                smoothScrollToLeft();
+                            }
+                        }, 200);
+                    } else {
+                        setCurrentMonth(getCurrentMonth().previous(), true);
+                    }
+                } else if(com > 0) { // goto next
+                    if(mMonthMode) {
+                        postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                smoothScrollToRight();
+                            }
+                        }, 200);
+                    } else {
+                        setCurrentMonth(getCurrentMonth().next(), true);
+                    }
+                }
+            }
             if(mListener != null)
                 mListener.onDayClick(monthView, calendarDay);
         }
