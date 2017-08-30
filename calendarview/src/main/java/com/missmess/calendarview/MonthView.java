@@ -245,7 +245,7 @@ public class MonthView extends View {
             // if true, current drawing day is in other month
             boolean otherMonth = false;
             if (day < 1) {
-                if (!mShowOtherMonth) {
+                if (!mWeekMode && !mShowOtherMonth) {
                     offsetInLine++;
                     continue;
                 }
@@ -255,7 +255,7 @@ public class MonthView extends View {
                 int preMDays = CalendarUtils.getDaysInMonth(currentMonth);
                 day = preMDays + day;
             } else if (day > mNumCells) {
-                if (!mShowOtherMonth) {
+                if (!mWeekMode && !mShowOtherMonth) {
                     offsetInLine++;
                     continue;
                 }
@@ -279,7 +279,7 @@ public class MonthView extends View {
             mDayNumPaint.setTextSize(normalDayTextSize);
             // set style
             DayDecor.Style style;
-            if (otherMonth) { // other month
+            if (!mWeekMode && otherMonth) { // other month, if week mode, other month style is unnecessary
                 style = otherMonthStyle;
             } else if (mDecors != null && mDecors.getDecorStyle(currentDay) != null) { // exist decor
                 style = mDecors.getDecorStyle(currentDay);

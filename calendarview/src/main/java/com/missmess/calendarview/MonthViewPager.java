@@ -554,8 +554,6 @@ public class MonthViewPager extends ViewGroup {
         childLeft.showMonthMode();
         childMiddle.showMonthMode();
         childRight.showMonthMode();
-        setShowOtherMonthInternal(mShowOtherMonth);
-        setOtherMonthColorInternal(mOtherMonthColor);
         onMiddleChildChanged(childMiddle.getCurrentMonth());
     }
 
@@ -567,8 +565,6 @@ public class MonthViewPager extends ViewGroup {
         childLeft.showWeekMode();
         childMiddle.showWeekMode();
         childRight.showWeekMode();
-        setShowOtherMonthInternal(true);
-        setOtherMonthColorInternal(childMiddle.normalDayTextColor);
 
         // correct the selection when change to week mode
         int com = childMiddle.getSelectionType();
