@@ -125,7 +125,7 @@ public class DayDecor {
         /**
          * add text attributes to specified paint.
          */
-        void styledTextPaint(Paint paint) {
+        void assignStyleToPaint(Paint paint) {
             paint.setFakeBoldText(isBold);
             paint.setTextSkewX(isItalic ? -0.25f : 0f);
             paint.setUnderlineText(underline);

@@ -228,16 +228,16 @@ public class MonthView extends View {
      */
     protected void drawMonthDays(Canvas canvas) {
         int dayTop = SPACE_BETWEEN_WEEK_AND_DAY + MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT;
-        int y = (dayRowHeight + normalDayTextSize) / 2 + dayTop;
         float halfDay = halfDayWidth;
         int firstDayOffset = findDayOffset();
+        boolean weekMode = mWeekMode;
 
         // in a line, the offset with left of current day
         int offsetInLine = 0;
         // the offset with top left of current day
-        int startOffset = mWeekMode ? getWeekIndex() * mNumDays : 0;
+        int startOffset = weekMode ? getWeekIndex() * mNumDays : 0;
         // times we loop
-        int cells = mWeekMode ? mNumDays : mNumRows * mNumDays;
+        int cells = weekMode ? mNumDays : mNumRows * mNumDays;
         // loop to draw
         for (int i = startOffset; i < startOffset + cells; i++) {
             int day = i - firstDayOffset + 1;
@@ -245,7 +245,7 @@ public class MonthView extends View {
             // if true, current drawing day is in other month
             boolean otherMonth = false;
             if (day < 1) {
-                if (!mWeekMode && !mShowOtherMonth) {
+                if (!weekMode && !mShowOtherMonth) {
                     offsetInLine++;
                     continue;
                 }
@@ -255,7 +255,7 @@ public class MonthView extends View {
                 int preMDays = CalendarUtils.getDaysInMonth(currentMonth);
                 day = preMDays + day;
             } else if (day > mNumCells) {
-                if (!mWeekMode && !mShowOtherMonth) {
+                if (!weekMode && !mShowOtherMonth) {
                     offsetInLine++;
                     continue;
                 }
@@ -264,7 +264,7 @@ public class MonthView extends View {
                 currentMonth = currentMonth.next();
                 day = day - mNumCells;
             }
-
+            // x position
             CalendarDay currentDay = new CalendarDay(currentMonth, day);
             float dayLeft = offsetInLine * halfDay * 2 + mPadding;
             float x = halfDay + dayLeft;
@@ -274,73 +274,90 @@ public class MonthView extends View {
                 selected = true;
             }
 
+            DayDecor.Style decoration = null;
+            if (mDecors != null) {
+                decoration = mDecors.getDecorStyle(currentDay);
+            }
             // default color and size
             mDayNumPaint.setColor(decorTextColor);
             mDayNumPaint.setTextSize(normalDayTextSize);
-            // set style
+
+            // ==================================
+            // cover order for drawing:
+            // 1. text: other month > selection > decorator > today > normal
+            // 2. bg: selection + decorator, selection in foreground
+            // ==================================
             DayDecor.Style style;
-            if (!mWeekMode && otherMonth) { // other month, if week mode, other month style is unnecessary
+            if (!weekMode && otherMonth) { // other month, if in week mode, other month is unnecessary
                 style = otherMonthStyle;
-            } else if (mDecors != null && mDecors.getDecorStyle(currentDay) != null) { // exist decor
-                style = mDecors.getDecorStyle(currentDay);
-            } else if (today.equals(currentDay)) { // today
-                style = todayStyle;
             } else if (selected) { // select
                 style = selectionStyle;
+            } else if (decoration != null) { // exist decor
+                style = decoration;
+            } else if (today.equals(currentDay)) { // today
+                style = todayStyle;
             } else { // normal
                 style = normalStyle;
                 style.setTextColor(normalDayTextColor);
             }
-            style.styledTextPaint(mDayNumPaint);
+            style.assignStyleToPaint(mDayNumPaint);
             // get text height
             String dayStr = String.format(Locale.getDefault(), "%d", day);
             mDayNumPaint.getTextBounds(dayStr, 0, dayStr.length(), drawRect);
             int textHeight = drawRect.height();
+            float y = (dayRowHeight + mDayNumPaint.getTextSize()) / 2 + dayTop;
 
-            // when selected, background always use selection style,
-            // whenever it used be.
-            if (selected) {
-                style = selectionStyle;
-            }
             // draw background
-            if (style.isCircleBg()) {
-                mDayBgPaint.setColor(style.getPureColorBg());
-                canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
-            } else if (style.isRectBg()) {
-                mDayBgPaint.setColor(style.getPureColorBg());
-                canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
-            } else if (style.isDrawableBg()) {
-                Drawable drawable = style.getDrawableBg();
-                int dHeight = drawable.getIntrinsicHeight();
-                int dWidth = drawable.getIntrinsicWidth();
-
-                float left, right, top, bottom;
-                if (dWidth <= 0) { // fill
-                    left = dayLeft;
-                    right = dayLeft + 2 * halfDay;
-                } else { // remain original size
-                    left = x - dWidth / 2;
-                    right = x + dWidth / 2;
-                }
-                if (dHeight <= 0) {
-                    top = dayTop;
-                    bottom = dayTop + dayRowHeight;
-                } else {
-                    top = y - textHeight / 2 - dHeight / 2;
-                    bottom = y - textHeight / 2 + dHeight / 2;
-                }
-                drawable.setBounds((int) left, (int) top, (int) right, (int) bottom);
-                drawable.draw(canvas);
+            if (decoration != null) {
+                drawDayBg(canvas, decoration, x, y, textHeight, dayTop, dayLeft);
             }
+            if (selected) {
+                drawDayBg(canvas, selectionStyle, x, y, textHeight, dayTop, dayLeft);
+            }
+
+            // draw text
             canvas.drawText(dayStr, x, y, mDayNumPaint);
 
             // goto next day
             offsetInLine++;
             if (offsetInLine == mNumDays) {
                 offsetInLine = 0;
-                y += dayRowHeight;
                 dayTop += dayRowHeight;
             }
+        }
+    }
+
+    private void drawDayBg(Canvas canvas, DayDecor.Style style, float x, float y, int textHeight,
+                           int dayTop, float dayLeft) {
+        float halfDay = halfDayWidth;
+        if (style.isCircleBg()) {
+            mDayBgPaint.setColor(style.getPureColorBg());
+            canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
+        } else if (style.isRectBg()) {
+            mDayBgPaint.setColor(style.getPureColorBg());
+            canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
+        } else if (style.isDrawableBg()) {
+            Drawable drawable = style.getDrawableBg();
+            int dHeight = drawable.getIntrinsicHeight();
+            int dWidth = drawable.getIntrinsicWidth();
+
+            float left, right, top, bottom;
+            if (dWidth <= 0) { // fill
+                left = dayLeft;
+                right = dayLeft + 2 * halfDay;
+            } else { // remain original size
+                left = x - dWidth / 2;
+                right = x + dWidth / 2;
+            }
+            if (dHeight <= 0) {
+                top = dayTop;
+                bottom = dayTop + dayRowHeight;
+            } else {
+                top = y - textHeight / 2 - dHeight / 2;
+                bottom = y - textHeight / 2 + dHeight / 2;
+            }
+            drawable.setBounds((int) left, (int) top, (int) right, (int) bottom);
+            drawable.draw(canvas);
         }
     }
 

@@ -8,8 +8,11 @@ import android.widget.Toast;
 
 import com.missmess.calendarview.CalendarDay;
 import com.missmess.calendarview.CalendarMonth;
+import com.missmess.calendarview.CalendarUtils;
 import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
+
+import java.util.Calendar;
 
 public class MonthViewDemoActivity extends AppCompatActivity {
 
@@ -27,16 +30,17 @@ public class MonthViewDemoActivity extends AppCompatActivity {
     }
 
     private void init() {
-        monthView.setYearAndMonth(new CalendarMonth(2017, 2));
-        monthView.setToday(new CalendarDay(2017, 2, 12));
+        CalendarMonth month = new CalendarMonth(2017, 2);
+        monthView.setYearAndMonth(month);
+        monthView.setToday(new CalendarDay(month, 12));
         // add decorators
         DayDecor dayDecor = new DayDecor();
         // circle bg
-        dayDecor.putOne(new CalendarDay(2017, 2, 1), 0xFFFF6600);
+        dayDecor.putOne(new CalendarDay(month, 1), 0xFFFF6600);
         // rectangle bg
-        dayDecor.putOne(new CalendarDay(2017, 2, 11), 0xFFAAAAAA, DayDecor.Style.RECTANGLE);
+        decorWeekend(month, dayDecor);
         // drawable bg
-        dayDecor.putOne(new CalendarDay(2017, 2, 19), getResources().getDrawable(R.drawable.a_decor));
+        dayDecor.putOne(new CalendarDay(month, 21), getResources().getDrawable(R.drawable.a_decor));
         // styled background and text
         DayDecor.Style style = new DayDecor.Style();
         style.setTextSize(getResources().getDimensionPixelSize(R.dimen.big_text));
@@ -47,7 +51,7 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         style.setStrikeThrough(true);
         style.setPureColorBgShape(DayDecor.Style.CIRCLE);
         style.setPureColorBg(0xFF66AA76);
-        dayDecor.putOne(new CalendarDay(2017, 2, 24), style);
+        dayDecor.putOne(new CalendarDay(month, 24), style);
         monthView.setDecors(dayDecor);
         // add listener
         monthView.setOnMonthTitleClickListener(new MonthView.OnMonthTitleClickListener() {
@@ -62,6 +66,19 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 Toast.makeText(MonthViewDemoActivity.this, "selection change to: " + now, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void decorWeekend(CalendarMonth month, DayDecor dayDecor) {
+        int days = CalendarUtils.getDaysInMonth(month);
+        for(int i = 1; i <= days; i++) {
+            CalendarDay calendarDay = new CalendarDay(month, i);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(calendarDay.getDate());
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+            if(dayOfWeek == 1 || dayOfWeek == 7) {
+                dayDecor.putOne(calendarDay, 0xFFAAAAAA, DayDecor.Style.RECTANGLE);
+            }
+        }
     }
 
     public void click(View v) {
