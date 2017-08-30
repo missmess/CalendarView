@@ -50,17 +50,18 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
         monthViewPager.addOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
-                Log.d("xiaomi_calendar", "old=" + old.toString() + ";current=" + currentMonth.toString());
+                Log.d("xiaomi_calendar", "old=" + old.toString() + "; current=" + currentMonth.toString());
                 year.setText(currentMonth.getYear() + "年");
                 month.setText(currentMonth.getMonth() + "月");
             }
         });
-        monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
+        monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
+            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
+                Log.v("xiaomi_calendar", "byUser=" + byUser + "; old=" + old + "; now=" + now);
                 for(DayEvent event : yearEvents) {
-                    if(event.isThisDay(calendarDay)) {
-                        textView.setText(String.format("Today is \n%s\nToday have %d events", calendarDay.toString(), event.getEventDetails().length));
+                    if(event.isThisDay(now)) {
+                        textView.setText(String.format("Today is \n%s\nToday have %d events", now, event.getEventDetails().length));
                         return;
                     }
                 }
@@ -94,7 +95,7 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.mvp_menu, menu);
+        getMenuInflater().inflate(R.menu.xiaomi_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -102,6 +103,24 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.item1:
+                if(monthViewPager.isShowingOtherMonth()) {
+                    monthViewPager.setShowOtherMonth(false);
+                } else {
+                    monthViewPager.setShowOtherMonth(true);
+                }
+                break;
+            case R.id.item2:
+                if(monthViewPager.isMonthMode()) {
+                    monthViewPager.setWeekMode();
+                } else {
+                    monthViewPager.setMonthMode();
+                }
+                break;
+            case R.id.item3:
+                monthViewPager.setCurrentMonth(new CalendarMonth(2017, 1));
+                break;
+            case R.id.item4:
+                monthViewPager.setSelection(new CalendarDay(2017, 4, 2));
                 break;
         }
         return super.onOptionsItemSelected(item);

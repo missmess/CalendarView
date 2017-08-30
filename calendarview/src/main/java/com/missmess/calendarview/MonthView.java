@@ -11,6 +11,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
@@ -78,7 +80,7 @@ public class MonthView extends View {
     protected boolean mShowOtherMonth;
 
     private static final String DAY_OF_WEEK_FORMAT = "EEEEE";
-    private OnDayClickListener mOnDayClickListener;
+    private OnSelectionChangeListener mOnSelectionChangeListener;
     private OnMonthTitleClickListener mOnMonthClicker;
     private CalendarDay selectedDay;
     private float downX;
@@ -130,7 +132,7 @@ public class MonthView extends View {
         normalDayTextSize = typedArray.getDimensionPixelSize(R.styleable.MonthView_dayTextSize, resources.getDimensionPixelSize(R.dimen.text_size_day));
         MONTH_LABEL_TEXT_SIZE = typedArray.getDimensionPixelSize(R.styleable.MonthView_monthTextSize, resources.getDimensionPixelSize(R.dimen.text_size_month));
         WEEK_LABEL_TEXT_SIZE = typedArray.getDimensionPixelSize(R.styleable.MonthView_weekLabelTextSize, resources.getDimensionPixelSize(R.dimen.text_size_week));
-        MONTH_HEADER_HEIGHT = monthHeaderSizeCache =  typedArray.getDimensionPixelOffset(R.styleable.MonthView_monthHeaderHeight, resources.getDimensionPixelOffset(R.dimen.header_month_height));
+        MONTH_HEADER_HEIGHT = monthHeaderSizeCache = typedArray.getDimensionPixelOffset(R.styleable.MonthView_monthHeaderHeight, resources.getDimensionPixelOffset(R.dimen.header_month_height));
         dayCircleRadius = typedArray.getDimensionPixelSize(R.styleable.MonthView_dayCircleRadius, resources.getDimensionPixelOffset(R.dimen.selected_day_radius));
 
         dayRowHeight = typedArray.getDimensionPixelSize(R.styleable.MonthView_dayRowHeight, resources.getDimensionPixelOffset(R.dimen.row_height));
@@ -139,16 +141,16 @@ public class MonthView extends View {
         mShowWeekDivider = typedArray.getBoolean(R.styleable.MonthView_showWeekDivider, false);
 
         spaceBetweenWeekAndDivider = resources.getDimensionPixelSize(R.dimen.week_label_between_divider_size);
-        if(!mShowMonthTitle) {
+        if (!mShowMonthTitle) {
             MONTH_HEADER_HEIGHT = 0;
         }
-        if(!mShowWeekLabel) {
+        if (!mShowWeekLabel) {
             WEEK_LABEL_HEIGHT = 0;
         } else {
             WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + spaceBetweenWeekAndDivider;
         }
 
-//        typedArray.recycle();
+        //        typedArray.recycle();
         mPadding = getPaddingLeft();
         drawRect = new Rect();
         initStyle();
@@ -165,6 +167,7 @@ public class MonthView extends View {
 
     /**
      * 设置当前时间
+     *
      * @param today 当前时间
      */
     public void setToday(CalendarDay today) {
@@ -205,7 +208,7 @@ public class MonthView extends View {
             canvas.drawText(mDayOfWeekFormatter.format(cal.getTime()), x, y, mWeekLabelPaint);
         }
 
-        if(mShowWeekDivider) {
+        if (mShowWeekDivider) {
             //draw divider under week label
             int yLine = MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT + weekLabelOffset;
             canvas.drawLine(mPadding, yLine - 1, mWidth - mPadding, yLine, mWeekLabelPaint);
@@ -213,10 +216,10 @@ public class MonthView extends View {
     }
 
     private void drawMonthTitle(Canvas canvas) {
-//        Log.e("MonthView", "drawMonthTitle");
+        //        Log.e("MonthView", "drawMonthTitle");
         int[] pos = getMonthDrawPoint();
-//        StringBuilder stringBuilder = new StringBuilder(getMonthAndYearString().toLowerCase());
-//        stringBuilder.setCharAt(0, Character.toUpperCase(stringBuilder.charAt(0)));
+        //        StringBuilder stringBuilder = new StringBuilder(getMonthAndYearString().toLowerCase());
+        //        stringBuilder.setCharAt(0, Character.toUpperCase(stringBuilder.charAt(0)));
         canvas.drawText(getMonthTitleString(), pos[0], pos[1], mMonthTitlePaint);
     }
 
@@ -229,41 +232,45 @@ public class MonthView extends View {
         float halfDay = halfDayWidth;
         int firstDayOffset = findDayOffset();
 
+        // in a line, the offset with left of current day
         int offsetInLine = 0;
+        // the offset with top left of current day
         int startOffset = mWeekMode ? getWeekIndex() * mNumDays : 0;
-
+        // times we loop
         int cells = mWeekMode ? mNumDays : mNumRows * mNumDays;
-
-        for(int i = startOffset; i < startOffset + cells; i++) {
+        // loop to draw
+        for (int i = startOffset; i < startOffset + cells; i++) {
             int day = i - firstDayOffset + 1;
-            CalendarMonth month = getCurrentMonth();
+            CalendarMonth currentMonth = getCurrentMonth();
+            // if true, current drawing day is in other month
             boolean otherMonth = false;
-            if(day < 1) {
-                if(!mShowOtherMonth) {
+            if (day < 1) {
+                if (!mShowOtherMonth) {
                     offsetInLine++;
                     continue;
                 }
 
                 otherMonth = true;
-                month = month.previous();
-                int preMDays = CalendarUtils.getDaysInMonth(month);
+                currentMonth = currentMonth.previous();
+                int preMDays = CalendarUtils.getDaysInMonth(currentMonth);
                 day = preMDays + day;
-            } else if(day > mNumCells) {
-                if(!mShowOtherMonth) {
+            } else if (day > mNumCells) {
+                if (!mShowOtherMonth) {
                     offsetInLine++;
                     continue;
                 }
 
                 otherMonth = true;
-                month = month.next();
+                currentMonth = currentMonth.next();
                 day = day - mNumCells;
             }
 
+            CalendarDay currentDay = new CalendarDay(currentMonth, day);
             float dayLeft = offsetInLine * halfDay * 2 + mPadding;
             float x = halfDay + dayLeft;
-
+            // if true, current drawing day is selected
             boolean selected = false;
-            if(selectedDay != null && selectedDay.equals(new CalendarDay(month, day))) { //selected
+            if (selectedDay != null && selectedDay.equals(currentDay)) { //selected
                 selected = true;
             }
 
@@ -272,11 +279,11 @@ public class MonthView extends View {
             mDayNumPaint.setTextSize(normalDayTextSize);
             // set style
             DayDecor.Style style;
-            if(otherMonth) { // other month
+            if (otherMonth) { // other month
                 style = otherMonthStyle;
-            } else if(mDecors != null && mDecors.getDecorStyle(mYear, mMonth + 1, day) != null) { // exist decor
-                style = mDecors.getDecorStyle(mYear, mMonth + 1, day);
-            } else if (today.equals(new CalendarDay(mYear, mMonth + 1, day))) { // today
+            } else if (mDecors != null && mDecors.getDecorStyle(currentDay) != null) { // exist decor
+                style = mDecors.getDecorStyle(currentDay);
+            } else if (today.equals(currentDay)) { // today
                 style = todayStyle;
             } else if (selected) { // select
                 style = selectionStyle;
@@ -292,30 +299,30 @@ public class MonthView extends View {
 
             // when selected, background always use selection style,
             // whenever it used be.
-            if(selected) {
+            if (selected) {
                 style = selectionStyle;
             }
             // draw background
-            if(style.isCircleBg()) {
+            if (style.isCircleBg()) {
                 mDayBgPaint.setColor(style.getPureColorBg());
                 canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
-            } else if(style.isRectBg()) {
+            } else if (style.isRectBg()) {
                 mDayBgPaint.setColor(style.getPureColorBg());
                 canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
-            } else if(style.isDrawableBg()) {
+            } else if (style.isDrawableBg()) {
                 Drawable drawable = style.getDrawableBg();
                 int dHeight = drawable.getIntrinsicHeight();
                 int dWidth = drawable.getIntrinsicWidth();
 
                 float left, right, top, bottom;
-                if(dWidth <= 0) { // fill
+                if (dWidth <= 0) { // fill
                     left = dayLeft;
                     right = dayLeft + 2 * halfDay;
                 } else { // remain original size
                     left = x - dWidth / 2;
                     right = x + dWidth / 2;
                 }
-                if(dHeight <= 0) {
+                if (dHeight <= 0) {
                     top = dayTop;
                     bottom = dayTop + dayRowHeight;
                 } else {
@@ -337,6 +344,11 @@ public class MonthView extends View {
         }
     }
 
+    /**
+     * The first day of current month offset x cells.
+     *
+     * @return the x
+     */
     protected int findDayOffset() {
         return (mDayOfWeekStart < mWeekStart ? (mDayOfWeekStart + mNumDays) : mDayOfWeekStart) - mWeekStart;
     }
@@ -356,10 +368,7 @@ public class MonthView extends View {
     }
 
     private void onDayClick(CalendarDay calendarDay) {
-        setSelection(calendarDay);
-        if (mOnDayClickListener != null) {
-            mOnDayClickListener.onDayClick(this, calendarDay);
-        }
+        selectActual(calendarDay, true);
     }
 
     public void setSelectionStyle(DayDecor.Style selectionStyle) {
@@ -368,17 +377,54 @@ public class MonthView extends View {
     }
 
     /**
-     * select specified calendar day.
-     * @param calendarDay calendarDay; null to clear selection.
+     * Select a specified calendar day in this month. Selection day should always be visible, no
+     * matter month mode or week mode.
+     *
+     * @param selection a day; set null to clear selection.
+     * @return success selected
      */
-    public void setSelection(CalendarDay calendarDay) {
-        if(selectedDay == calendarDay) // not changed
-            return;
-        if(calendarDay != null && calendarDay.equals(selectedDay)) //same day
-            return;
+    public boolean setSelection(@Nullable CalendarDay selection) {
+        if (selection != null && selection.compareTo(leftEdge) < 0)
+            return false;
+        if (selection != null && selection.compareTo(rightEdge) > 0)
+            return false;
 
-        selectedDay = calendarDay;
+        if (selection != null) {
+            if (mWeekMode) {
+                // selection can not out range of current week
+                if (!isDayInWeek(selection)) {
+                    return false;
+                }
+            } else {
+                // selection can not out range of current month
+                int com = getDayType(selection);
+                if (com == -2 || com == 2) {
+                    return false;
+                }
+            }
+        }
+
+        return selectActual(selection, false);
+    }
+
+    void setSelectionAtom(@Nullable CalendarDay selection) {
+        selectedDay = selection;
         invalidate();
+    }
+
+    private boolean selectActual(CalendarDay selection, boolean byUser) {
+        if (selectedDay == selection) // not changed
+            return false;
+        if (selection != null && selection.equals(selectedDay)) //same day
+            return false;
+
+        CalendarDay old = selectedDay;
+        selectedDay = selection;
+        invalidate();
+        if (mOnSelectionChangeListener != null) {
+            mOnSelectionChangeListener.onSelectionChanged(this, selection, old, byUser);
+        }
+        return true;
     }
 
     public CalendarDay getSelection() {
@@ -400,34 +446,34 @@ public class MonthView extends View {
         }
 
         float yDayOffset = y - MONTH_HEADER_HEIGHT - WEEK_LABEL_HEIGHT - SPACE_BETWEEN_WEEK_AND_DAY;
-        if(yDayOffset < 0)
+        if (yDayOffset < 0)
             return null;
 
         int yDay = (int) yDayOffset / dayRowHeight;
         int day = 1 + ((int) ((x - padding) / (2 * halfDayWidth)) - findDayOffset()) + yDay * mNumDays;
 
-        if(mWeekMode) {
-            day += mWeekIndex * mNumDays;
+        if (mWeekMode) {
+            day += getWeekIndex() * mNumDays;
         }
 
-        if(day < 1) {
-            if(mShowOtherMonth) {
-                CalendarMonth preM = new CalendarMonth(mYear, mMonth + 1).previous();
+        if (day < 1) {
+            if (mShowOtherMonth) {
+                CalendarMonth preM = getCurrentMonth().previous();
                 int preD = CalendarUtils.getDaysInMonth(preM) + day;
                 return new CalendarDay(preM, preD);
             } else {
                 return null;
             }
-        } else if(day > mNumCells) {
-            if(mShowOtherMonth) {
-                CalendarMonth nextM = new CalendarMonth(mYear, mMonth + 1).next();
+        } else if (day > mNumCells) {
+            if (mShowOtherMonth) {
+                CalendarMonth nextM = getCurrentMonth().next();
                 int nextD = day - mNumCells;
                 return new CalendarDay(nextM, nextD);
             } else {
                 return null;
             }
         } else
-            return new CalendarDay(mYear, mMonth + 1, day);
+            return new CalendarDay(getCurrentMonth(), day);
     }
 
     private boolean isClickMonth(int x, int y) {
@@ -445,7 +491,7 @@ public class MonthView extends View {
     private int[] getMonthDrawPoint() {
         int x = mWidth / 2;
         int y = MONTH_HEADER_HEIGHT / 2 + (MONTH_LABEL_TEXT_SIZE / 3) + monthLabelOffset;
-        return new int[] {x, y};
+        return new int[]{x, y};
     }
 
     protected void initPaint() {
@@ -482,33 +528,33 @@ public class MonthView extends View {
     }
 
     protected void onDraw(Canvas canvas) {
-//        Log.d("MonthView", "onDraw");
+        //        Log.d("MonthView", "onDraw");
 
-        if(mShowMonthTitle) {
+        if (mShowMonthTitle) {
             drawMonthTitle(canvas);
         }
-        if(mShowWeekLabel) {
+        if (mShowWeekLabel) {
             drawWeekLabels(canvas);
         }
         drawMonthDays(canvas);
     }
 
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-//        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-//
-//        int height = 0;
-//        switch (heightMode) {
-//            case MeasureSpec.AT_MOST:
-//                height = getShouldHeight();
-//                break;
-//            case MeasureSpec.EXACTLY:
-//            case MeasureSpec.UNSPECIFIED:
-//                height = heightSize;
-//                break;
-//        }
+        //        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        //        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        //
+        //        int height = 0;
+        //        switch (heightMode) {
+        //            case MeasureSpec.AT_MOST:
+        //                height = getShouldHeight();
+        //                break;
+        //            case MeasureSpec.EXACTLY:
+        //            case MeasureSpec.UNSPECIFIED:
+        //                height = heightSize;
+        //                break;
+        //        }
 
-//        Log.d("MonthView", "onMeasure->" + this.getId());
+        //        Log.d("MonthView", "onMeasure->" + this.getId());
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), getShouldHeight());
     }
 
@@ -524,14 +570,14 @@ public class MonthView extends View {
     }
 
     private void recycle() {
-        if(mTypeArray != null) {
+        if (mTypeArray != null) {
             mTypeArray.recycle();
             mTypeArray = null;
         }
     }
 
     protected void setOtherMonthTextColor(@ColorInt int color) {
-        if(color == mOtherMonthTextColor)
+        if (color == mOtherMonthTextColor)
             return;
 
         mOtherMonthTextColor = color;
@@ -540,7 +586,7 @@ public class MonthView extends View {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        if(!isEnabled()) {
+        if (!isEnabled()) {
             // still consume touch event
             return true;
         }
@@ -559,15 +605,15 @@ public class MonthView extends View {
                     CalendarDay calendarDay = getDayFromLocation(x, y);
                     if (calendarDay != null) {
                         // if this location is out of range.
-                        if((leftEdge != null && calendarDay.compareTo(leftEdge) < 0)
+                        if ((leftEdge != null && calendarDay.compareTo(leftEdge) < 0)
                                 || (rightEdge != null && calendarDay.compareTo(rightEdge) > 0))
                             break;
                         // else
                         onDayClick(calendarDay);
-                    } else if(isClickMonth((int)x, (int)y)) { // clicked month title
+                    } else if (isClickMonth((int) x, (int) y)) { // clicked month title
                         // month title clicked
-                        if(mOnMonthClicker != null) {
-                            mOnMonthClicker.onMonthClick(this, new CalendarMonth(mYear, mMonth + 1));
+                        if (mOnMonthClicker != null) {
+                            mOnMonthClicker.onMonthClick(this, getCurrentMonth());
                         }
                     }
                 }
@@ -578,6 +624,7 @@ public class MonthView extends View {
 
     /**
      * 设置当前显示的年和月
+     *
      * @param calendarMonth calendarMonth
      */
     public void setYearAndMonth(CalendarMonth calendarMonth) {
@@ -586,11 +633,12 @@ public class MonthView extends View {
 
     /**
      * 设置当前显示的年和月
-     * @param year 年
+     *
+     * @param year  年
      * @param month 月
      */
     public void setYearAndMonth(int year, int month) {
-        if(year == mYear && month == mMonth + 1)
+        if (year == mYear && month == mMonth + 1)
             return;
 
         mYear = year;
@@ -608,7 +656,7 @@ public class MonthView extends View {
 
         mNumRows = calculateNumRows();
 
-        if(ViewCompat.isLaidOut(this)) {
+        if (ViewCompat.isLaidOut(this)) {
             // we are not sure height will remain unchanged.
             requestLayout();
             invalidate();
@@ -626,7 +674,7 @@ public class MonthView extends View {
 
     public void showMonthTitle(boolean show) {
         this.mShowMonthTitle = show;
-        if(!mShowMonthTitle) {
+        if (!mShowMonthTitle) {
             MONTH_HEADER_HEIGHT = 0;
         } else {
             MONTH_HEADER_HEIGHT = monthHeaderSizeCache;
@@ -635,7 +683,7 @@ public class MonthView extends View {
 
     public void showWeekLabel(boolean show) {
         this.mShowWeekLabel = show;
-        if(!mShowWeekLabel) {
+        if (!mShowWeekLabel) {
             WEEK_LABEL_HEIGHT = 0;
         } else {
             WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + spaceBetweenWeekAndDivider;
@@ -651,7 +699,7 @@ public class MonthView extends View {
     }
 
     protected void setShowOtherMonth(boolean show) {
-        if(mShowOtherMonth == show)
+        if (mShowOtherMonth == show)
             return;
 
         mShowOtherMonth = show;
@@ -676,43 +724,135 @@ public class MonthView extends View {
         invalidate();
     }
 
-    void showWeekMode() {
+    public void showWeekMode() {
+        if (mWeekMode)
+            return;
+
         this.mWeekMode = true;
         invalidate();
     }
 
-    void setWeekIndex(int weekIndex) {
+    public void setWeekIndex(int weekIndex) {
+        if (mWeekIndex == weekIndex)
+            return;
+
         this.mWeekIndex = weekIndex;
-        invalidate();
+        if (mWeekMode) {
+            invalidate();
+        }
     }
 
-    int getWeekIndex() {
+    public int getWeekIndex() {
         return mWeekIndex;
     }
 
-    boolean isWeekMode() {
+    public boolean isWeekMode() {
         return mWeekMode;
     }
 
-    void showMonthMode() {
+    boolean isDayInWeek(CalendarDay day) {
+        if (!mWeekMode)
+            throw new IllegalStateException("do not call this when not in week mode");
+
+        int dayOffset = findDayOffset();
+        int start = mWeekIndex * mNumDays - dayOffset;
+        CalendarDay startDay = CalendarUtils.offsetDay(new CalendarDay(getCurrentMonth(), 1), start);
+        if (day.compareTo(startDay) < 0)
+            return false;
+
+        CalendarDay endDay = CalendarUtils.offsetDay(startDay, mNumDays);
+        if (day.compareTo(endDay) > 0)
+            return false;
+
+        return true;
+    }
+
+    public void showMonthMode() {
+        if (!mWeekMode)
+            return;
+
         this.mWeekMode = false;
         invalidate();
     }
 
     /**
-     * Line index of selection.
-     * @return return -1 for no selection.
+     * Line index of selection showing.
+     *
+     * @return return -1 for no selection or selection is visible in current month.
      */
-    int getSelectionLineIndex() {
-        if(selectedDay != null && selectedDay.getCalendarMonth().equals(getCurrentMonth())) {
-            return (findDayOffset() + selectedDay.getDay() - 1) / mNumDays;
+    public int getSelectionLineIndex() {
+        if (selectedDay != null) {
+            int type = getSelectionType();
+            switch (type) {
+                case 0:
+                    return (findDayOffset() + selectedDay.getDay() - 1) / mNumDays;
+                case 1:
+                    return mNumRows - 1;
+                case 2:
+                    return -1;
+                case -1:
+                    return 0;
+                case -2:
+                    return -1;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Selection day type.
+     *
+     * @return -3 - no selection, others see {@link #getDayType(CalendarDay)}
+     */
+    int getSelectionType() {
+        if (selectedDay == null)
+            return -3;
+
+        return getDayType(selectedDay);
+    }
+
+    /**
+     * A type of day relative to this month.
+     *
+     * @return <p>0 - if day is in current month</p>
+     * <p>-1 - if day is in previous month and visible now</p>
+     * <p>-2 - if day is in previous month but not visible</p>
+     * <p>1 - if day is in next month and visible now</p>
+     * <p>2 - if day is in next month but not visible</p>
+     */
+    int getDayType(@NonNull CalendarDay day) {
+        int com = day.getCalendarMonth().compareTo(getCurrentMonth());
+        if (com == 0) {
+            // current month
+            return 0;
+        }
+
+        int dayOffset = findDayOffset();
+        if (com < 0) {
+            CalendarDay first = new CalendarDay(getCurrentMonth(), 1);
+            CalendarDay otherMonthStartDay = CalendarUtils.offsetDay(first, -dayOffset);
+            if (mShowOtherMonth && day.compareTo(otherMonthStartDay) >= 0) {
+                // select day is in previous month and visible
+                return -1;
+            } else {
+                return -2;
+            }
         } else {
-            return -1;
+            CalendarDay last = new CalendarDay(getCurrentMonth(), mNumCells);
+            CalendarDay otherMonthEndDay = CalendarUtils.offsetDay(last, mNumRows * mNumDays - dayOffset - mNumCells);
+            if (mShowOtherMonth && day.compareTo(otherMonthEndDay) <= 0) {
+                // select day is in next month and visible
+                return 1;
+            } else {
+                return 2;
+            }
         }
     }
 
     /**
      * return the number of week of this month.
+     *
      * @return week number rows.
      */
     int getWeekRows() {
@@ -721,6 +861,7 @@ public class MonthView extends View {
 
     /**
      * MonthView should be this height.
+     *
      * @return should height
      */
     public int getShouldHeight() {
@@ -729,6 +870,7 @@ public class MonthView extends View {
 
     /**
      * the max height MonthView could be.
+     *
      * @return max height
      */
     public int getMaxHeight() {
@@ -745,7 +887,7 @@ public class MonthView extends View {
 
     // get a copy with same attributes defined in layout.
     protected MonthView staticCopy() {
-        if(isCopy)
+        if (isCopy)
             // this is a copy, should not make a copy again.
             return null;
         return new MonthView(getContext(), mTypeArray, null);
@@ -755,24 +897,32 @@ public class MonthView extends View {
         return new CalendarMonth(mYear, mMonth + 1);
     }
 
-    public void setOnDayClickListener(OnDayClickListener onDayClickListener) {
-        mOnDayClickListener = onDayClickListener;
+    public void setOnSelectionChangeListener(OnSelectionChangeListener listener) {
+        mOnSelectionChangeListener = listener;
     }
 
     public OnMonthTitleClickListener getOnMonthTitleClickListener() {
         return mOnMonthClicker;
     }
 
-    public OnDayClickListener getOnDayClickListener() {
-        return mOnDayClickListener;
+    public OnSelectionChangeListener getOnSelectionChangeListener() {
+        return mOnSelectionChangeListener;
     }
 
     public void setOnMonthTitleClickListener(OnMonthTitleClickListener onMonthTitleClickListener) {
         this.mOnMonthClicker = onMonthTitleClickListener;
     }
 
-    public interface OnDayClickListener {
-        void onDayClick(MonthView monthView, CalendarDay calendarDay);
+    public interface OnSelectionChangeListener {
+        /**
+         * Selection has changed on month view
+         *
+         * @param monthView monthView
+         * @param now       now selection
+         * @param old       old selection
+         * @param byUser    true - selection changed by user click, false - selection changed by {@link #setSelection(CalendarDay)}
+         */
+        void onSelectionChanged(MonthView monthView, @Nullable CalendarDay now, @Nullable CalendarDay old, boolean byUser);
     }
 
     public interface OnMonthTitleClickListener {

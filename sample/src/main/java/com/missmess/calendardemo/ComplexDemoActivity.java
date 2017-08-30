@@ -109,11 +109,11 @@ public class ComplexDemoActivity extends AppCompatActivity {
     }
 
     private void initListener() {
-        monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
+        monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
+            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
                 for(DayEvent event : yearEvents) {
-                    if(event.isThisDay(calendarDay)) {
+                    if(event.isThisDay(now)) {
                         adapter.setDetails(event.getType().name(), event.getEventDetails());
                         adapter.notifyDataSetChanged();
                         return;

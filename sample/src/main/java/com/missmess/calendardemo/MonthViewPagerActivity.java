@@ -50,12 +50,12 @@ public class MonthViewPagerActivity extends AppCompatActivity {
                         ";right=" + (next == null ? "null" : next.getCurrentMonth().toString()));
             }
         });
-        monthViewPager.setOnDayClickListener(new MonthView.OnDayClickListener() {
+        monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
+            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
                 for(DayEvent event : yearEvents) {
-                    if(event.isThisDay(calendarDay)) {
-                        textView.setText(String.format("Today is \n%s\nToday have %d events", calendarDay.toString(), event.getEventDetails().length));
+                    if(event.isThisDay(now)) {
+                        textView.setText(String.format("Today is \n%s\nToday have %d events", now.toString(), event.getEventDetails().length));
                         return;
                     }
                 }

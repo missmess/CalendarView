@@ -56,10 +56,10 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 Toast.makeText(MonthViewDemoActivity.this, "title clicked: " + calendarMonth.toString(), Toast.LENGTH_SHORT).show();
             }
         });
-        monthView.setOnDayClickListener(new MonthView.OnDayClickListener() {
+        monthView.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onDayClick(MonthView monthView, CalendarDay calendarDay) {
-                Toast.makeText(MonthViewDemoActivity.this, "day clicked: " + calendarDay.toString(), Toast.LENGTH_SHORT).show();
+            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
+                Toast.makeText(MonthViewDemoActivity.this, "selection change to: " + now, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -78,9 +78,16 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 break;
             case R.id.button7:
                 if(monthView.getCurrentMonth().getYear() == 2017) {
-                    monthView.setYearAndMonth(2000, 3);
+                    monthView.setYearAndMonth(2000, 4);
                 } else {
                     monthView.setYearAndMonth(2017, 2);
+                }
+                break;
+            case R.id.button8:
+                if(monthView.isWeekMode()) {
+                    monthView.showMonthMode();
+                } else {
+                    monthView.showWeekMode();
                 }
                 break;
         }

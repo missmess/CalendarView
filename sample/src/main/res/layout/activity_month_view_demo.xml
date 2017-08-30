@@ -34,8 +34,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/mv"
-        android:onClick="click"
         android:layout_marginTop="10dp"
+        android:onClick="click"
         android:text="Clear Selection"
         android:textAllCaps="false"/>
 
@@ -54,11 +54,22 @@
         android:id="@+id/button7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/button5"
         android:onClick="click"
         android:text="Change Month"
-        android:textAllCaps="false"
-        android:layout_alignTop="@+id/button5"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/button8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
+        android:layout_below="@+id/button7"
+        android:onClick="click"
+        android:text="Month/week mode"
+        android:textAllCaps="false"/>
 
 </RelativeLayout>
