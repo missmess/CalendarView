@@ -747,6 +747,7 @@ public class MonthView extends View {
 
         this.mWeekMode = true;
         invalidate();
+        requestLayout();
     }
 
     public void setWeekIndex(int weekIndex) {
@@ -790,6 +791,7 @@ public class MonthView extends View {
 
         this.mWeekMode = false;
         invalidate();
+        requestLayout();
     }
 
     /**
@@ -877,12 +879,16 @@ public class MonthView extends View {
     }
 
     /**
-     * MonthView should be this height.
+     * Height of MonthView should be.
      *
      * @return should height
      */
     public int getShouldHeight() {
-        return getHeightWithRows(mNumRows);
+        if(mWeekMode) {
+            return getHeightWithRows(1);
+        } else {
+            return getHeightWithRows(mNumRows);
+        }
     }
 
     /**
@@ -894,10 +900,14 @@ public class MonthView extends View {
         return getHeightWithRows(DEFAULT_NUM_ROWS);
     }
 
-    int getHeightWithRows(int rows) {
+    public int getHeightWithRows(int rows) {
         return MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT + SPACE_BETWEEN_WEEK_AND_DAY + dayRowHeight * rows;
     }
 
+    /**
+     * Height of one day row.
+     * @return height
+     */
     public int getDayRowHeight() {
         return dayRowHeight;
     }

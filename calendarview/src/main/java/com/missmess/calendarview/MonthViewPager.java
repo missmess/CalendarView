@@ -474,13 +474,28 @@ public class MonthViewPager extends ViewGroup {
         return true;
     }
 
+    int getShouldHeightInMonthMode() {
+        // month mode, height should be 6 rows height
+        return childMiddle.getHeightWithRows(6) + month_marginTop;
+    }
+
+    int getShouldHeightInWeekMode() {
+        // week mode, height should be 1 row height
+        return childMiddle.getHeightWithRows(1) + month_marginTop;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mWidth = MeasureSpec.getSize(widthMeasureSpec);
         if (childLeft == null || childMiddle == null || childRight == null) {
             throw new IllegalStateException("MonthViewPager should host a MonthView child");
         }
-        int height = childMiddle.getMaxHeight() + month_marginTop;
+        int height;
+        if(mMonthMode) {
+            height = getShouldHeightInMonthMode();
+        } else {
+            height = getShouldHeightInWeekMode();
+        }
 
         //measure MonthView children
         int childWidthSpec = MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.AT_MOST);
@@ -503,9 +518,9 @@ public class MonthViewPager extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int paddingTop = month_marginTop;
-        childMiddle.layout(0, paddingTop, mWidth, childMiddle.getShouldHeight() + paddingTop);
-        childLeft.layout(-mWidth, paddingTop, 0, childLeft.getShouldHeight() + paddingTop);
-        childRight.layout(mWidth, paddingTop, 2 * mWidth, childRight.getShouldHeight() + paddingTop);
+        childMiddle.layout(0, paddingTop, mWidth, childMiddle.getMeasuredHeight() + paddingTop);
+        childLeft.layout(-mWidth, paddingTop, 0, childLeft.getMeasuredHeight() + paddingTop);
+        childRight.layout(mWidth, paddingTop, 2 * mWidth, childRight.getMeasuredHeight() + paddingTop);
 
         if (mShowIndicator) {
             int month_header_height = childMiddle.MONTH_HEADER_HEIGHT;
