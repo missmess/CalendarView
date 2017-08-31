@@ -38,7 +38,7 @@ CalendarView
 Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   `
-    compile "com.missmess.calendarview:calendarview:2.0.0"
+    compile "com.missmess.calendarview:calendarview:2.1.0"
   `
 
 ---
@@ -166,7 +166,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
 ###### 6、周历到月历切换
   
-  支持月历周历的竖直滑动切换。需要配合nested scrolling。示例：
+  1、支持月历周历的竖直滑动切换。需要配合nested scrolling。示例：
   ```xml
       <!-- 顶层需使用CoordinatorLayout -->
       <android.support.design.widget.CoordinatorLayout
@@ -215,6 +215,16 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
           </android.support.v4.widget.NestedScrollView>
       </android.support.design.widget.CoordinatorLayout>
   ```
+  
+  2、如果不需要嵌套垂直滑动切换week/month mode。则不要使用behavior即可。同时提供直接在代码中进行切换。
+  ```java
+  		if(monthViewPager.isMonthMode()) {
+			monthViewPager.setWeekMode();
+		} else {
+			monthViewPager.setMonthMode();
+		}
+  ```
+  
   通过上述步骤就能实现周历、月历切换功能。
 
 ---
@@ -226,7 +236,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   ~~2、 增加月历上滑显示到周历的功能。类似于小米日历的效果。~~
 
-  3、周历上切换时，默认设置selection也根据切换变化。
+  ~~3、周历上切换时，默认设置selection也根据切换变化。~~
 
 ---
 
