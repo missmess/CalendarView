@@ -40,6 +40,7 @@
         <attr name="monthHeaderHeight" format="dimension" />
         <attr name="weekLabelTextColor" format="color" />
         <attr name="weekLabelTextSize" format="dimension" />
+        <attr name="weekLabelPadding" format="dimension" />
 
         <attr name="showWeekLabel" format="boolean"/>
         <attr name="showWeekDivider" format="boolean"/>

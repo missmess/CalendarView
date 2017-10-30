@@ -46,7 +46,8 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
     }
 
     private void init() {
-        monthViewPager.setMonthRange(new CalendarMonth(2016, 1), new CalendarMonth(2017, 10));
+        monthViewPager.setCurrentMonth(new CalendarMonth(2017, 8));
+        monthViewPager.setMonthRange(new CalendarMonth(2016, 1), new CalendarMonth(2018, 10));
         monthViewPager.addOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {

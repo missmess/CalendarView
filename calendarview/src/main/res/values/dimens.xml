@@ -16,7 +16,7 @@
     <dimen name="text_size_week">12sp</dimen>
     <dimen name="header_month_height">64dip</dimen>
     <dimen name="selected_day_radius">16dip</dimen>
-    <dimen name="week_label_between_divider_size">10dip</dimen>
+    <dimen name="week_label_padding">14dip</dimen>
     <dimen name="row_height">38dip</dimen>
 
     <!-- MonthViewPager -->

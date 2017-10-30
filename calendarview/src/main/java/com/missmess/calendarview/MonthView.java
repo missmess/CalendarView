@@ -41,7 +41,7 @@ public class MonthView extends View {
     protected int WEEK_LABEL_HEIGHT;
     protected int MONTH_LABEL_TEXT_SIZE;
     protected int mSelectedCircleColor;
-    protected int spaceBetweenWeekAndDivider;
+    protected int week_label_padding;
     protected int monthHeaderSizeCache;
     protected int weekLabelOffset = 0;
     protected int monthLabelOffset = 0;
@@ -140,14 +140,14 @@ public class MonthView extends View {
         mShowWeekLabel = typedArray.getBoolean(R.styleable.MonthView_showWeekLabel, true);
         mShowWeekDivider = typedArray.getBoolean(R.styleable.MonthView_showWeekDivider, false);
 
-        spaceBetweenWeekAndDivider = resources.getDimensionPixelSize(R.dimen.week_label_between_divider_size);
+        week_label_padding = typedArray.getDimensionPixelSize(R.styleable.MonthView_weekLabelPadding, resources.getDimensionPixelSize(R.dimen.week_label_padding));
         if (!mShowMonthTitle) {
             MONTH_HEADER_HEIGHT = 0;
         }
         if (!mShowWeekLabel) {
             WEEK_LABEL_HEIGHT = 0;
         } else {
-            WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + spaceBetweenWeekAndDivider;
+            WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + week_label_padding;
         }
 
         //        typedArray.recycle();
@@ -190,8 +190,8 @@ public class MonthView extends View {
         otherMonthStyle.setTextColor(mOtherMonthTextColor);
     }
 
-    private void drawWeekLabels(Canvas canvas) {
-        int y = MONTH_HEADER_HEIGHT + WEEK_LABEL_TEXT_SIZE + weekLabelOffset;
+    void drawWeekLabels(Canvas canvas) {
+        int y = MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT / 2 + WEEK_LABEL_TEXT_SIZE / 2 + weekLabelOffset;
         float dayWidthHalf = halfDayWidth;
 
         for (int i = 0; i < mNumDays; i++) {
@@ -215,7 +215,7 @@ public class MonthView extends View {
         }
     }
 
-    private void drawMonthTitle(Canvas canvas) {
+    void drawMonthTitle(Canvas canvas) {
         //        Log.e("MonthView", "drawMonthTitle");
         int[] pos = getMonthDrawPoint();
         //        StringBuilder stringBuilder = new StringBuilder(getMonthAndYearString().toLowerCase());
@@ -703,7 +703,7 @@ public class MonthView extends View {
         if (!mShowWeekLabel) {
             WEEK_LABEL_HEIGHT = 0;
         } else {
-            WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + spaceBetweenWeekAndDivider;
+            WEEK_LABEL_HEIGHT = WEEK_LABEL_TEXT_SIZE + week_label_padding;
         }
     }
 

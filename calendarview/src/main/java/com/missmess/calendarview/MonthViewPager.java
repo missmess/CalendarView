@@ -106,6 +106,7 @@ public class MonthViewPager extends ViewGroup {
         childRight.setYearAndMonth(childMiddle.getCurrentMonth().next());
 
         childMiddle.setOnSelectionChangeListener(mSelectListener);
+        applyEdge2Children();
         // add param
         addChildAttrs();
 
@@ -244,6 +245,11 @@ public class MonthViewPager extends ViewGroup {
             setCurrentMonth(rightEdge.getCalendarMonth());
         }
 
+        applyEdge2Children();
+        checkIfInEdge();
+    }
+
+    private void applyEdge2Children() {
         if (childMiddle != null) {
             childLeft.leftEdgeDay(leftEdge);
             childLeft.rightEdgeDay(rightEdge);
@@ -252,8 +258,6 @@ public class MonthViewPager extends ViewGroup {
             childRight.leftEdgeDay(leftEdge);
             childRight.rightEdgeDay(rightEdge);
         }
-
-        checkIfInEdge();
     }
 
     /**
