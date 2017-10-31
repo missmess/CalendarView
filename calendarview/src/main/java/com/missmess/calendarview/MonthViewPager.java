@@ -603,7 +603,12 @@ public class MonthViewPager extends ViewGroup {
         // correct the selection when change to week mode
         int com = childMiddle.getSelectionType();
         if (com == -2 || com == 2 || com == -3) {
-            childMiddle.setSelection(new CalendarDay(getCurrentMonth(), 1));
+            CalendarDay today = childMiddle.getToday();
+            int todayType = childMiddle.getDayType(today);
+            if (todayType == 0)
+                childMiddle.setSelection(today);
+            else
+                childMiddle.setSelection(new CalendarDay(getCurrentMonth(), 1));
             onMiddleChildChanged(childMiddle.getCurrentMonth());
         } else if (com == -1) {
             onSelectionInLeftOtherMonth();

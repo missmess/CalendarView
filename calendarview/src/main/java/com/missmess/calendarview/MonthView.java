@@ -171,7 +171,7 @@ public class MonthView extends View {
      *
      * @param today 当前时间
      */
-    public void setToday(CalendarDay today) {
+    public void setToday(@NonNull CalendarDay today) {
         this.today = today;
         invalidate();
     }
@@ -678,6 +678,9 @@ public class MonthView extends View {
 
         mNumRows = calculateNumRows();
 
+        int preIndex = getTodayLineIndex();
+        mWeekIndex = preIndex == -1 ? 0 : preIndex;
+
         if (ViewCompat.isLaidOut(this)) {
             // we are not sure height will remain unchanged.
             requestLayout();
@@ -801,6 +804,16 @@ public class MonthView extends View {
 
     public boolean isMonthMode() {
         return !mWeekMode;
+    }
+
+    private int getTodayLineIndex() {
+        int type = getDayType(today);
+        switch (type) {
+            case 0:
+                return (findDayOffset() + today.getDay() - 1) / mNumDays;
+            default:
+                return -1;
+        }
     }
 
     /**
