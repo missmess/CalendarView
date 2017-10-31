@@ -45,6 +45,7 @@
         <attr name="showWeekLabel" format="boolean"/>
         <attr name="showWeekDivider" format="boolean"/>
         <attr name="showMonthTitle" format="boolean"/>
+        <attr name="weekMode" format="boolean"/>
     </declare-styleable>
 
     <declare-styleable name="MonthViewPager">

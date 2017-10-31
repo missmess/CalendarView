@@ -56,11 +56,7 @@ public class MonthViewPager extends ViewGroup {
     private int month_marginTop;
     private boolean mShowOtherMonth;
     private int mOtherMonthColor;
-    private boolean mMonthMode = true;
-
-    public MonthViewPager(Context context) {
-        this(context, null);
-    }
+    private boolean mMonthMode;
 
     public MonthViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -140,6 +136,13 @@ public class MonthViewPager extends ViewGroup {
     private void addChildAttrs() {
         setShowOtherMonthInternal(mShowOtherMonth);
         setOtherMonthColorInternal(mOtherMonthColor);
+        if (childMiddle.isMonthMode()) {
+            mMonthMode = true;
+            setMonthInternal();
+        } else {
+            mMonthMode = false;
+            setWeekInternal();
+        }
     }
 
     private ImageView createIndicator(Drawable icon) {
@@ -214,6 +217,10 @@ public class MonthViewPager extends ViewGroup {
         childLeft.setToday(today);
         childMiddle.setToday(today);
         childRight.setToday(today);
+    }
+
+    public CalendarDay getToday() {
+        return childMiddle.getToday();
     }
 
     public CalendarMonth getCurrentMonth() {
@@ -569,6 +576,10 @@ public class MonthViewPager extends ViewGroup {
         if (mMonthMode)
             return;
 
+        setMonthInternal();
+    }
+
+    private void setMonthInternal() {
         mMonthMode = true;
         childLeft.showMonthMode();
         childMiddle.showMonthMode();
@@ -580,6 +591,10 @@ public class MonthViewPager extends ViewGroup {
         if (!mMonthMode)
             return;
 
+        setWeekInternal();
+    }
+
+    private void setWeekInternal() {
         mMonthMode = false;
         childLeft.showWeekMode();
         childMiddle.showWeekMode();

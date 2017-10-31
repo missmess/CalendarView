@@ -18,6 +18,7 @@
         calendar:dayTextColor="#222222"
         calendar:dayTextSize="14sp"
         calendar:monthHeaderHeight="60dp"
+        calendar:weekMode="false"
         calendar:monthTextSize="21sp"
         calendar:monthTitleColor="#CCBB22"
         calendar:selectDayCircleBgColor="@color/colorPrimary"

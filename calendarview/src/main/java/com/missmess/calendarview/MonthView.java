@@ -139,6 +139,7 @@ public class MonthView extends View {
         mShowMonthTitle = typedArray.getBoolean(R.styleable.MonthView_showMonthTitle, true);
         mShowWeekLabel = typedArray.getBoolean(R.styleable.MonthView_showWeekLabel, true);
         mShowWeekDivider = typedArray.getBoolean(R.styleable.MonthView_showWeekDivider, false);
+        mWeekMode = typedArray.getBoolean(R.styleable.MonthView_weekMode, false);
 
         week_label_padding = typedArray.getDimensionPixelSize(R.styleable.MonthView_weekLabelPadding, resources.getDimensionPixelSize(R.dimen.week_label_padding));
         if (!mShowMonthTitle) {
@@ -173,6 +174,10 @@ public class MonthView extends View {
     public void setToday(CalendarDay today) {
         this.today = today;
         invalidate();
+    }
+
+    public CalendarDay getToday() {
+        return today;
     }
 
     private void initStyle() {
@@ -792,6 +797,10 @@ public class MonthView extends View {
         this.mWeekMode = false;
         invalidate();
         requestLayout();
+    }
+
+    public boolean isMonthMode() {
+        return !mWeekMode;
     }
 
     /**
