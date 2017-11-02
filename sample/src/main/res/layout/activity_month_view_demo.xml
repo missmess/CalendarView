@@ -73,4 +73,24 @@
         android:text="Month/week mode"
         android:textAllCaps="false"/>
 
+    <Button
+        android:id="@+id/button9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button8"
+        android:onClick="click"
+        android:text="show visible range"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/button10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button8"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:onClick="click"
+        android:text="disable 14, 15, 16"
+        android:textAllCaps="false"/>
+
 </RelativeLayout>

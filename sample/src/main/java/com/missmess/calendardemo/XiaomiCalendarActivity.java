@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.missmess.calendardemo.control.GetDecorsTask;
 import com.missmess.calendardemo.model.DayEvent;
@@ -47,7 +48,7 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
 
     private void init() {
         monthViewPager.setCurrentMonth(new CalendarMonth(2017, 8));
-        monthViewPager.setMonthRange(new CalendarMonth(2016, 1), new CalendarMonth(2018, 10));
+        monthViewPager.setMonthRange(new CalendarMonth(2016, 10), new CalendarMonth(2018, 10));
         monthViewPager.addOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override
             public void onMonthChanged(MonthViewPager monthViewPager, MonthView previous, MonthView current, MonthView next, CalendarMonth currentMonth, CalendarMonth old) {
@@ -123,6 +124,13 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
             case R.id.item4:
                 monthViewPager.setSelection(new CalendarDay(2017, 4, 2));
                 break;
+            case R.id.item5:
+                CalendarDay[] range = monthViewPager.getShowingDayRange();
+                String s = "从" + range[0].toString() + "到" + range[1].toString();
+                Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+                break;
+            case R.id.item6:
+                monthViewPager.setDayDisable(new CalendarDay(monthViewPager.getCurrentMonth(), 30));
         }
         return super.onOptionsItemSelected(item);
     }

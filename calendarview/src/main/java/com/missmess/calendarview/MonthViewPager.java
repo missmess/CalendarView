@@ -389,6 +389,22 @@ public class MonthViewPager extends ViewGroup {
         }
     }
 
+    public void setDayDisable(@NonNull CalendarDay disable) {
+        if (childMiddle != null) {
+            childLeft.setDayDisable(disable);
+            childMiddle.setDayDisable(disable);
+            childRight.setDayDisable(disable);
+        }
+    }
+
+    public void clearDisable() {
+        if (childMiddle != null) {
+            childLeft.clearDisable();
+            childMiddle.clearDisable();
+            childRight.clearDisable();
+        }
+    }
+
     public DayDecor getDecors() {
         return mDecors;
     }
@@ -403,7 +419,7 @@ public class MonthViewPager extends ViewGroup {
     }
 
     public boolean isShowingOtherMonth() {
-        return mShowOtherMonth;
+        return childMiddle.isOtherMonthShowing();
     }
 
     public void setOtherMonthColor(@ColorInt int color) {
@@ -456,7 +472,7 @@ public class MonthViewPager extends ViewGroup {
     }
 
     /**
-     * Smooth slide to left month
+     * Smooth slide to left page
      *
      * @return false - in left edge we can not able to slide left again.
      */
@@ -471,7 +487,7 @@ public class MonthViewPager extends ViewGroup {
     }
 
     /**
-     * Smooth slide to right month
+     * Smooth slide to right page
      *
      * @return false - in right edge we can not able to slide right again.
      */
@@ -629,6 +645,10 @@ public class MonthViewPager extends ViewGroup {
         return selectionLineIndex;
     }
 
+    public CalendarDay[] getShowingDayRange() {
+        return childMiddle.getShowingDayRange();
+    }
+
     /**
      * Maximum scroll range for scrolling.
      *
@@ -766,7 +786,19 @@ public class MonthViewPager extends ViewGroup {
                                     calendarDay = rightEdge;
                                 if (calendarDay.compareTo(leftEdge) < 0)
                                     calendarDay = leftEdge;
-                                childMiddle.setSelection(calendarDay);
+
+                                if (childMiddle.isDayDisabled(calendarDay)) {
+                                    // simulate to select the disable day. there is still have a problem
+                                    // when scroll is aborted by touch, which cause selection disappeared.
+                                    childMiddle.setSelectionAtom(calendarDay);
+                                    if (toleft) {
+                                        smoothScrollToRight();
+                                    } else {
+                                        smoothScrollToLeft();
+                                    }
+                                } else {
+                                    childMiddle.setSelection(calendarDay);
+                                }
                             }
                         }
                         // week index change also
@@ -839,7 +871,7 @@ public class MonthViewPager extends ViewGroup {
             // if show other month and select the day of other month:
             // in month mode, we scroll to change middle view;
             // in week mode, we set a new current month.
-            if (mShowOtherMonth) {
+            if (isShowingOtherMonth()) {
                 int com = childMiddle.getSelectionType();
                 if (com == -1) { // goto previous
                     onSelectionInLeftOtherMonth();

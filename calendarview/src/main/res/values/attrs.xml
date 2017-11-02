@@ -29,6 +29,7 @@
         <attr name="selectDayCircleBgColor" format="color" />
 
         <attr name="dayTextColor" format="color"/>
+        <attr name="dayDisableTextColor" format="color"/>
         <attr name="dayTextSize" format="dimension"/>
         <attr name="dayRowHeight" format="dimension" />
 

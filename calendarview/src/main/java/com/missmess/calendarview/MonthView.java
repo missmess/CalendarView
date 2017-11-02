@@ -18,9 +18,11 @@ import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Locale;
 
 /**
@@ -46,6 +48,7 @@ public class MonthView extends View {
     protected int weekLabelOffset = 0;
     protected int monthLabelOffset = 0;
     private int mOtherMonthTextColor;
+    private int mDisableTextColor;
 
     protected int mPadding = 0;
 
@@ -93,11 +96,15 @@ public class MonthView extends View {
     private DayDecor.Style selectionStyle;
     private DayDecor.Style normalStyle;
     private DayDecor.Style otherMonthStyle;
+    private DayDecor.Style disableStyle;
     private Rect drawRect;
     private CalendarDay leftEdge;
     private CalendarDay rightEdge;
     private boolean mWeekMode;
     private int mWeekIndex = 0;
+    private CalendarDay firstVisibleDay;
+    private CalendarDay lastVisibleDay;
+    private HashSet<CalendarDay> disabledDays;
 
     public MonthView(Context context) {
         this(context, null);
@@ -128,6 +135,7 @@ public class MonthView extends View {
         normalDayTextColor = typedArray.getColor(R.styleable.MonthView_dayTextColor, resources.getColor(R.color.day_label_text_color));
         todayTextColor = resources.getColor(R.color.today_text_color);
         mSelectedCircleColor = typedArray.getColor(R.styleable.MonthView_selectDayCircleBgColor, resources.getColor(R.color.day_select_circle_bg_color));
+        mDisableTextColor = typedArray.getColor(R.styleable.MonthView_dayDisableTextColor, resources.getColor(R.color.day_disable_text_color));
 
         normalDayTextSize = typedArray.getDimensionPixelSize(R.styleable.MonthView_dayTextSize, resources.getDimensionPixelSize(R.dimen.text_size_day));
         MONTH_LABEL_TEXT_SIZE = typedArray.getDimensionPixelSize(R.styleable.MonthView_monthTextSize, resources.getDimensionPixelSize(R.dimen.text_size_month));
@@ -157,6 +165,10 @@ public class MonthView extends View {
         initStyle();
         initPaint();
         setYearAndMonth(today.getYear(), today.getMonth());
+
+        leftEdge = new CalendarDay(1900, 2, 1);
+        rightEdge = new CalendarDay(2049, 12, 31);
+        disabledDays = new HashSet<>();
     }
 
     private int calculateNumRows() {
@@ -193,6 +205,9 @@ public class MonthView extends View {
 
         otherMonthStyle = new DayDecor.Style();
         otherMonthStyle.setTextColor(mOtherMonthTextColor);
+
+        disableStyle = new DayDecor.Style();
+        disableStyle.setTextColor(mDisableTextColor);
     }
 
     void drawWeekLabels(Canvas canvas) {
@@ -228,10 +243,15 @@ public class MonthView extends View {
         canvas.drawText(getMonthTitleString(), pos[0], pos[1], mMonthTitlePaint);
     }
 
+    boolean isOtherMonthShowing() {
+        return mWeekMode || mShowOtherMonth;
+    }
+
     /**
      * draw the day of month
      */
     protected void drawMonthDays(Canvas canvas) {
+        firstVisibleDay = lastVisibleDay = null;
         int dayTop = SPACE_BETWEEN_WEEK_AND_DAY + MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT;
         float halfDay = halfDayWidth;
         int firstDayOffset = findDayOffset();
@@ -250,7 +270,7 @@ public class MonthView extends View {
             // if true, current drawing day is in other month
             boolean otherMonth = false;
             if (day < 1) {
-                if (!weekMode && !mShowOtherMonth) {
+                if (!isOtherMonthShowing()) {
                     offsetInLine++;
                     continue;
                 }
@@ -260,7 +280,7 @@ public class MonthView extends View {
                 int preMDays = CalendarUtils.getDaysInMonth(currentMonth);
                 day = preMDays + day;
             } else if (day > mNumCells) {
-                if (!weekMode && !mShowOtherMonth) {
+                if (!isOtherMonthShowing()) {
                     offsetInLine++;
                     continue;
                 }
@@ -271,6 +291,13 @@ public class MonthView extends View {
             }
             // x position
             CalendarDay currentDay = new CalendarDay(currentMonth, day);
+            // Now edge day is always the first or end day of the current month.
+            if ((leftEdge != null && currentDay.compareTo(leftEdge) < 0)
+                    || (rightEdge != null && currentDay.compareTo(rightEdge) > 0)) {
+                offsetInLine++;
+                // edge以外
+                continue;
+            }
             float dayLeft = offsetInLine * halfDay * 2 + mPadding;
             float x = halfDay + dayLeft;
             // if true, current drawing day is selected
@@ -278,6 +305,8 @@ public class MonthView extends View {
             if (selectedDay != null && selectedDay.equals(currentDay)) { //selected
                 selected = true;
             }
+
+            boolean disabled = disabledDays.contains(currentDay);
 
             DayDecor.Style decoration = null;
             if (mDecors != null) {
@@ -289,12 +318,14 @@ public class MonthView extends View {
 
             // ==================================
             // cover order for drawing:
-            // 1. text: other month > selection > decorator > today > normal
-            // 2. bg: selection + decorator, selection in foreground
+            // 1. text: other month > disabled > selection > decorator > today > normal
+            // 2. bg: disabled : none; otherwise is (selection + decorator), selection in foreground
             // ==================================
             DayDecor.Style style;
             if (!weekMode && otherMonth) { // other month, if in week mode, other month is unnecessary
                 style = otherMonthStyle;
+            } else if (disabled) {
+                style = disableStyle;
             } else if (selected) { // select
                 style = selectionStyle;
             } else if (decoration != null) { // exist decor
@@ -312,17 +343,22 @@ public class MonthView extends View {
             int textHeight = drawRect.height();
             float y = (dayRowHeight + mDayNumPaint.getTextSize()) / 2 + dayTop;
 
-            // draw background
-            if (decoration != null) {
-                drawDayBg(canvas, decoration, x, y, textHeight, dayTop, dayLeft);
-            }
-            if (selected) {
-                drawDayBg(canvas, selectionStyle, x, y, textHeight, dayTop, dayLeft);
+            if (!disabled) {
+                // draw background
+                if (decoration != null) {
+                    drawDayBg(canvas, decoration, x, y, textHeight, dayTop, dayLeft);
+                }
+                if (selected) {
+                    drawDayBg(canvas, selectionStyle, x, y, textHeight, dayTop, dayLeft);
+                }
             }
 
             // draw text
             canvas.drawText(dayStr, x, y, mDayNumPaint);
-
+            // set day
+            if (firstVisibleDay == null)
+                firstVisibleDay = currentDay;
+            lastVisibleDay = currentDay;
             // goto next day
             offsetInLine++;
             if (offsetInLine == mNumDays) {
@@ -336,11 +372,17 @@ public class MonthView extends View {
                            int dayTop, float dayLeft) {
         float halfDay = halfDayWidth;
         if (style.isCircleBg()) {
+            mDayBgPaint.setStyle(Style.FILL);
             mDayBgPaint.setColor(style.getPureColorBg());
             canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
         } else if (style.isRectBg()) {
+            mDayBgPaint.setStyle(Style.FILL);
             mDayBgPaint.setColor(style.getPureColorBg());
             canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
+        } else if (style.isCircleStrokeBg()) {
+            mDayBgPaint.setStyle(Style.STROKE);
+            mDayBgPaint.setColor(style.getPureColorBg());
+            canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
         } else if (style.isDrawableBg()) {
             Drawable drawable = style.getDrawableBg();
             int dHeight = drawable.getIntrinsicHeight();
@@ -406,9 +448,9 @@ public class MonthView extends View {
      * @return success selected
      */
     public boolean setSelection(@Nullable CalendarDay selection) {
-        if (selection != null && selection.compareTo(leftEdge) < 0)
+        if (selection != null && leftEdge != null && selection.compareTo(leftEdge) < 0)
             return false;
-        if (selection != null && selection.compareTo(rightEdge) > 0)
+        if (selection != null && leftEdge != null && selection.compareTo(rightEdge) > 0)
             return false;
 
         if (selection != null) {
@@ -424,6 +466,10 @@ public class MonthView extends View {
                     return false;
                 }
             }
+
+            // if disabled
+            if (disabledDays.contains(selection))
+                return false;
         }
 
         return selectActual(selection, false);
@@ -453,6 +499,31 @@ public class MonthView extends View {
         return selectedDay;
     }
 
+    public void setDayDisable(@NonNull CalendarDay disable) {
+        boolean added = disabledDays.add(disable);
+        if (!added)
+            return;
+
+        // clear selection
+        if (disable.equals(selectedDay))
+            setSelection(null);
+
+        // remove decor
+        if (mDecors != null)
+            mDecors.remove(disable);
+
+        invalidate();
+    }
+
+    public boolean isDayDisabled(@NonNull CalendarDay day) {
+        return disabledDays.contains(day);
+    }
+
+    public void clearDisable() {
+        disabledDays.clear();
+        invalidate();
+    }
+
     protected void leftEdgeDay(CalendarDay lEdge) {
         leftEdge = lEdge;
     }
@@ -479,20 +550,20 @@ public class MonthView extends View {
         }
 
         if (day < 1) {
-            if (mShowOtherMonth) {
+            if (!isOtherMonthShowing()) {
+                return null;
+            } else {
                 CalendarMonth preM = getCurrentMonth().previous();
                 int preD = CalendarUtils.getDaysInMonth(preM) + day;
                 return new CalendarDay(preM, preD);
-            } else {
-                return null;
             }
         } else if (day > mNumCells) {
-            if (mShowOtherMonth) {
+            if (!isOtherMonthShowing()) {
+                return null;
+            } else {
                 CalendarMonth nextM = getCurrentMonth().next();
                 int nextD = day - mNumCells;
                 return new CalendarDay(nextM, nextD);
-            } else {
-                return null;
             }
         } else
             return new CalendarDay(getCurrentMonth(), day);
@@ -529,6 +600,7 @@ public class MonthView extends View {
         mDayBgPaint = new Paint();
         mDayBgPaint.setAntiAlias(true);
         mDayBgPaint.setColor(mSelectedCircleColor);
+        mDayBgPaint.setStrokeWidth(3);
         mDayBgPaint.setStyle(Style.FILL);
 
         mWeekLabelPaint = new Paint();
@@ -607,6 +679,15 @@ public class MonthView extends View {
         invalidate();
     }
 
+    public void setDisableTextColor(@ColorInt int color) {
+        if (color == mDisableTextColor)
+            return;
+
+        mDisableTextColor = color;
+        disableStyle.setTextColor(color);
+        invalidate();
+    }
+
     public boolean onTouchEvent(MotionEvent event) {
         if (!isEnabled()) {
             // still consume touch event
@@ -630,6 +711,10 @@ public class MonthView extends View {
                         if ((leftEdge != null && calendarDay.compareTo(leftEdge) < 0)
                                 || (rightEdge != null && calendarDay.compareTo(rightEdge) > 0))
                             break;
+                        // if disabled
+                        if (disabledDays.contains(calendarDay))
+                            break;
+
                         // else
                         onDayClick(calendarDay);
                     } else if (isClickMonth((int) x, (int) y)) { // clicked month title
@@ -873,18 +958,24 @@ public class MonthView extends View {
         if (com < 0) {
             CalendarDay first = new CalendarDay(getCurrentMonth(), 1);
             CalendarDay otherMonthStartDay = CalendarUtils.offsetDay(first, -dayOffset);
-            if (mShowOtherMonth && day.compareTo(otherMonthStartDay) >= 0) {
-                // select day is in previous month and visible
-                return -1;
+            if (isOtherMonthShowing() && day.compareTo(otherMonthStartDay) >= 0) {
+                if (leftEdge != null && day.compareTo(leftEdge) < 0)
+                    return -2;
+                else
+                    // select day is in previous month and visible
+                    return -1;
             } else {
                 return -2;
             }
         } else {
             CalendarDay last = new CalendarDay(getCurrentMonth(), mNumCells);
             CalendarDay otherMonthEndDay = CalendarUtils.offsetDay(last, mNumRows * mNumDays - dayOffset - mNumCells);
-            if (mShowOtherMonth && day.compareTo(otherMonthEndDay) <= 0) {
-                // select day is in next month and visible
-                return 1;
+            if (isOtherMonthShowing() && day.compareTo(otherMonthEndDay) <= 0) {
+                if (rightEdge != null && day.compareTo(rightEdge) > 0)
+                    return 2;
+                else
+                    // select day is in next month and visible
+                    return 1;
             } else {
                 return 2;
             }
@@ -911,6 +1002,10 @@ public class MonthView extends View {
         } else {
             return getHeightWithRows(mNumRows);
         }
+    }
+
+    public CalendarDay[] getShowingDayRange() {
+        return new CalendarDay[] {firstVisibleDay, lastVisibleDay};
     }
 
     /**

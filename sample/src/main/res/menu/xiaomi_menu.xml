@@ -4,4 +4,6 @@
     <item android:id="@+id/item2" android:title="Month/week mode" />
     <item android:id="@+id/item3" android:title="Jump to 2017-1" />
     <item android:id="@+id/item4" android:title="Select 2017-4-2" />
+    <item android:id="@+id/item5" android:title="Show visible range" />
+    <item android:id="@+id/item6" android:title="Disable 30" />
 </menu>

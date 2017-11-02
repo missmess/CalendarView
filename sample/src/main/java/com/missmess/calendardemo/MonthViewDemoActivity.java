@@ -49,7 +49,7 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         style.setItalic(true);
         style.setUnderline(true);
         style.setStrikeThrough(true);
-        style.setPureColorBgShape(DayDecor.Style.CIRCLE);
+        style.setPureColorBgShape(DayDecor.Style.CIRCLE_STROKE);
         style.setPureColorBg(0xFF66AA76);
         dayDecor.putOne(new CalendarDay(month, 24), style);
         monthView.setDecors(dayDecor);
@@ -106,6 +106,18 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 } else {
                     monthView.showWeekMode();
                 }
+                break;
+            case R.id.button9:
+                CalendarDay[] range = monthView.getShowingDayRange();
+                String s = "从" + range[0].toString() + "到" + range[1].toString();
+                Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+                break;
+            case R.id.button10:
+                monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 12));
+                monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 13));
+                monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 14));
+                monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 15));
+                monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 16));
                 break;
         }
     }

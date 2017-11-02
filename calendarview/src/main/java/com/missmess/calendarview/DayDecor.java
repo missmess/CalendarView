@@ -108,6 +108,10 @@ public class DayDecor {
          * rectangle shape of pure color bg
          */
         public static int RECTANGLE = 2;
+        /**
+         * circle stroke color bg
+         */
+        public static int CIRCLE_STROKE = 3;
 
         // attributes
         // text
@@ -231,6 +235,10 @@ public class DayDecor {
 
         public boolean isRectBg() {
             return pureColorBgShape == RECTANGLE;
+        }
+
+        public boolean isCircleStrokeBg() {
+            return pureColorBgShape == CIRCLE_STROKE;
         }
 
         public boolean isDrawableBg() {

@@ -15,6 +15,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
 import com.missmess.calendarview.TransitRootView.OnTransitListener;
+import com.missmess.calendarview.internal.DelayAnimListener;
 
 /**
  * YearView and MonthView transition animator helper.

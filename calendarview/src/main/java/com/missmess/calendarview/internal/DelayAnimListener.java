@@ -1,4 +1,4 @@
-package com.missmess.calendarview;
+package com.missmess.calendarview.internal;
 
 import android.animation.Animator;
 import android.os.Handler;
