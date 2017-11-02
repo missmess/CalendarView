@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.missmess.calendarview.CalendarDay;
@@ -15,7 +16,7 @@ import com.missmess.calendarview.MonthView;
 import java.util.Calendar;
 
 public class MonthViewDemoActivity extends AppCompatActivity {
-
+    private TextView button12;
     private MonthView monthView;
 
     @Override
@@ -25,6 +26,8 @@ public class MonthViewDemoActivity extends AppCompatActivity {
 
         //find view
         monthView = (MonthView) findViewById(R.id.mv);
+        button12 = (TextView) findViewById(R.id.button12);
+        button12.setVisibility(View.GONE);
 
         init();
     }
@@ -103,8 +106,10 @@ public class MonthViewDemoActivity extends AppCompatActivity {
             case R.id.button8:
                 if(monthView.isWeekMode()) {
                     monthView.showMonthMode();
+                    button12.setVisibility(View.GONE);
                 } else {
                     monthView.showWeekMode();
+                    button12.setVisibility(View.VISIBLE);
                 }
                 break;
             case R.id.button9:
@@ -123,6 +128,11 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 int dayOfWeek = monthView.getStartDayOfWeek();
                 int next = ++dayOfWeek % 7;
                 monthView.setStartDayOfWeek(next == 0 ? 7 : next);
+                break;
+            case R.id.button12:
+                int lineIndex = monthView.getSelectionLineIndex();
+                if (lineIndex != -1)
+                    monthView.setWeekIndex(lineIndex);
                 break;
         }
     }

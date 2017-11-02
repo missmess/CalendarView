@@ -102,4 +102,15 @@
         android:text="next day as week start"
         android:textAllCaps="false"/>
 
+
+    <Button
+        android:id="@+id/button12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button9"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:onClick="click"
+        android:text="selection line as week"
+        android:textAllCaps="false"/>
 </RelativeLayout>

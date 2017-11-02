@@ -779,9 +779,6 @@ public class MonthView extends View {
 
         mNumRows = calculateNumRows();
 
-        int preIndex = getTodayLineIndex();
-        mWeekIndex = preIndex == -1 ? 0 : preIndex;
-
         if (ViewCompat.isLaidOut(this)) {
             // we are not sure height will remain unchanged.
             requestLayout();
@@ -907,7 +904,7 @@ public class MonthView extends View {
         return !mWeekMode;
     }
 
-    private int getTodayLineIndex() {
+    public int getTodayLineIndex() {
         int type = getDayType(today);
         switch (type) {
             case 0:
@@ -920,7 +917,7 @@ public class MonthView extends View {
     /**
      * Line index of selection showing.
      *
-     * @return return -1 for no selection or selection is visible in current month.
+     * @return return -1 for no selection or selection is invisible in current month.
      */
     public int getSelectionLineIndex() {
         if (selectedDay != null) {
