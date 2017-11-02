@@ -38,7 +38,7 @@ CalendarView
 Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   `
-    compile "com.missmess.calendarview:calendarview:2.1.6"
+    compile "com.missmess.calendarview:calendarview:2.1.7"
   `
 
 ---

@@ -102,8 +102,6 @@ public class MonthView extends View {
     private CalendarDay rightEdge;
     private boolean mWeekMode;
     private int mWeekIndex = 0;
-    private CalendarDay firstVisibleDay;
-    private CalendarDay lastVisibleDay;
     private HashSet<CalendarDay> disabledDays;
 
     public MonthView(Context context) {
@@ -254,7 +252,6 @@ public class MonthView extends View {
      * draw the day of month
      */
     protected void drawMonthDays(Canvas canvas) {
-        firstVisibleDay = lastVisibleDay = null;
         int dayTop = SPACE_BETWEEN_WEEK_AND_DAY + MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT;
         float halfDay = halfDayWidth;
         int firstDayOffset = findDayOffset();
@@ -358,10 +355,6 @@ public class MonthView extends View {
 
             // draw text
             canvas.drawText(dayStr, x, y, mDayNumPaint);
-            // set day
-            if (firstVisibleDay == null)
-                firstVisibleDay = currentDay;
-            lastVisibleDay = currentDay;
             // goto next day
             offsetInLine++;
             if (offsetInLine == mNumDays) {
@@ -860,6 +853,10 @@ public class MonthView extends View {
         if (mWeekIndex == weekIndex)
             return;
 
+        if (mWeekIndex < 0 || mWeekIndex >= mNumRows)
+            throw new IllegalStateException(getCurrentMonth() + " week index range is 0 ~ "
+                    + (mNumRows - 1) + ", current is " + weekIndex);
+
         this.mWeekIndex = weekIndex;
         if (mWeekMode) {
             invalidate();
@@ -1018,7 +1015,47 @@ public class MonthView extends View {
     }
 
     public CalendarDay[] getShowingDayRange() {
-        return new CalendarDay[] {firstVisibleDay, lastVisibleDay};
+        CalendarDay start, end;
+        CalendarMonth currentMonth = getCurrentMonth();
+
+        int firstDayOffset = findDayOffset();
+        // the offset with top left of current day
+        int startOffset = mWeekMode ? getWeekIndex() * mNumDays : 0;
+        // times we loop
+        int cells = mWeekMode ? mNumDays : mNumRows * mNumDays;
+
+        int startDay = startOffset - firstDayOffset + 1;
+        if (startDay < 1) {
+            if (!isOtherMonthShowing()) {
+                start = new CalendarDay(currentMonth, 1);
+            } else {
+                CalendarMonth previousMonth = currentMonth.previous();
+                int day = CalendarUtils.getDaysInMonth(previousMonth) + startDay;
+                start = new CalendarDay(previousMonth, day);
+            }
+        } else {
+            start = new CalendarDay(currentMonth, startDay);
+        }
+
+        int endDay = startDay + cells - 1;
+        if (endDay > mNumCells) {
+            if (!isOtherMonthShowing()) {
+                end = new CalendarDay(currentMonth, mNumCells);
+            } else {
+                int day = endDay - mNumCells;
+                end = new CalendarDay(currentMonth.next(), day);
+            }
+        } else {
+            end = new CalendarDay(currentMonth, endDay);
+        }
+
+        if (leftEdge != null && start.compareTo(leftEdge) < 0)
+            start = leftEdge;
+
+        if (rightEdge != null && end.compareTo(rightEdge) > 0)
+            end = rightEdge;
+
+        return new CalendarDay[] {start, end};
     }
 
     /**
