@@ -32,6 +32,7 @@
         <attr name="dayDisableTextColor" format="color"/>
         <attr name="dayTextSize" format="dimension"/>
         <attr name="dayRowHeight" format="dimension" />
+        <attr name="firstDayOfWeek" format="integer" />
 
         <!--<attr name="todayCircleBgColor" format="color"/>
         <attr name="todayTextColor" format="color"/>-->

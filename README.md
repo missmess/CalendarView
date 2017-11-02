@@ -38,7 +38,7 @@ CalendarView
 Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   `
-    compile "com.missmess.calendarview:calendarview:2.1.4"
+    compile "com.missmess.calendarview:calendarview:2.1.5"
   `
 
 ---
@@ -85,22 +85,26 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
 ###### 2、MonthView
 
-  月历。提供了13个自定义属性来控制MonthView布局。
+  月历。提供了17个自定义属性来控制MonthView布局。
   ```xml
     <declare-styleable name="MonthView">
         <attr name="dayCircleRadius" format="dimension" />
-        <attr name="selectDayCircleBgColor" format="color" />
-        <attr name="dayTextColor" format="color"/>
-        <attr name="dayTextSize" format="dimension"/>
-        <attr name="dayRowHeight" format="dimension" />
-        <attr name="monthTitleColor" format="color" />
-        <attr name="monthTextSize" format="dimension" />
-        <attr name="monthHeaderHeight" format="dimension" />
-        <attr name="weekLabelTextColor" format="color" />
-        <attr name="weekLabelTextSize" format="dimension" />
-        <attr name="showWeekLabel" format="boolean"/>
-        <attr name="showWeekDivider" format="boolean"/>
-        <attr name="showMonthTitle" format="boolean"/>
+		<attr name="selectDayCircleBgColor" format="color" />
+		<attr name="dayTextColor" format="color"/>
+		<attr name="dayDisableTextColor" format="color"/>
+		<attr name="dayTextSize" format="dimension"/>
+		<attr name="dayRowHeight" format="dimension" />
+		<attr name="firstDayOfWeek" format="integer" />
+		<attr name="monthTitleColor" format="color" />
+		<attr name="monthTextSize" format="dimension" />
+		<attr name="monthHeaderHeight" format="dimension" />
+		<attr name="weekLabelTextColor" format="color" />
+		<attr name="weekLabelTextSize" format="dimension" />
+		<attr name="weekLabelPadding" format="dimension" />
+		<attr name="showWeekLabel" format="boolean"/>
+		<attr name="showWeekDivider" format="boolean"/>
+		<attr name="showMonthTitle" format="boolean"/>
+		<attr name="weekMode" format="boolean"/>
     </declare-styleable>
   ```
 
@@ -230,7 +234,7 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 ---
 
 ### 接下来的工作
-###### 还有一些工作需要完善，目前能想到的计划内的工作有以下两条：
+###### 还有一些工作需要完善：
 
   ~~1、 强化DayDecor的功能，包括对样式（加粗、斜体），任意背景，任意字体颜色的自定义。~~
 
@@ -238,6 +242,8 @@ Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   ~~3、周历上切换时，默认设置selection也根据切换变化。~~
 
+  ~~4、设置某一天disable属性~~
+  
 ---
 
 ### 关于作者

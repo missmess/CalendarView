@@ -119,6 +119,11 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 15));
                 monthView.setDayDisable(new CalendarDay(monthView.getCurrentMonth(), 16));
                 break;
+            case R.id.button11:
+                int dayOfWeek = monthView.getStartDayOfWeek();
+                int next = ++dayOfWeek % 7;
+                monthView.setStartDayOfWeek(next == 0 ? 7 : next);
+                break;
         }
     }
 }

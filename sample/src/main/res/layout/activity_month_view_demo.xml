@@ -93,4 +93,13 @@
         android:text="disable 14, 15, 16"
         android:textAllCaps="false"/>
 
+    <Button
+        android:id="@+id/button11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button9"
+        android:onClick="click"
+        android:text="next day as week start"
+        android:textAllCaps="false"/>
+
 </RelativeLayout>

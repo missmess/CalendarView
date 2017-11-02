@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -18,7 +19,6 @@ import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -148,6 +148,9 @@ public class MonthView extends View {
         mShowWeekLabel = typedArray.getBoolean(R.styleable.MonthView_showWeekLabel, true);
         mShowWeekDivider = typedArray.getBoolean(R.styleable.MonthView_showWeekDivider, false);
         mWeekMode = typedArray.getBoolean(R.styleable.MonthView_weekMode, false);
+        mWeekStart = typedArray.getInt(R.styleable.MonthView_firstDayOfWeek, Calendar.SUNDAY);
+        if (mWeekStart > Calendar.SATURDAY || mWeekStart < Calendar.SUNDAY)
+            throw new IllegalStateException("start day of week can only be values 1 ~7");
 
         week_label_padding = typedArray.getDimensionPixelSize(R.styleable.MonthView_weekLabelPadding, resources.getDimensionPixelSize(R.dimen.week_label_padding));
         if (!mShowMonthTitle) {
@@ -524,6 +527,21 @@ public class MonthView extends View {
         invalidate();
     }
 
+    public void setStartDayOfWeek(@IntRange(from = Calendar.SUNDAY, to = Calendar.SATURDAY) int dayOfWeek) {
+        if (dayOfWeek > Calendar.SATURDAY || dayOfWeek < Calendar.SUNDAY)
+            throw new IllegalStateException("start day of week can only be values 1 ~7");
+
+        if (dayOfWeek == mWeekStart)
+            return;
+
+        this.mWeekStart = dayOfWeek;
+        invalidate();
+    }
+
+    public int getStartDayOfWeek() {
+        return mWeekStart;
+    }
+
     protected void leftEdgeDay(CalendarDay lEdge) {
         leftEdge = lEdge;
     }
@@ -756,8 +774,6 @@ public class MonthView extends View {
         calendar.set(Calendar.YEAR, mYear);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         mDayOfWeekStart = calendar.get(Calendar.DAY_OF_WEEK);
-
-        mWeekStart = calendar.getFirstDayOfWeek();
 
         mNumCells = CalendarUtils.getDaysInMonth(mMonth, mYear);
 
