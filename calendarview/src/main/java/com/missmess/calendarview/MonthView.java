@@ -313,7 +313,7 @@ public class MonthView extends View {
                 decoration = mDecors.getDecorStyle(currentDay);
             }
             // default color and size
-            mDayNumPaint.setColor(decorTextColor);
+            mDayNumPaint.setColor(normalDayTextColor);
             mDayNumPaint.setTextSize(normalDayTextSize);
 
             // ==================================
