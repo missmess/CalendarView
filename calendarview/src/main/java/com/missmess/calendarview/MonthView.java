@@ -1014,6 +1014,10 @@ public class MonthView extends View {
         }
     }
 
+    /**
+     * The visible day range of current month, including other month if other-month enabled.
+     * @return array with 2 elements, first visible day and last visible day.
+     */
     public CalendarDay[] getShowingDayRange() {
         CalendarDay start, end;
         CalendarMonth currentMonth = getCurrentMonth();
@@ -1055,6 +1059,17 @@ public class MonthView extends View {
         if (rightEdge != null && end.compareTo(rightEdge) > 0)
             end = rightEdge;
 
+        return new CalendarDay[] {start, end};
+    }
+
+    /**
+     * The month day range of current month.
+     * @return first day of month and last day of month.
+     */
+    public CalendarDay[] getMonthDayRange() {
+        CalendarMonth currentMonth = getCurrentMonth();
+        CalendarDay start = new CalendarDay(currentMonth, 1);
+        CalendarDay end = new CalendarDay(currentMonth, mNumCells);
         return new CalendarDay[] {start, end};
     }
 

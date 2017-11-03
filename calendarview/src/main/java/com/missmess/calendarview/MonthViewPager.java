@@ -639,14 +639,30 @@ public class MonthViewPager extends ViewGroup {
         return mMonthMode;
     }
 
+    public CalendarDay getSelection() {
+        return childMiddle.getSelection();
+    }
+
     private int applySelectionLineAsWeekIndex() {
         int selectionLineIndex = childMiddle.getSelectionLineIndex();
         childMiddle.setWeekIndex(selectionLineIndex == -1 ? 0 : selectionLineIndex);
         return selectionLineIndex;
     }
 
+    /**
+     * The visible day range of current month, including other month if other-month enabled.
+     * @return array with 2 elements, first visible day and last visible day.
+     */
     public CalendarDay[] getShowingDayRange() {
         return childMiddle.getShowingDayRange();
+    }
+
+    /**
+     * The month day range of current month.
+     * @return first day of month and last day of month.
+     */
+    public CalendarDay[] getMonthDayRange() {
+        return childMiddle.getMonthDayRange();
     }
 
     /**
