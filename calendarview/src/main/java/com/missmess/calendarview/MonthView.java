@@ -201,8 +201,10 @@ public class MonthView extends View {
         selectionStyle = new DayDecor.Style();
         selectionStyle.setPureColorBgShape(DayDecor.Style.CIRCLE);
         selectionStyle.setPureColorBg(mSelectedCircleColor);
+        selectionStyle.setTextColor(decorTextColor);
 
         normalStyle = new DayDecor.Style();
+        normalStyle.setTextColor(normalDayTextColor);
 
         otherMonthStyle = new DayDecor.Style();
         otherMonthStyle.setTextColor(mOtherMonthTextColor);
@@ -334,7 +336,6 @@ public class MonthView extends View {
                 style = todayStyle;
             } else { // normal
                 style = normalStyle;
-                style.setTextColor(normalDayTextColor);
             }
             style.assignStyleToPaint(mDayNumPaint);
             // get text height
