@@ -103,6 +103,7 @@ public class MonthView extends View {
     private boolean mWeekMode;
     private int mWeekIndex = 0;
     private HashSet<CalendarDay> disabledDays;
+    private boolean multiSelectMode = false;
 
     public MonthView(Context context) {
         this(context, null);
@@ -199,7 +200,7 @@ public class MonthView extends View {
         todayStyle.setTextColor(todayTextColor);
 
         selectionStyle = new DayDecor.Style();
-        selectionStyle.setPureColorBgShape(DayDecor.Style.CIRCLE);
+        selectionStyle.setBgShape(DayDecor.Style.CIRCLE);
         selectionStyle.setPureColorBg(mSelectedCircleColor);
         selectionStyle.setTextColor(decorTextColor);
 
@@ -331,6 +332,14 @@ public class MonthView extends View {
             } else if (selected) { // select
                 style = selectionStyle;
             } else if (decoration != null) { // exist decor
+                if (decoration.getTextColor() == 0) {
+                    int bgShape = decoration.getBgShape();
+                    if (bgShape == DayDecor.Style.CIRCLE_STROKE || bgShape == DayDecor.Style.DOT) {
+                        decoration.setTextColor(normalDayTextColor);
+                    } else {
+                        decoration.setTextColor(decorTextColor);
+                    }
+                }
                 style = decoration;
             } else if (today.equals(currentDay)) { // today
                 style = todayStyle;
@@ -368,40 +377,52 @@ public class MonthView extends View {
     private void drawDayBg(Canvas canvas, DayDecor.Style style, float x, float y, int textHeight,
                            int dayTop, float dayLeft) {
         float halfDay = halfDayWidth;
-        if (style.isCircleBg()) {
-            mDayBgPaint.setStyle(Style.FILL);
-            mDayBgPaint.setColor(style.getPureColorBg());
-            canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
-        } else if (style.isRectBg()) {
-            mDayBgPaint.setStyle(Style.FILL);
-            mDayBgPaint.setColor(style.getPureColorBg());
-            canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
-        } else if (style.isCircleStrokeBg()) {
-            mDayBgPaint.setStyle(Style.STROKE);
-            mDayBgPaint.setColor(style.getPureColorBg());
-            canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
-        } else if (style.isDrawableBg()) {
-            Drawable drawable = style.getDrawableBg();
-            int dHeight = drawable.getIntrinsicHeight();
-            int dWidth = drawable.getIntrinsicWidth();
+        switch (style.getBgShape()) {
+            case DayDecor.Style.CIRCLE:
+                mDayBgPaint.setStyle(Style.FILL);
+                mDayBgPaint.setColor(style.getPureColorBg());
+                canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
+                break;
+            case DayDecor.Style.RECTANGLE:
+                mDayBgPaint.setStyle(Style.FILL);
+                mDayBgPaint.setColor(style.getPureColorBg());
+                canvas.drawRect(dayLeft, dayTop, dayLeft + 2 * halfDay, dayTop + dayRowHeight, mDayBgPaint);
+                break;
+            case DayDecor.Style.CIRCLE_STROKE:
+                mDayBgPaint.setStyle(Style.STROKE);
+                mDayBgPaint.setColor(style.getPureColorBg());
+                canvas.drawCircle(x, y - textHeight / 2, dayCircleRadius, mDayBgPaint);
+                break;
+            case DayDecor.Style.DOT:
+                mDayBgPaint.setStyle(Style.FILL);
+                mDayBgPaint.setColor(style.getPureColorBg());
+                int dot_r = getResources().getDimensionPixelSize(R.dimen.dot_radius);
+                canvas.drawCircle(x, y + dot_r * 3, dot_r, mDayBgPaint);
+                break;
+            case DayDecor.Style.DRAWABLE: {
+                Drawable drawable = style.getDrawableBg();
+                int dHeight = drawable.getIntrinsicHeight();
+                int dWidth = drawable.getIntrinsicWidth();
 
-            float left, right, top, bottom;
-            if (dWidth <= 0) { // fill
-                left = dayLeft;
-                right = dayLeft + 2 * halfDay;
-            } else { // remain original size
-                left = x - dWidth / 2;
-                right = x + dWidth / 2;
+                float left, right, top, bottom;
+                if (dWidth <= 0) { // fill
+                    left = dayLeft;
+                    right = dayLeft + 2 * halfDay;
+                } else { // remain original size
+                    left = x - dWidth / 2;
+                    right = x + dWidth / 2;
+                }
+                if (dHeight <= 0) {
+                    top = dayTop;
+                    bottom = dayTop + dayRowHeight;
+                } else {
+                    top = y - textHeight / 2 - dHeight / 2;
+                    bottom = y - textHeight / 2 + dHeight / 2;
+                }
+                drawable.setBounds((int) left, (int) top, (int) right, (int) bottom);
+                drawable.draw(canvas);
+                break;
             }
-            if (dHeight <= 0) {
-                top = dayTop;
-                bottom = dayTop + dayRowHeight;
-            } else {
-                top = y - textHeight / 2 - dHeight / 2;
-                bottom = y - textHeight / 2 + dHeight / 2;
-            }
-            drawable.setBounds((int) left, (int) top, (int) right, (int) bottom);
-            drawable.draw(canvas);
         }
     }
 

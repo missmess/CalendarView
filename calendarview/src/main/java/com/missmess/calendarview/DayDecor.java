@@ -36,7 +36,7 @@ public class DayDecor {
     public void putOne(CalendarDay calendarDay, @ColorInt int bgColor, int shape) {
         Style style = new Style();
         style.setPureColorBg(bgColor);
-        style.setPureColorBgShape(shape);
+        style.setBgShape(shape);
         putOne(calendarDay, style);
     }
 
@@ -100,18 +100,20 @@ public class DayDecor {
     }
 
     public static class Style {
+        public static final int DRAWABLE = 0;
         /**
          * circle shape of pure color bg
          */
-        public static int CIRCLE = 1;
+        public static final int CIRCLE = 1;
         /**
          * rectangle shape of pure color bg
          */
-        public static int RECTANGLE = 2;
+        public static final int RECTANGLE = 2;
         /**
          * circle stroke color bg
          */
-        public static int CIRCLE_STROKE = 3;
+        public static final int CIRCLE_STROKE = 3;
+        public static final int DOT = 5;
 
         // attributes
         // text
@@ -122,7 +124,7 @@ public class DayDecor {
         private @ColorInt int textColor = 0;
         private int textSize = 0;
         // bg
-        private int pureColorBgShape = 0;
+        private int bgShape = DRAWABLE;
         private @ColorInt int pureColorBg = 0;
         private Drawable drawableBg = null;
 
@@ -154,8 +156,8 @@ public class DayDecor {
                 setTextColor(other.getTextColor());
             if(other.getTextSize() != 0)
                 setTextSize(other.getTextSize());
-            if(other.getPureColorBgShape() != 0)
-                setPureColorBgShape(other.getPureColorBgShape());
+            if(other.getBgShape() != 0)
+                setBgShape(other.getBgShape());
             if(other.getPureColorBg() != 0)
                 setPureColorBg(other.getPureColorBg());
             if(other.getDrawableBg() != null)
@@ -189,8 +191,8 @@ public class DayDecor {
             this.textSize = textSize;
         }
 
-        public void setPureColorBgShape(int pureColorBgShape) {
-            this.pureColorBgShape = pureColorBgShape;
+        public void setBgShape(int bgShape) {
+            this.bgShape = bgShape;
         }
 
         public void setPureColorBg(int pureColorBg) {
@@ -225,24 +227,8 @@ public class DayDecor {
             return textSize;
         }
 
-        public int getPureColorBgShape() {
-            return pureColorBgShape;
-        }
-
-        public boolean isCircleBg() {
-            return pureColorBgShape == CIRCLE;
-        }
-
-        public boolean isRectBg() {
-            return pureColorBgShape == RECTANGLE;
-        }
-
-        public boolean isCircleStrokeBg() {
-            return pureColorBgShape == CIRCLE_STROKE;
-        }
-
-        public boolean isDrawableBg() {
-            return pureColorBgShape == 0 && drawableBg != null;
+        public int getBgShape() {
+            return bgShape;
         }
 
         public @ColorInt int getPureColorBg() {

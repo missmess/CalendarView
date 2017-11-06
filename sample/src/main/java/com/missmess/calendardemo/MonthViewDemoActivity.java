@@ -44,6 +44,8 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         decorWeekend(month, dayDecor);
         // drawable bg
         dayDecor.putOne(new CalendarDay(month, 21), getResources().getDrawable(R.drawable.a_decor));
+        // dot bg
+        dayDecor.putOne(new CalendarDay(month, 4), 0xCDEF43FF, DayDecor.Style.DOT);
         // styled background and text
         DayDecor.Style style = new DayDecor.Style();
         style.setTextSize(getResources().getDimensionPixelSize(R.dimen.big_text));
@@ -52,7 +54,7 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         style.setItalic(true);
         style.setUnderline(true);
         style.setStrikeThrough(true);
-        style.setPureColorBgShape(DayDecor.Style.CIRCLE_STROKE);
+        style.setBgShape(DayDecor.Style.CIRCLE_STROKE);
         style.setPureColorBg(0xFF66AA76);
         dayDecor.putOne(new CalendarDay(month, 24), style);
         monthView.setDecors(dayDecor);

@@ -18,6 +18,7 @@
     <dimen name="selected_day_radius">16dip</dimen>
     <dimen name="week_label_padding">14dip</dimen>
     <dimen name="row_height">38dip</dimen>
+    <dimen name="dot_radius">2dip</dimen>
 
     <!-- MonthViewPager -->
     <dimen name="icon_margin">13dp</dimen>
