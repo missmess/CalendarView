@@ -214,6 +214,40 @@ public class MonthView extends View {
         disableStyle.setTextColor(mDisableTextColor);
     }
 
+    protected void initPaint() {
+        mMonthTitlePaint = new Paint();
+        mMonthTitlePaint.setFakeBoldText(true);
+        mMonthTitlePaint.setAntiAlias(true);
+        mMonthTitlePaint.setTextSize(MONTH_LABEL_TEXT_SIZE);
+        mMonthTitlePaint.setTypeface(Typeface.create(mMonthTitleTypeface, Typeface.BOLD));
+        mMonthTitlePaint.setColor(mMonthTextColor);
+        mMonthTitlePaint.setTextAlign(Align.CENTER);
+        mMonthTitlePaint.setStyle(Style.FILL);
+
+        mDayBgPaint = new Paint();
+        mDayBgPaint.setAntiAlias(true);
+        mDayBgPaint.setColor(mSelectedCircleColor);
+        mDayBgPaint.setStrokeWidth(3);
+        mDayBgPaint.setStyle(Style.FILL);
+
+        mWeekLabelPaint = new Paint();
+        mWeekLabelPaint.setAntiAlias(true);
+        mWeekLabelPaint.setTextSize(WEEK_LABEL_TEXT_SIZE);
+        mWeekLabelPaint.setColor(mWeekColor);
+        mWeekLabelPaint.setTypeface(Typeface.create(mDayOfWeekTypeface, Typeface.NORMAL));
+        mWeekLabelPaint.setStyle(Style.FILL);
+        mWeekLabelPaint.setTextAlign(Align.CENTER);
+        mWeekLabelPaint.setFakeBoldText(true);
+
+        mDayNumPaint = new Paint();
+        mDayNumPaint.setAntiAlias(true);
+        mDayNumPaint.setTextSize(normalDayTextSize);
+        mDayNumPaint.setStyle(Style.FILL);
+        mDayNumPaint.setTextAlign(Align.CENTER);
+        mDayNumPaint.setColor(normalDayTextColor);
+        mDayNumPaint.setFakeBoldText(false);
+    }
+
     void drawWeekLabels(Canvas canvas) {
         int y = MONTH_HEADER_HEIGHT + WEEK_LABEL_HEIGHT / 2 + WEEK_LABEL_TEXT_SIZE / 2 + weekLabelOffset;
         float dayWidthHalf = halfDayWidth;
@@ -620,40 +654,6 @@ public class MonthView extends View {
         return new int[]{x, y};
     }
 
-    protected void initPaint() {
-        mMonthTitlePaint = new Paint();
-        mMonthTitlePaint.setFakeBoldText(true);
-        mMonthTitlePaint.setAntiAlias(true);
-        mMonthTitlePaint.setTextSize(MONTH_LABEL_TEXT_SIZE);
-        mMonthTitlePaint.setTypeface(Typeface.create(mMonthTitleTypeface, Typeface.BOLD));
-        mMonthTitlePaint.setColor(mMonthTextColor);
-        mMonthTitlePaint.setTextAlign(Align.CENTER);
-        mMonthTitlePaint.setStyle(Style.FILL);
-
-        mDayBgPaint = new Paint();
-        mDayBgPaint.setAntiAlias(true);
-        mDayBgPaint.setColor(mSelectedCircleColor);
-        mDayBgPaint.setStrokeWidth(3);
-        mDayBgPaint.setStyle(Style.FILL);
-
-        mWeekLabelPaint = new Paint();
-        mWeekLabelPaint.setAntiAlias(true);
-        mWeekLabelPaint.setTextSize(WEEK_LABEL_TEXT_SIZE);
-        mWeekLabelPaint.setColor(mWeekColor);
-        mWeekLabelPaint.setTypeface(Typeface.create(mDayOfWeekTypeface, Typeface.NORMAL));
-        mWeekLabelPaint.setStyle(Style.FILL);
-        mWeekLabelPaint.setTextAlign(Align.CENTER);
-        mWeekLabelPaint.setFakeBoldText(true);
-
-        mDayNumPaint = new Paint();
-        mDayNumPaint.setAntiAlias(true);
-        mDayNumPaint.setTextSize(normalDayTextSize);
-        mDayNumPaint.setStyle(Style.FILL);
-        mDayNumPaint.setTextAlign(Align.CENTER);
-        mDayNumPaint.setColor(normalDayTextColor);
-        mDayNumPaint.setFakeBoldText(false);
-    }
-
     protected void onDraw(Canvas canvas) {
         //        Log.d("MonthView", "onDraw");
 
@@ -828,11 +828,12 @@ public class MonthView extends View {
         }
     }
 
-    public void setNormalDayTextColor(@ColorInt int color) {
+    void setNormalDayTextColor(@ColorInt int color) {
         normalDayTextColor = color;
+        normalStyle.setTextColor(color);
     }
 
-    public void setNormalDayTextSize(int px) {
+    void setNormalDayTextSize(int px) {
         normalDayTextSize = px;
     }
 
@@ -844,11 +845,11 @@ public class MonthView extends View {
         invalidate();
     }
 
-    public void setDayCircleRadius(int px) {
+    void setDayCircleRadius(int px) {
         dayCircleRadius = px;
     }
 
-    public void setDayRowHeight(int px) {
+    void setDayRowHeight(int px) {
         dayRowHeight = px;
     }
 
