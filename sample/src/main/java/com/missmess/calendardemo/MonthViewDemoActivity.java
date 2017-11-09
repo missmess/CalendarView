@@ -13,6 +13,7 @@ import com.missmess.calendarview.CalendarUtils;
 import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
 public class MonthViewDemoActivity extends AppCompatActivity {
@@ -67,8 +68,8 @@ public class MonthViewDemoActivity extends AppCompatActivity {
         });
         monthView.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
-                Toast.makeText(MonthViewDemoActivity.this, "selection change to: " + now, Toast.LENGTH_SHORT).show();
+            public void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old, CalendarDay selection, boolean byUser) {
+                Toast.makeText(MonthViewDemoActivity.this, Arrays.toString(old) + "\nselection change to: \n" + Arrays.toString(now), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -132,9 +133,9 @@ public class MonthViewDemoActivity extends AppCompatActivity {
                 monthView.setStartDayOfWeek(next == 0 ? 7 : next);
                 break;
             case R.id.button12:
-                int lineIndex = monthView.getSelectionLineIndex();
+                int lineIndex = monthView.getLineIndex(monthView.getSelection()[0]);
                 if (lineIndex != -1)
-                    monthView.setWeekIndex(lineIndex);
+                monthView.setWeekIndex(lineIndex);
                 break;
         }
     }

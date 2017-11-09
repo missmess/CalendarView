@@ -6,4 +6,16 @@
     <item android:id="@+id/item4" android:title="Select 2017-4-2" />
     <item android:id="@+id/item5" android:title="Show visible range" />
     <item android:id="@+id/item6" android:title="Disable 30" />
+    <item android:title="selection mode">
+        <menu>
+            <group
+                android:checkableBehavior="single"
+                android:title="selection mode">
+                <item android:title="none" android:id="@+id/item7"/>
+                <item android:title="single" android:id="@+id/item8"/>
+                <item android:title="multiple" android:id="@+id/item9"/>
+                <item android:title="range" android:id="@+id/item10"/>
+            </group>
+        </menu>
+    </item>
 </menu>

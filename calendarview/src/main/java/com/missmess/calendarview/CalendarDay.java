@@ -69,6 +69,14 @@ public class CalendarDay implements Comparable<CalendarDay> {
         return new Date(year - 1900, month - 1, day);
     }
 
+    public CalendarDay previous() {
+        return CalendarUtils.offsetDay(this, -1);
+    }
+
+    public CalendarDay next() {
+        return CalendarUtils.offsetDay(this, 1);
+    }
+
     @Override
     public int compareTo(@NonNull CalendarDay another) {
         if(another.getYear() > year || (another.getYear() == year && another.getMonth() > month)

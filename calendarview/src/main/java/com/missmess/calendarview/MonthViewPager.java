@@ -57,6 +57,7 @@ public class MonthViewPager extends ViewGroup {
     private boolean mShowOtherMonth;
     private int mOtherMonthColor;
     private boolean mMonthMode;
+    private CalendarDay lastInteractDay;
 
     public MonthViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -138,10 +139,10 @@ public class MonthViewPager extends ViewGroup {
         setOtherMonthColorInternal(mOtherMonthColor);
         if (childMiddle.isMonthMode()) {
             mMonthMode = true;
-            setMonthInternal();
+            setMonthModeInternal();
         } else {
             mMonthMode = false;
-            setWeekInternal();
+            setWeekModeInternal();
         }
     }
 
@@ -193,24 +194,8 @@ public class MonthViewPager extends ViewGroup {
 
         // set current month
         childMiddle.setYearAndMonth(calendarMonth);
-        applySelectionLineAsWeekIndex();
-
-        if (!mMonthMode) {
-            // correct the selection when month changed
-            int com = childMiddle.getSelectionType();
-            if (com == -2 || com == 2 || com == -3) {
-                childMiddle.setSelection(new CalendarDay(getCurrentMonth(), 1));
-                onMiddleChildChanged(oldMonth);
-            } else if (com == -1) {
-                onSelectionInLeftOtherMonth();
-            } else if (com == 1) {
-                onSelectionInRightOtherMonth();
-            } else {
-                onMiddleChildChanged(oldMonth);
-            }
-        } else {
-            onMiddleChildChanged(oldMonth);
-        }
+        // month changed
+        onMiddleChildChanged(oldMonth);
     }
 
     public void setToday(CalendarDay today) {
@@ -227,6 +212,11 @@ public class MonthViewPager extends ViewGroup {
         return childMiddle.getCurrentMonth();
     }
 
+    /**
+     * Get current showing MonthView child, you can use this to call get method, NOTIFY that NOT to
+     * call any set method upon this return value directly, use set method in MonthViewPager instead.
+     * @return current showing child
+     */
     public MonthView getCurrentChild() {
         return childMiddle;
     }
@@ -268,12 +258,11 @@ public class MonthViewPager extends ViewGroup {
     }
 
     /**
-     * Do works that check is in edge, setup left and right child.
-     * It is called when middle child changed, this means:
+     * Do works that check if in edge, and setup left and right child,
+     * call this when middle child changed, this means:
      * <p>
      * <li>after scrolling, middle child has changed to another view.</li>
      * <li>middle child changes its showing month.</li>
-     * <li>middle child changes its display mode.</li>
      *
      * @param oldMonth old month
      */
@@ -284,52 +273,73 @@ public class MonthViewPager extends ViewGroup {
         CalendarMonth currentMonth = middle.getCurrentMonth();
 
         // code below do works that setup left and right child.
-        MonthView left = null;
-        MonthView right = null;
-        if (leftAble) {
-            left = childLeft;
-            // In month mode, we always set left view with previous month.
-            // In week mode, we set left view with previous week, may in same month, may in previous month.
-            if (mMonthMode) {
-                left.setYearAndMonth(currentMonth.previous());
-            } else {
-                int week = middle.getWeekIndex() - 1;
-                if (week < 0) {
-                    left.setYearAndMonth(currentMonth.previous());
-                    if (middle.findDayOffset() == 0)
-                        left.setWeekIndex(left.getWeekRows() - 1);
-                    else
-                        left.setWeekIndex(left.getWeekRows() - 2);
-                } else {
-                    left.setYearAndMonth(currentMonth);
-                    left.setWeekIndex(week);
-                }
-            }
+        MonthView left = childLeft;
+        MonthView right = childRight;
+
+        if (mMonthMode) {
+            setSiblingInMonthMode(currentMonth);
+        } else {
+            setSiblingInWeekMode(middle.getWeekIndex());
         }
-        if (rightAble) {
-            right = childRight;
-            if (mMonthMode) {
-                right.setYearAndMonth(currentMonth.next());
-            } else {
-                int week = middle.getWeekIndex() + 1;
-                if (week > middle.getWeekRows() - 1) {
-                    right.setYearAndMonth(currentMonth.next());
-                    if (right.findDayOffset() == 0)
-                        right.setWeekIndex(0);
-                    else
-                        right.setWeekIndex(1);
-                } else {
-                    right.setYearAndMonth(currentMonth);
-                    right.setWeekIndex(week);
-                }
-            }
-        }
+
         // call listeners
         boolean monthChanged = !oldMonth.equals(currentMonth);
         if (monthChanged && mChangeListeners != null) {
             for (OnMonthChangeListener listener : mChangeListeners) {
                 if (listener != null)
                     listener.onMonthChanged(this, left, middle, right, currentMonth, oldMonth);
+            }
+        }
+    }
+
+    // setup left and right MonthView when in month mode
+    private void setSiblingInMonthMode(CalendarMonth currentMonth) {
+        if (!mMonthMode)
+            return;
+
+        if (leftAble) {
+            childLeft.setYearAndMonth(currentMonth.previous());
+            childLeft.setWeekIndex(0);
+        }
+        if (rightAble) {
+            childRight.setYearAndMonth(currentMonth.next());
+            childRight.setWeekIndex(0);
+        }
+    }
+
+    // setup left and right MonthView when in week mode
+    private void setSiblingInWeekMode(int middleWeekIndex) {
+        if (mMonthMode)
+            return;
+
+        MonthView middle = childMiddle;
+        CalendarMonth currentMonth = middle.getCurrentMonth();
+        if (leftAble) {
+            MonthView left = childLeft;
+            int week = middleWeekIndex - 1;
+            if (week < 0) {
+                left.setYearAndMonth(currentMonth.previous());
+                if (middle.findDayOffset() == 0)
+                    left.setWeekIndex(left.getWeekRows() - 1);
+                else
+                    left.setWeekIndex(left.getWeekRows() - 2);
+            } else {
+                left.setYearAndMonth(currentMonth);
+                left.setWeekIndex(week);
+            }
+        }
+        if (rightAble) {
+            MonthView right = childRight;
+            int week = middleWeekIndex + 1;
+            if (week > middle.getWeekRows() - 1) {
+                right.setYearAndMonth(currentMonth.next());
+                if (right.findDayOffset() == 0)
+                    right.setWeekIndex(0);
+                else
+                    right.setWeekIndex(1);
+            } else {
+                right.setYearAndMonth(currentMonth);
+                right.setWeekIndex(week);
             }
         }
     }
@@ -592,62 +602,97 @@ public class MonthViewPager extends ViewGroup {
         if (mMonthMode)
             return;
 
-        setMonthInternal();
+        setMonthModeInternal();
     }
 
-    private void setMonthInternal() {
+    private void setMonthModeInternal() {
         mMonthMode = true;
         childLeft.showMonthMode();
         childMiddle.showMonthMode();
         childRight.showMonthMode();
-        onMiddleChildChanged(childMiddle.getCurrentMonth());
+        setSiblingInMonthMode(childMiddle.getCurrentMonth());
     }
 
     public void setWeekMode() {
         if (!mMonthMode)
             return;
 
-        setWeekInternal();
+        setWeekModeInternal();
     }
 
-    private void setWeekInternal() {
+    public int getLineIndex(CalendarDay day) {
+        return childMiddle.getLineIndex(day);
+    }
+
+    /**
+     * Show specified week.
+     * @param weekIndex week index, should be correct in current month.
+     */
+    public void setWeekIndex(int weekIndex) {
+        boolean done = childMiddle.setWeekIndex(weekIndex);
+        // if week mode, setup sibling views to show correctly.
+        if (!mMonthMode && done) {
+            setSiblingInWeekMode(weekIndex);
+        }
+    }
+
+    private void setWeekModeInternal() {
         mMonthMode = false;
         childLeft.showWeekMode();
         childMiddle.showWeekMode();
         childRight.showWeekMode();
 
-        // correct the selection when change to week mode
-        int com = childMiddle.getSelectionType();
-        if (com == -2 || com == 2 || com == -3) {
-            CalendarDay today = childMiddle.getToday();
-            int todayType = childMiddle.getDayType(today);
-            if (todayType == 0)
-                childMiddle.setSelection(today);
-            else
-                childMiddle.setSelection(new CalendarDay(getCurrentMonth(), 1));
-            onMiddleChildChanged(childMiddle.getCurrentMonth());
-        } else if (com == -1) {
-            onSelectionInLeftOtherMonth();
-        } else if (com == 1) {
-            onSelectionInRightOtherMonth();
-        } else {
-            onMiddleChildChanged(childMiddle.getCurrentMonth());
-        }
+//        // correct the selection when change to week mode
+//        int com = childMiddle.getSelectionType();
+//        if (com == -2 || com == 2 || com == -3) {
+//            CalendarDay today = childMiddle.getToday();
+//            int todayType = childMiddle.getDayType(today);
+//            if (todayType == 0)
+//                childMiddle.setSelection(today);
+//            else
+//                childMiddle.setSelection(new CalendarDay(getCurrentMonth(), 1));
+//            onMiddleChildChanged(childMiddle.getCurrentMonth());
+//        } else if (com == -1) {
+//            onSelectionInLeftOtherMonth();
+//        } else if (com == 1) {
+//            onSelectionInRightOtherMonth();
+//        } else {
+//            onMiddleChildChanged(childMiddle.getCurrentMonth());
+//        }
+
+        setSiblingInWeekMode(childMiddle.getWeekIndex());
     }
 
     public boolean isMonthMode() {
         return mMonthMode;
     }
 
-    public CalendarDay getSelection() {
+    /**
+     * Be one of the {@link MonthView#SELECTION_SINGLE}, {@link MonthView#SELECTION_MULTI},
+     * {@link MonthView#SELECTION_RANGE}, {@link MonthView#SELECTION_NONE}
+     * @param selectionMode mode
+     */
+    public void setSelectionMode(int selectionMode) {
+        if (childMiddle != null) {
+            childLeft.setSelectionMode(selectionMode);
+            childMiddle.setSelectionMode(selectionMode);
+            childRight.setSelectionMode(selectionMode);
+        }
+    }
+
+    public int getSelectionMode() {
+        return childMiddle.getSelectionMode();
+    }
+
+    public CalendarDay[] getSelection() {
         return childMiddle.getSelection();
     }
 
-    private int applySelectionLineAsWeekIndex() {
-        int selectionLineIndex = childMiddle.getSelectionLineIndex();
-        childMiddle.setWeekIndex(selectionLineIndex == -1 ? 0 : selectionLineIndex);
-        return selectionLineIndex;
-    }
+//    private int applySelectionLineAsWeekIndex() {
+//        int selectionLineIndex = childMiddle.getSelectionLineIndex();
+//        childMiddle.setWeekIndex(selectionLineIndex == -1 ? 0 : selectionLineIndex);
+//        return selectionLineIndex;
+//    }
 
     /**
      * The visible day range of current month, including other month if other-month enabled.
@@ -792,33 +837,6 @@ public class MonthViewPager extends ViewGroup {
                         childMiddle.setOnSelectionChangeListener(mSelectListener);
                         old.setOnMonthTitleClickListener(null);
                         old.setOnSelectionChangeListener(null);
-
-                        // if week mode, select a proper day when scrolled.
-                        if (!mMonthMode) {
-                            CalendarDay oldSelection = old.getSelection();
-                            if (oldSelection != null) {
-                                CalendarDay calendarDay = CalendarUtils.offsetDay(oldSelection, toleft ? -7 : 7);
-                                if (calendarDay.compareTo(rightEdge) > 0)
-                                    calendarDay = rightEdge;
-                                if (calendarDay.compareTo(leftEdge) < 0)
-                                    calendarDay = leftEdge;
-
-                                if (childMiddle.isDayDisabled(calendarDay)) {
-                                    // simulate to select the disable day. there is still have a problem
-                                    // when scroll is aborted by touch, which cause selection disappeared.
-                                    childMiddle.setSelectionAtom(calendarDay);
-                                    if (toleft) {
-                                        smoothScrollToRight();
-                                    } else {
-                                        smoothScrollToLeft();
-                                    }
-                                } else {
-                                    childMiddle.setSelection(calendarDay);
-                                }
-                            }
-                        }
-                        // week index change also
-                        applySelectionLineAsWeekIndex();
                     }
                     break;
             }
@@ -848,11 +866,15 @@ public class MonthViewPager extends ViewGroup {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    // be about to scroll to left, set left view index to the last row
+                    childLeft.setWeekIndex(childLeft.getWeekRows() - 1);
                     smoothScrollToLeft();
                 }
             }, 200);
         } else {
             setCurrentMonth(getCurrentMonth().previous());
+            // must show the last row
+            setWeekIndex(childMiddle.getWeekRows() - 1);
         }
     }
 
@@ -861,11 +883,15 @@ public class MonthViewPager extends ViewGroup {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    // be about to scroll to right, set right view index to 0
+                    childRight.setWeekIndex(0);
                     smoothScrollToRight();
                 }
             }, 200);
         } else {
             setCurrentMonth(getCurrentMonth().next());
+            // must show the first row
+            setWeekIndex(0);
         }
     }
 
@@ -877,28 +903,35 @@ public class MonthViewPager extends ViewGroup {
         }
 
         @Override
-        public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
-            // when selection changed, change week index
-            applySelectionLineAsWeekIndex();
+        public void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old, CalendarDay selection, boolean byUser) {
             // left and right view also should change selection
             childLeft.setSelectionAtom(now);
             childRight.setSelectionAtom(now);
 
-            // if show other month and select the day of other month:
-            // in month mode, we scroll to change middle view;
-            // in week mode, we set a new current month.
-            if (isShowingOtherMonth()) {
-                int com = childMiddle.getSelectionType();
-                if (com == -1) { // goto previous
-                    onSelectionInLeftOtherMonth();
-                } else if (com == 1) { // goto next
-                    onSelectionInRightOtherMonth();
+            if (selection != null) {
+                int type = childMiddle.getDayType(selection);
+                switch (type) {
+                    case 0:
+                        int index = childMiddle.getLineIndex(selection);
+                        childMiddle.setWeekIndex(index);
+                        break;
+                    case 1:
+                        onSelectionInRightOtherMonth();
+                        break;
+                    case -1:
+                        onSelectionInLeftOtherMonth();
+                        break;
+                    case 2:
+                        break;
+                    case -2:
+                        break;
+
                 }
             }
 
             // call listener
             if (mListener != null)
-                mListener.onSelectionChanged(monthView, now, old, byUser);
+                mListener.onSelectionChanged(monthView, now, old, selection, byUser);
         }
     }
 

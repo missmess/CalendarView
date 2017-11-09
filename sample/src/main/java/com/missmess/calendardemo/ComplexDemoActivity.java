@@ -21,6 +21,7 @@ import com.missmess.calendarview.TransitRootView;
 import com.missmess.calendarview.YearView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ComplexDemoActivity extends AppCompatActivity {
@@ -111,9 +112,9 @@ public class ComplexDemoActivity extends AppCompatActivity {
     private void initListener() {
         monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
+            public void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old, CalendarDay selection, boolean byUser) {
                 for(DayEvent event : yearEvents) {
-                    if(event.isThisDay(now)) {
+                    if(Arrays.asList(now).contains(event.getCalendarDay())) {
                         adapter.setDetails(event.getType().name(), event.getEventDetails());
                         adapter.notifyDataSetChanged();
                         return;

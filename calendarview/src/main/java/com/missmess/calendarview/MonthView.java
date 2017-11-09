@@ -21,8 +21,10 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 
 /**
@@ -34,6 +36,10 @@ import java.util.Locale;
  * ...
  */
 public class MonthView extends View {
+    public static final int SELECTION_SINGLE = 0;
+    public static final int SELECTION_MULTI = 1;
+    public static final int SELECTION_RANGE = 2;
+    public static final int SELECTION_NONE = 9;
     private final int DEFAULT_NUM_ROWS = 6;
     protected int dayCircleRadius;
     protected int SPACE_BETWEEN_WEEK_AND_DAY = 0;
@@ -85,7 +91,7 @@ public class MonthView extends View {
     private static final String DAY_OF_WEEK_FORMAT = "EEEEE";
     private OnSelectionChangeListener mOnSelectionChangeListener;
     private OnMonthTitleClickListener mOnMonthClicker;
-    private CalendarDay selectedDay;
+    private LinkedHashSet<CalendarDay> selectedDays;
     private float downX;
     private float downY;
     private TypedArray mTypeArray;
@@ -103,7 +109,7 @@ public class MonthView extends View {
     private boolean mWeekMode;
     private int mWeekIndex = 0;
     private HashSet<CalendarDay> disabledDays;
-    private boolean multiSelectMode = false;
+    private int mSelectionMode = SELECTION_SINGLE;
 
     public MonthView(Context context) {
         this(context, null);
@@ -171,6 +177,7 @@ public class MonthView extends View {
         leftEdge = new CalendarDay(1900, 2, 1);
         rightEdge = new CalendarDay(2049, 12, 31);
         disabledDays = new HashSet<>();
+        selectedDays = new LinkedHashSet<>();
     }
 
     private int calculateNumRows() {
@@ -339,7 +346,7 @@ public class MonthView extends View {
             float x = halfDay + dayLeft;
             // if true, current drawing day is selected
             boolean selected = false;
-            if (selectedDay != null && selectedDay.equals(currentDay)) { //selected
+            if (selectedDays.contains(currentDay)) { //selected
                 selected = true;
             }
 
@@ -493,6 +500,23 @@ public class MonthView extends View {
     }
 
     /**
+     * Be one of the {@link #SELECTION_SINGLE}, {@link #SELECTION_MULTI}, {@link #SELECTION_RANGE},
+     * {@link #SELECTION_NONE}
+     * @param selectionMode mode
+     */
+    public void setSelectionMode(int selectionMode) {
+        if (mSelectionMode == selectionMode)
+            return;
+
+        this.mSelectionMode = selectionMode;
+        setSelection(null);
+    }
+
+    public int getSelectionMode() {
+        return mSelectionMode;
+    }
+
+    /**
      * Select a specified calendar day in this month. Selection day should always be visible, no
      * matter month mode or week mode.
      *
@@ -527,28 +551,86 @@ public class MonthView extends View {
         return selectActual(selection, false);
     }
 
-    void setSelectionAtom(@Nullable CalendarDay selection) {
-        selectedDay = selection;
+    // set selection atomically no matter what limit
+    void setSelectionAtom(@Nullable CalendarDay[] selections) {
+        selectedDays.clear();
+        if (selections != null) {
+            selectedDays.addAll(Arrays.asList(selections));
+        }
         invalidate();
     }
 
     private boolean selectActual(CalendarDay selection, boolean byUser) {
-        if (selectedDay == selection) // not changed
-            return false;
-        if (selection != null && selection.equals(selectedDay)) //same day
-            return false;
+        int mode = mSelectionMode;
+        // old selection array
+        CalendarDay[] oldArray = new CalendarDay[selectedDays.size()];
+        selectedDays.toArray(oldArray);
 
-        CalendarDay old = selectedDay;
-        selectedDay = selection;
-        invalidate();
-        if (mOnSelectionChangeListener != null) {
-            mOnSelectionChangeListener.onSelectionChanged(this, selection, old, byUser);
+        boolean modified = false;
+        if (selection == null || mode == SELECTION_NONE) { // if null, clear selections
+            if (!selectedDays.isEmpty()) {
+                selectedDays.clear();
+                modified = true;
+            }
+        } else {
+            boolean exist = selectedDays.contains(selection);
+            switch (mode) {
+                case SELECTION_SINGLE:
+                    if (!exist) { // not exist, add it
+                        selectedDays.clear();
+                        modified = selectedDays.add(selection);
+                    }
+                    break;
+                case SELECTION_MULTI:
+                    if (exist) {
+                        modified = selectedDays.remove(selection);
+                    } else {
+                        modified = selectedDays.add(selection);
+                    }
+                    break;
+                case SELECTION_RANGE:
+                    int size = selectedDays.size();
+                    if (size == 0) {
+                        modified = selectedDays.add(selection);
+                    } else if (size == 1) {
+                        if (exist) {
+                            modified = selectedDays.remove(selection);
+                        } else {
+                            CalendarDay one = selectedDays.iterator().next();
+                            int com = one.compareTo(selection);
+                            CalendarDay start = com < 0 ? one.next() : selection;
+                            CalendarDay end = com < 0 ? selection : one.previous();
+                            // add range selections from the one to selection.
+                            for (CalendarDay day = start; day.compareTo(end) <= 0; day = day.next()) {
+                                selectedDays.add(day);
+                            }
+                            modified = true;
+                        }
+                    } else {
+                        selectedDays.clear();
+                        selectedDays.add(selection);
+                        modified = true;
+                    }
+                    break;
+            }
         }
-        return true;
+
+        if (modified) {
+            invalidate();
+            CalendarDay[] newArray = new CalendarDay[selectedDays.size()];
+            selectedDays.toArray(newArray);
+            if (mOnSelectionChangeListener != null) {
+                mOnSelectionChangeListener.onSelectionChanged(this, newArray, oldArray, selection, byUser);
+            }
+            return true;
+        }
+
+        return false;
     }
 
-    public CalendarDay getSelection() {
-        return selectedDay;
+    public CalendarDay[] getSelection() {
+        CalendarDay[] a = new CalendarDay[selectedDays.size()];
+        return selectedDays.toArray(a);
     }
 
     public void setDayDisable(@NonNull CalendarDay disable) {
@@ -557,8 +639,7 @@ public class MonthView extends View {
             return;
 
         // clear selection
-        if (disable.equals(selectedDay))
-            setSelection(null);
+        selectedDays.remove(disable);
 
         // remove decor
         if (mDecors != null)
@@ -764,25 +845,27 @@ public class MonthView extends View {
 
     /**
      * 设置当前显示的年和月
-     *
-     * @param calendarMonth calendarMonth
+     * @param year  年
+     * @param month 月
      */
-    public void setYearAndMonth(CalendarMonth calendarMonth) {
-        setYearAndMonth(calendarMonth.getYear(), calendarMonth.getMonth());
+    public void setYearAndMonth(int year, int month) {
+        setYearAndMonth(new CalendarMonth(year, month));
     }
 
     /**
      * 设置当前显示的年和月
      *
-     * @param year  年
-     * @param month 月
+     * @param calendarMonth calendarMonth
      */
-    public void setYearAndMonth(int year, int month) {
-        if (year == mYear && month == mMonth + 1)
+    public void setYearAndMonth(@NonNull CalendarMonth calendarMonth) {
+        if (calendarMonth.getYear() == mYear && calendarMonth.getMonth() == mMonth + 1)
+            return;
+        if ((leftEdge != null && calendarMonth.compareTo(leftEdge.getCalendarMonth()) < 0)
+                || (rightEdge != null && calendarMonth.compareTo(rightEdge.getCalendarMonth()) > 0))
             return;
 
-        mYear = year;
-        mMonth = month - 1;
+        mYear = calendarMonth.getYear();
+        mMonth = calendarMonth.getMonth() - 1;
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.MONTH, mMonth);
@@ -872,18 +955,24 @@ public class MonthView extends View {
         requestLayout();
     }
 
-    public void setWeekIndex(int weekIndex) {
+    /**
+     * Week index indicate the showing week rows when in week mode, or the destination week row when
+     * use {@link ScrollingMonthPagerBehavior} to transit MonthMode to WeekMode.
+     * @param weekIndex week row index, should be in range of 0 ~ ({@link #getWeekRows()} - 1).
+     * @return true - success set.
+     */
+    public boolean setWeekIndex(int weekIndex) {
         if (mWeekIndex == weekIndex)
-            return;
+            return false;
 
-        if (mWeekIndex < 0 || mWeekIndex >= mNumRows)
-            throw new IllegalStateException(getCurrentMonth() + " week index range is 0 ~ "
-                    + (mNumRows - 1) + ", current is " + weekIndex);
+        if (weekIndex < 0 || weekIndex >= mNumRows)
+            return false;
 
         this.mWeekIndex = weekIndex;
         if (mWeekMode) {
             invalidate();
         }
+        return true;
     }
 
     public int getWeekIndex() {
@@ -924,51 +1013,56 @@ public class MonthView extends View {
         return !mWeekMode;
     }
 
-    public int getTodayLineIndex() {
-        int type = getDayType(today);
+//    /**
+//     * Line index of selection showing.
+//     *
+//     * @return return -1 for no selection or selection is invisible in current month.
+//     */
+//    public int getSelectionLineIndex() {
+//        if (!selectedDays.isEmpty()) {
+//            int type = getSelectionType();
+//            switch (type) {
+//                case 0:
+//                    CalendarDay day = selectedDays.iterator().next();
+//                    return (findDayOffset() + day.getDay() - 1) / mNumDays;
+//                case 1:
+//                    return mNumRows - 1;
+//                case 2:
+//                    return -1;
+//                case -1:
+//                    return 0;
+//                case -2:
+//                    return -1;
+//            }
+//        }
+//
+//        return -1;
+//    }
+
+//    /**
+//     * Selection day type.
+//     *
+//     * @return -3 - no selection, others see {@link #getDayType(CalendarDay)}
+//     */
+//    int getSelectionType() {
+//        if (selectedDays.isEmpty())
+//            return -3;
+//
+//        return getDayType(selectedDays.iterator().next());
+//    }
+
+    /**
+     * Line index of calendar day in current month, return -1 if not in current month.
+     * @return index or -1.
+     */
+    public int getLineIndex(@NonNull CalendarDay day) {
+        int type = getDayType(day);
         switch (type) {
             case 0:
-                return (findDayOffset() + today.getDay() - 1) / mNumDays;
+                return (findDayOffset() + day.getDay() - 1) / mNumDays;
             default:
                 return -1;
         }
-    }
-
-    /**
-     * Line index of selection showing.
-     *
-     * @return return -1 for no selection or selection is invisible in current month.
-     */
-    public int getSelectionLineIndex() {
-        if (selectedDay != null) {
-            int type = getSelectionType();
-            switch (type) {
-                case 0:
-                    return (findDayOffset() + selectedDay.getDay() - 1) / mNumDays;
-                case 1:
-                    return mNumRows - 1;
-                case 2:
-                    return -1;
-                case -1:
-                    return 0;
-                case -2:
-                    return -1;
-            }
-        }
-
-        return -1;
-    }
-
-    /**
-     * Selection day type.
-     *
-     * @return -3 - no selection, others see {@link #getDayType(CalendarDay)}
-     */
-    int getSelectionType() {
-        if (selectedDay == null)
-            return -3;
-
-        return getDayType(selectedDay);
     }
 
     /**
@@ -980,7 +1074,7 @@ public class MonthView extends View {
      * <p>1 - if day is in next month and visible now</p>
      * <p>2 - if day is in next month but not visible</p>
      */
-    int getDayType(@NonNull CalendarDay day) {
+    public int getDayType(@NonNull CalendarDay day) {
         int com = day.getCalendarMonth().compareTo(getCurrentMonth());
         if (com == 0) {
             // current month
@@ -1150,11 +1244,15 @@ public class MonthView extends View {
          * Selection has changed on month view
          *
          * @param monthView monthView
-         * @param now       now selection
-         * @param old       old selection
-         * @param byUser    true - selection changed by user click, false - selection changed by {@link #setSelection(CalendarDay)}
+         * @param now       now selections array, not be null
+         * @param old       old selections array, not be null
+         * @param selection the day which user is interacting with. If click, the day clicked; if
+         *                  call {@link #setSelection(CalendarDay)}, the day user call, may be null.
+         * @param byUser    true - selection changed by user click, false - selection changed by
+         *                  call {@link #setSelection(CalendarDay)}.
          */
-        void onSelectionChanged(MonthView monthView, @Nullable CalendarDay now, @Nullable CalendarDay old, boolean byUser);
+        void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old,
+                                @Nullable CalendarDay selection, boolean byUser);
     }
 
     public interface OnMonthTitleClickListener {

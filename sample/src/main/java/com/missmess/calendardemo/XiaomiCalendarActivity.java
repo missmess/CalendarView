@@ -17,6 +17,7 @@ import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.MonthViewPager;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,11 +60,11 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
         });
         monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
-                Log.v("xiaomi_calendar", "byUser=" + byUser + "; old=" + old + "; now=" + now);
+            public void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old, CalendarDay selection, boolean byUser) {
+                Log.v("xiaomi_calendar", "byUser=" + byUser + "; old=" + Arrays.toString(old) + "; now=" +  Arrays.toString(now));
                 for(DayEvent event : yearEvents) {
-                    if(event.isThisDay(now)) {
-                        textView.setText(String.format("Today is \n%s\nToday have %d events", now, event.getEventDetails().length));
+                    if(Arrays.asList(now).contains(event.getCalendarDay())) {
+                        textView.setText(String.format("Today is \n%s\nToday have %d events", now[0], event.getEventDetails().length));
                         return;
                     }
                 }
@@ -131,6 +132,19 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
                 break;
             case R.id.item6:
                 monthViewPager.setDayDisable(new CalendarDay(monthViewPager.getCurrentMonth(), 30));
+                break;
+            case R.id.item7:
+                monthViewPager.setSelectionMode(MonthView.SELECTION_NONE);
+                break;
+            case R.id.item8:
+                monthViewPager.setSelectionMode(MonthView.SELECTION_SINGLE);
+                break;
+            case R.id.item9:
+                monthViewPager.setSelectionMode(MonthView.SELECTION_MULTI);
+                break;
+            case R.id.item10:
+                monthViewPager.setSelectionMode(MonthView.SELECTION_RANGE);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

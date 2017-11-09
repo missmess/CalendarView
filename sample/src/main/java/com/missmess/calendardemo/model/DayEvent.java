@@ -15,11 +15,9 @@ public class DayEvent {
     private EventType type;
     private String[] eventDetails;
 
-    public boolean isThisDay(CalendarDay calendarDay) {
-        return calendarDay != null && year == calendarDay.getYear() && month == calendarDay.getMonth() && day == calendarDay.getDay();
+    public CalendarDay getCalendarDay() {
+        return new CalendarDay(year, month, day);
     }
-
-
 
     public DayEvent(int year, int month, int day, EventType type, String[] eventDetails) {
         this.year = year;

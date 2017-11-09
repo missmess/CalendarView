@@ -28,7 +28,8 @@ CalendarView
 * 为某一天添加自定义文字样式和背景。
 * 包含滚动月历。支持滑动显示其它月份。
 * 支持多种监听。
-* 月历和周历滑动切换功能。
+* 类似小米日历实现的，月历和周历上滑切换功能。
+* 支持disable；禁选，单选，多选，范围选择。
 * 提供一个帮助实现年历到月历的过渡动画的viewgroup。
 
 ---
@@ -38,8 +39,12 @@ CalendarView
 Android Studio用户，在项目的build.gradle中添加该dependencies：
 
   `
-    compile "com.missmess.calendarview:calendarview:2.2.0"
+    compile "com.missmess.calendarview:calendarview:2.4.0"
   `
+
+从2.2.0及以下升级到2.4.0的请注意：
+1、由于2.4.0增加了控件对多选和范围选择的支持。原来MonthView中跟selection相关的方法有部分已经被删除或者修改。
+2、同样由于对多选的支持。周历滑动时，由于要保留多选模式下的selections，控件不再默认选中下一周的某一天，这里跟小米日历已经不一样了。其它方面在实现时已经尽量保持一致。
 
 ---
 

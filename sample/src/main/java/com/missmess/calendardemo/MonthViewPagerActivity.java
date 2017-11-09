@@ -17,6 +17,7 @@ import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.MonthViewPager;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class MonthViewPagerActivity extends AppCompatActivity {
@@ -52,10 +53,10 @@ public class MonthViewPagerActivity extends AppCompatActivity {
         });
         monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
-            public void onSelectionChanged(MonthView monthView, CalendarDay now, CalendarDay old, boolean byUser) {
+            public void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old, CalendarDay selection, boolean byUser) {
                 for(DayEvent event : yearEvents) {
-                    if(event.isThisDay(now)) {
-                        textView.setText(String.format("Today is \n%s\nToday have %d events", now.toString(), event.getEventDetails().length));
+                    if(Arrays.asList(now).contains(event.getCalendarDay())) {
+                        textView.setText(String.format("Today is \n%s\nToday have %d events", now[0].toString(), event.getEventDetails().length));
                         return;
                     }
                 }
