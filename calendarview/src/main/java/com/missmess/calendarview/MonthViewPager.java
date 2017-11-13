@@ -263,6 +263,7 @@ public class MonthViewPager extends ViewGroup {
      * <p>
      * <li>after scrolling, middle child has changed to another view.</li>
      * <li>middle child changes its showing month.</li>
+     * <li>middle child changed its display mode or week index</li>
      *
      * @param oldMonth old month
      */
@@ -598,6 +599,10 @@ public class MonthViewPager extends ViewGroup {
         return true;
     }
 
+    boolean isDraggerIdle() {
+        return dragger.getViewDragState() == ViewDragHelper.STATE_IDLE;
+    }
+
     public void setMonthMode() {
         if (mMonthMode)
             return;
@@ -610,7 +615,7 @@ public class MonthViewPager extends ViewGroup {
         childLeft.showMonthMode();
         childMiddle.showMonthMode();
         childRight.showMonthMode();
-        setSiblingInMonthMode(childMiddle.getCurrentMonth());
+        onMiddleChildChanged(getCurrentMonth());
     }
 
     public void setWeekMode() {
@@ -632,7 +637,7 @@ public class MonthViewPager extends ViewGroup {
         boolean done = childMiddle.setWeekIndex(weekIndex);
         // if week mode, setup sibling views to show correctly.
         if (!mMonthMode && done) {
-            setSiblingInWeekMode(weekIndex);
+            onMiddleChildChanged(getCurrentMonth());
         }
     }
 
@@ -642,25 +647,7 @@ public class MonthViewPager extends ViewGroup {
         childMiddle.showWeekMode();
         childRight.showWeekMode();
 
-//        // correct the selection when change to week mode
-//        int com = childMiddle.getSelectionType();
-//        if (com == -2 || com == 2 || com == -3) {
-//            CalendarDay today = childMiddle.getToday();
-//            int todayType = childMiddle.getDayType(today);
-//            if (todayType == 0)
-//                childMiddle.setSelection(today);
-//            else
-//                childMiddle.setSelection(new CalendarDay(getCurrentMonth(), 1));
-//            onMiddleChildChanged(childMiddle.getCurrentMonth());
-//        } else if (com == -1) {
-//            onSelectionInLeftOtherMonth();
-//        } else if (com == 1) {
-//            onSelectionInRightOtherMonth();
-//        } else {
-//            onMiddleChildChanged(childMiddle.getCurrentMonth());
-//        }
-
-        setSiblingInWeekMode(childMiddle.getWeekIndex());
+        onMiddleChildChanged(getCurrentMonth());
     }
 
     public boolean isMonthMode() {

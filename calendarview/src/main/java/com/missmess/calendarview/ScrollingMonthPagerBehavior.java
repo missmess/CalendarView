@@ -49,18 +49,17 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
     public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, final View child, View directTargetChild, View target, int nestedScrollAxes) {
         scroller.abortAnimation();
         scrollerOfM.abortAnimation();
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (!monthViewPager.isMonthMode()) {
-                    final int translate = -monthViewPager.getMaximumScrollRange();
-                    monthViewPager.setMonthMode();
-                    ViewCompat.setTranslationY(monthViewPager, translate);
-                    ViewCompat.setTranslationY(child, getTargetMaxTransY());
-//                    Log.i("month_behavior0", "translationY=" + ViewCompat.getTranslationY(monthViewPager));
-                }
-            }
-        });
+        if (!monthViewPager.isDraggerIdle())
+            // if dragger is not idle, prevent nested scroll for possible error.
+            return false;
+
+        if (!monthViewPager.isMonthMode()) {
+            final int translate = -monthViewPager.getMaximumScrollRange();
+            monthViewPager.setMonthMode();
+            ViewCompat.setTranslationY(monthViewPager, translate);
+            ViewCompat.setTranslationY(child, getTargetMaxTransY());
+//            Log.i("month_behavior0", "translationY=" + getTargetMaxTransY());
+        }
 
         return (nestedScrollAxes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
