@@ -26,7 +26,7 @@ public class MonthBehavior extends CoordinatorLayout.Behavior<MonthViewPager> {
         return (nestedScrollAxes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
 
-    private void scrollProperly(MonthViewPager view, int dy) {
+    private void scrollProperly(MonthViewPager view, int dy, View target) {
         float destY = ViewCompat.getTranslationY(view) - dy;
         if(destY > 0) {
             destY = 0;
@@ -38,11 +38,11 @@ public class MonthBehavior extends CoordinatorLayout.Behavior<MonthViewPager> {
         }
 
         ViewCompat.setTranslationY(view, destY);
-//        Log.d("month_behavior1", "translationY=" + ViewCompat.getTranslationY(view));
+//        Log.d("month_behavior2", "onNestedScroll: dy==" + dy + ";destY==" + destY + ";top==" + target.getTop() + ";transY==" + target.getTranslationY());
     }
 
     @Override
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, MonthViewPager child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-        scrollProperly(child, dyUnconsumed);
+        scrollProperly(child, dyUnconsumed, target);
     }
 }
