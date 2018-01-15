@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Scroller;
@@ -50,13 +49,13 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
             child.layout(0, bottom, child.getMeasuredWidth(), bottom + child.getMeasuredHeight() - minHeight);
             isLayouted = true;
         }
-        Log.i("month_behavior", "onLayoutChild: top==" + monthViewPager.getBottom() + ";transY==" + child.getTranslationY());
+//        Log.i("month_behavior", "onLayoutChild: top==" + monthViewPager.getBottom() + ";transY==" + child.getTranslationY());
         return true;
     }
 
     @Override
     public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, final View child, View directTargetChild, View target, int nestedScrollAxes) {
-        Log.d("month_behavior", "onStartNestedScroll");
+//        Log.d("month_behavior", "onStartNestedScroll");
         scroller.abortAnimation();
         scrollerOfM.abortAnimation();
         handler.removeCallbacksAndMessages(null);
@@ -102,7 +101,7 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
         }
 
         ViewCompat.setTranslationY(child, currentY - consumed[1]);
-        Log.i("month_behavior", "onNestedPreScroll: dy==" + dy + ";destY==" + (currentY - consumed[1]) + ";top==" + child.getTop() + ";transY==" + child.getTranslationY());
+//        Log.i("month_behavior", "onNestedPreScroll: dy==" + dy + ";destY==" + (currentY - consumed[1]) + ";top==" + child.getTop() + ";transY==" + child.getTranslationY());
     }
 
     private int getMaxTransY() {
@@ -120,7 +119,7 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
 
     @Override
     public void onStopNestedScroll(CoordinatorLayout coordinatorLayout, View child, View target) {
-        Log.d("month_behavior", "onStopNestedScroll");
+//        Log.d("month_behavior", "onStopNestedScroll");
         int minimumY = getMinTransY();
         float translationY = ViewCompat.getTranslationY(child);
 

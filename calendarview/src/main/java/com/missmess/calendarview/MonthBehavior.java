@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -54,6 +53,6 @@ public class MonthBehavior extends CoordinatorLayout.Behavior<MonthViewPager> {
             }
         }
         ViewCompat.setTranslationY(child, currentY - consumed[1]);
-        Log.d("month_behavior2", "onNestedPreScroll: dy==" + dy + ";destY==" + (currentY - consumed[1]) + ";top==" + target.getTop() + ";transY==" + target.getTranslationY());
+//        Log.d("month_behavior2", "onNestedPreScroll: dy==" + dy + ";destY==" + (currentY - consumed[1]) + ";top==" + target.getTop() + ";transY==" + target.getTranslationY());
     }
 }
