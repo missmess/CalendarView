@@ -3,12 +3,14 @@ package com.missmess.calendardemo;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.missmess.calendardemo.adapter.Event2Adapter;
 import com.missmess.calendardemo.control.GetDecorsTask;
 import com.missmess.calendardemo.model.DayEvent;
 import com.missmess.calendarview.CalendarDay;
@@ -16,8 +18,8 @@ import com.missmess.calendarview.CalendarMonth;
 import com.missmess.calendarview.DayDecor;
 import com.missmess.calendarview.MonthView;
 import com.missmess.calendarview.MonthViewPager;
+import com.missmess.calendarview.ScrollingMonthPagerBehavior;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -31,6 +33,7 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
     private TextView year;
     private ProgressDialog progressDialog;
     private List<DayEvent> yearEvents;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,7 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_xiaomi_calendar);
         // find view
         monthViewPager = (MonthViewPager) findViewById(R.id.mvp);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         textView = (TextView) findViewById(R.id.tv);
         month = (TextView) findViewById(R.id.month);
         year = (TextView) findViewById(R.id.year);
@@ -61,14 +65,27 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
         monthViewPager.setOnSelectionChangeListener(new MonthView.OnSelectionChangeListener() {
             @Override
             public void onSelectionChanged(MonthView monthView, CalendarDay[] now, CalendarDay[] old, CalendarDay selection, boolean byUser) {
-                Log.v("xiaomi_calendar", "byUser=" + byUser + "; old=" + Arrays.toString(old) + "; now=" +  Arrays.toString(now));
-                for(DayEvent event : yearEvents) {
-                    if(Arrays.asList(now).contains(event.getCalendarDay())) {
-                        textView.setText(String.format("Today is \n%s\nToday have %d events", now[0], event.getEventDetails().length));
-                        return;
-                    }
-                }
-                textView.setText(R.string.no_event);
+                //                Log.v("xiaomi_calendar", "byUser=" + byUser + "; old=" + Arrays.toString(old) + "; now=" +  Arrays.toString(now));
+                //                for(DayEvent event : yearEvents) {
+                //                    if(Arrays.asList(now).contains(event.getCalendarDay())) {
+                //                        textView.setText(String.format("Today is \n%s\nToday have %d events", now[0], event.getEventDetails().length));
+                //                        return;
+                //                    }
+                //                }
+                //                textView.setText(R.string.no_event);
+            }
+        });
+
+        recyclerView.setAdapter(new Event2Adapter());
+        ScrollingMonthPagerBehavior.from(recyclerView).setOnStateChangeListener(new ScrollingMonthPagerBehavior.OnStateChangeListener() {
+            @Override
+            public void onExpanded() {
+                Log.w("xiaomiactivity", "onExpanded");
+            }
+
+            @Override
+            public void onCollapsed() {
+                Log.w("xiaomiactivity", "onCollapsed");
             }
         });
     }

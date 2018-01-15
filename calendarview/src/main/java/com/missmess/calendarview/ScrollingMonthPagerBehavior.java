@@ -5,7 +5,9 @@ import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Scroller;
 
 /**
@@ -22,6 +24,7 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
     private Handler handler = new Handler();
     private boolean isCollapsed = false;
     private OnStateChangeListener li;
+    private boolean isLayouted = false;
 
     public ScrollingMonthPagerBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -40,55 +43,70 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
 
     @Override
     public boolean onLayoutChild(CoordinatorLayout parent, View child, int layoutDirection) {
-        // always locate target view below to the monthViewPager.
-        int bottom = monthViewPager.getBottom();
-        child.layout(0, bottom, child.getMeasuredWidth(), bottom + child.getMeasuredHeight());
-//        Log.i("month_behavior", "onLayoutChild: top==" + bottom + ";transY==" + child.getTranslationY());
+        if (!isLayouted) {
+            // always locate target view below to the monthViewPager.
+            int bottom = monthViewPager.getBottom();
+            int minHeight = monthViewPager.getShouldHeightInWeekMode();
+            child.layout(0, bottom, child.getMeasuredWidth(), bottom + child.getMeasuredHeight() - minHeight);
+            isLayouted = true;
+        }
+        Log.i("month_behavior", "onLayoutChild: top==" + monthViewPager.getBottom() + ";transY==" + child.getTranslationY());
         return true;
     }
 
     @Override
     public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout, final View child, View directTargetChild, View target, int nestedScrollAxes) {
-//        Log.d("month_behavior", "onStartNestedScroll");
+        Log.d("month_behavior", "onStartNestedScroll");
         scroller.abortAnimation();
         scrollerOfM.abortAnimation();
+        handler.removeCallbacksAndMessages(null);
+
         if (!monthViewPager.isDraggerIdle())
             // if dragger is not idle, not handle nested scroll event
             return false;
 
         if (!monthViewPager.isMonthMode()) {
-            int oldBottom = monthViewPager.getBottom();
             // when start scroll, set to month mode if previous mode is week-mode.
             final int translate = -monthViewPager.getMaximumScrollRange();
             monthViewPager.setMonthMode();
             // change to month mode, must set a proper translationY.
             ViewCompat.setTranslationY(monthViewPager, translate);
-
-            // relayout target view to final position and set a proper translationY on it.
-            int maxTransY = getTargetMaxTransY();
-            int childTop = oldBottom + (-maxTransY);
-            child.layout(0, childTop, child.getMeasuredWidth(), childTop + child.getMeasuredHeight());
-            ViewCompat.setTranslationY(child, maxTransY);
         }
 
         return (nestedScrollAxes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
 
     @Override
-    public void onNestedScroll(CoordinatorLayout coordinatorLayout, View child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-        float translationY = ViewCompat.getTranslationY(child);
-        float destY = translationY - dyUnconsumed;
-        if (destY > 0) {
-            destY = 0;
-        } else {
-            int minimumY = getTargetMaxTransY();
+    public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, View child, View target, int dx, int dy, int[] consumed) {
+        if (dy == 0)
+            return;
 
-            if (destY < minimumY)
-                destY = minimumY;
+        int currentY = (int) ViewCompat.getTranslationY(child);
+        int destY = currentY - dy;
+
+        boolean upward = dy > 0;
+        int minY = getMinTransY();
+        int maxY = getMaxTransY();
+        if (upward) {
+            if (destY < minY) {
+                consumed[1] = currentY - minY;
+            } else {
+                consumed[1] = dy;
+            }
+        } else {
+            if (destY <= maxY) {
+                consumed[1] = dy;
+            } else {
+                consumed[1] = currentY - maxY;
+            }
         }
 
-        ViewCompat.setTranslationY(child, destY);
-//        Log.e("month_behavior", "onNestedScroll: dy==" + dyUnconsumed + ";destY==" + destY + ";top==" + child.getTop() + ";transY==" + child.getTranslationY());
+        ViewCompat.setTranslationY(child, currentY - consumed[1]);
+        Log.i("month_behavior", "onNestedPreScroll: dy==" + dy + ";destY==" + (currentY - consumed[1]) + ";top==" + child.getTop() + ";transY==" + child.getTranslationY());
+    }
+
+    private int getMaxTransY() {
+        return 0;
     }
 
     /**
@@ -96,13 +114,14 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
      *
      * @return maximum translationY
      */
-    private int getTargetMaxTransY() {
+    private int getMinTransY() {
         return -(monthViewPager.getShouldHeightInMonthMode() - monthViewPager.getShouldHeightInWeekMode());
     }
 
     @Override
     public void onStopNestedScroll(CoordinatorLayout coordinatorLayout, View child, View target) {
-        int minimumY = getTargetMaxTransY();
+        Log.d("month_behavior", "onStopNestedScroll");
+        int minimumY = getMinTransY();
         float translationY = ViewCompat.getTranslationY(child);
 
         int minimumYOfM = -monthViewPager.getMaximumScrollRange();
@@ -156,16 +175,12 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
                 handler.post(this);
             } else {
                 boolean oldCollapseState = isCollapsed;
-                boolean newCollapseState = ViewCompat.getTranslationY(target) == getTargetMaxTransY();
+                boolean newCollapseState = ViewCompat.getTranslationY(target) == getMinTransY();
 
                 // always change to week mode when collapsed
                 if (newCollapseState) {
                     monthViewPager.setWeekMode();
                     ViewCompat.setTranslationY(monthViewPager, 0);
-                    // height of monthViewPager will changed on next layout step. Reference to
-                    // {@link #onLayoutChild} method, target will be relocated, so reset translationY
-                    // to 0.
-                    ViewCompat.setTranslationY(target, 0);
                 }
 
                 if (newCollapseState == oldCollapseState) {
@@ -190,5 +205,19 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
         void onExpanded();
 
         void onCollapsed();
+    }
+
+    public static <V extends View> ScrollingMonthPagerBehavior from(V view) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        if (!(params instanceof CoordinatorLayout.LayoutParams)) {
+            throw new IllegalArgumentException("The view is not a child of CoordinatorLayout");
+        }
+        CoordinatorLayout.Behavior behavior = ((CoordinatorLayout.LayoutParams) params)
+                .getBehavior();
+        if (!(behavior instanceof ScrollingMonthPagerBehavior)) {
+            throw new IllegalArgumentException(
+                    "The view is not associated with BottomSheetBehavior");
+        }
+        return (ScrollingMonthPagerBehavior) behavior;
     }
 }
