@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -12,7 +13,7 @@ import android.view.View;
  * @author wl
  * @since 2017/08/03 15:14
  */
-public class MonthBehavior extends CoordinatorLayout.Behavior<MonthViewPager> {
+public class MonthBehavior extends ViewOffsetBehavior<MonthViewPager> {
 
     public MonthBehavior() {
     }
@@ -26,23 +27,52 @@ public class MonthBehavior extends CoordinatorLayout.Behavior<MonthViewPager> {
         return (nestedScrollAxes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
 
-    private void scrollProperly(MonthViewPager view, int dy, View target) {
-        float destY = ViewCompat.getTranslationY(view) - dy;
-        if(destY > 0) {
-            destY = 0;
-        } else {
-            int minimumY = -view.getMaximumScrollRange();
-
-            if (destY < minimumY)
-                destY = minimumY;
-        }
-
-        ViewCompat.setTranslationY(view, destY);
-//        Log.d("month_behavior2", "onNestedScroll: dy==" + dy + ";destY==" + destY + ";top==" + target.getTop() + ";transY==" + target.getTranslationY());
-    }
-
     @Override
-    public void onNestedScroll(CoordinatorLayout coordinatorLayout, MonthViewPager child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-        scrollProperly(child, dyUnconsumed, target);
+    public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, MonthViewPager child, View target, int dx, int dy, int[] consumed) {
+        if (dy == 0)
+            return;
+
+        int currentY = getTopAndBottomOffset();
+        int destY = currentY - dy;
+
+        boolean upward = dy > 0;
+        int minY = -child.getMaximumScrollRange();
+        int maxY = 0;
+        if (upward) { // we just take interest on upward scrolling
+            if (destY < minY) {
+                consumed[1] = currentY - minY;
+            } else {
+                consumed[1] = dy;
+            }
+        } else {
+            if (destY <= maxY) {
+                consumed[1] = dy;
+            } else {
+                consumed[1] = currentY - maxY;
+            }
+        }
+        setTopAndBottomOffset(currentY - consumed[1]);
+        Log.d("month_behavior2", "onNestedPreScroll: dy==" + dy + ";destY==" + destY + ";top==" + target.getTop() + ";transY==" + target.getTranslationY());
     }
+
+//    @Override
+//    public void onNestedScroll(CoordinatorLayout coordinatorLayout, MonthViewPager child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
+//        if (dyUnconsumed == 0)
+//            return;
+//
+//        int currentY = (int) ViewCompat.getTranslationY(child);
+//        int destY = currentY - dyUnconsumed;
+//        Log.v("month_behavior2", "onNestedScroll: currentY==" + currentY);
+//
+//        boolean upward = dyUnconsumed > 0;
+//        int maxY = 0;
+//        if (!upward) {
+//            // ScrollingView not consume downward scrolling
+//            if (destY > maxY) {
+//                ViewCompat.setTranslationY(child, maxY);
+//            } else {
+//                ViewCompat.setTranslationY(child, destY);
+//            }
+//        }
+//    }
 }
