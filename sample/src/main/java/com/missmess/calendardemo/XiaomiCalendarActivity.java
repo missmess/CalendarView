@@ -34,6 +34,7 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     private List<DayEvent> yearEvents;
     private RecyclerView recyclerView;
+    private Event2Adapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +74,16 @@ public class XiaomiCalendarActivity extends AppCompatActivity {
                 //                    }
                 //                }
                 //                textView.setText(R.string.no_event);
+                if (selection.compareTo(new CalendarDay(2017, 8, 16)) >= 0) {
+                    adapter.setAvail(true);
+                } else {
+                    adapter.setAvail(false);
+                }
             }
         });
 
-        recyclerView.setAdapter(new Event2Adapter());
+        adapter = new Event2Adapter();
+        recyclerView.setAdapter(adapter);
         ScrollingMonthPagerBehavior.from(recyclerView).setOnStateChangeListener(new ScrollingMonthPagerBehavior.OnStateChangeListener() {
             @Override
             public void onExpanded() {

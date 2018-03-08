@@ -48,6 +48,8 @@ public class ScrollingMonthPagerBehavior extends CoordinatorLayout.Behavior<View
             int minHeight = monthViewPager.getShouldHeightInWeekMode();
             child.layout(0, bottom, child.getMeasuredWidth(), bottom + child.getMeasuredHeight() - minHeight);
             isLayouted = true;
+        } else {
+            child.layout(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
         }
 //        Log.i("month_behavior", "onLayoutChild: top==" + monthViewPager.getBottom() + ";transY==" + child.getTranslationY());
         return true;

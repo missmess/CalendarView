@@ -10,6 +10,14 @@ import android.widget.TextView;
  * @since 2018/01/11 18:15
  */
 public class Event2Adapter extends RecyclerView.Adapter<Event2Adapter.ViewHolder> {
+    private boolean avail = true;
+
+    public void setAvail(boolean avail) {
+        if (this.avail == avail)
+            return;
+        this.avail = avail;
+        notifyDataSetChanged();
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -25,7 +33,9 @@ public class Event2Adapter extends RecyclerView.Adapter<Event2Adapter.ViewHolder
 
     @Override
     public int getItemCount() {
+        if (avail)
         return 13;
+        else return 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
