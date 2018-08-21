@@ -127,6 +127,20 @@ public class DayDecor {
         private int bgShape = DRAWABLE;
         private @ColorInt int pureColorBg = 0;
         private Drawable drawableBg = null;
+        
+        public Style() {}
+        
+        public Style(Style src) {
+            setBold(src.isBold());
+            setItalic(src.isItalic());
+            setUnderline(src.isUnderline());
+            setStrikeThrough(src.isStrikeThrough());
+            setTextColor(src.getTextColor());
+            setTextSize(src.getTextSize());
+            setBgShape(src.getBgShape());
+            setPureColorBg(src.getPureColorBg());
+            setDrawableBg(src.getDrawableBg());
+        }
 
         /**
          * add text attributes to specified paint.

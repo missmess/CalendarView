@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = "com.missmess.calendarview"
-version = "2.5.2"
+version = "2.5.3"
 
 android {
     compileSdkVersion 26
