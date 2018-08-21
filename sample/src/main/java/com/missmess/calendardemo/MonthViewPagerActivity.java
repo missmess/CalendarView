@@ -42,6 +42,7 @@ public class MonthViewPagerActivity extends AppCompatActivity {
     private void init() {
         monthViewPager.setCurrentMonth(new CalendarMonth(2016, 3));
         monthViewPager.setToday(new CalendarDay(2016, 3, 12));
+        monthViewPager.setDayLabel(monthViewPager.getToday(), "今");
         monthViewPager.setMonthRange(new CalendarMonth(2015, 12), new CalendarMonth(2017, 2));
         monthViewPager.addOnMonthChangeListener(new MonthViewPager.OnMonthChangeListener() {
             @Override

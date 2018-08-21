@@ -3,15 +3,15 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = "com.missmess.calendarview"
-version = "2.5.1"
+version = "2.5.2"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 22
+        minSdkVersion 14
+        targetSdkVersion 26
         versionCode 5
         versionName version
     }
@@ -24,8 +24,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:design:23.3.0'
+    implementation 'com.android.support:design:26.1.0'
 }
 
 def siteUrl = 'https://github.com/missmess/CalendarView'    // project homepage

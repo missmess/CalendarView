@@ -15,6 +15,7 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -23,9 +24,11 @@ import android.view.View;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * MonthView can show a month, with week label in calendar style.
@@ -108,6 +111,7 @@ public class MonthView extends View {
     private CalendarDay rightEdge;
     private boolean mWeekMode;
     private int mWeekIndex = 0;
+    private Map<CalendarDay, String> dayLabels;
     private HashSet<CalendarDay> disabledDays;
     private int mSelectionMode = SELECTION_SINGLE;
 
@@ -177,6 +181,7 @@ public class MonthView extends View {
         leftEdge = new CalendarDay(1900, 2, 1);
         rightEdge = new CalendarDay(2049, 12, 31);
         disabledDays = new HashSet<>();
+        dayLabels = new HashMap<>();
         selectedDays = new LinkedHashSet<>();
     }
 
@@ -199,6 +204,14 @@ public class MonthView extends View {
 
     public CalendarDay getToday() {
         return today;
+    }
+
+    public void setDayLabel(CalendarDay day, String label) {
+        dayLabels.put(day, label);
+    }
+
+    public String getDayLabel(CalendarDay day) {
+        return dayLabels.get(day);
     }
 
     private void initStyle() {
@@ -389,7 +402,9 @@ public class MonthView extends View {
             }
             style.assignStyleToPaint(mDayNumPaint);
             // get text height
-            String dayStr = String.format(Locale.getDefault(), "%d", day);
+            String dayStr = dayLabels.get(currentDay);
+            if (TextUtils.isEmpty(dayStr))
+                dayStr = String.format(Locale.getDefault(), "%d", day);
             mDayNumPaint.getTextBounds(dayStr, 0, dayStr.length(), drawRect);
             int textHeight = drawRect.height();
             float y = (dayRowHeight + mDayNumPaint.getTextSize()) / 2 + dayTop;

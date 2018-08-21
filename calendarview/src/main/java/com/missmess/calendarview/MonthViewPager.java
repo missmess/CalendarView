@@ -204,6 +204,12 @@ public class MonthViewPager extends ViewGroup {
         childRight.setToday(today);
     }
 
+    public void setDayLabel(CalendarDay day, String label) {
+        childLeft.setDayLabel(day, label);
+        childMiddle.setDayLabel(day, label);
+        childRight.setDayLabel(day, label);
+    }
+
     public CalendarDay getToday() {
         return childMiddle.getToday();
     }
